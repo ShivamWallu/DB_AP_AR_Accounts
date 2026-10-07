@@ -166,8 +166,8 @@ const App = {
       datasetType: "master",
       fetchFn: (params) => API.getMaster(params),
       columns: [
-        { key: "transaction_site", label: "Transaction Site" },
-        { key: "voucher_number", label: "Voucher Number" },
+        { key: "transaction_site", label: "Site" },
+        { key: "voucher_number", label: "Voucher No." },
         { key: "voucher_date", label: "Voucher Date" },
         { key: "voucher_type", label: "Voucher Type" },
         { key: "source_tag", label: "Linked Register" },
@@ -194,8 +194,8 @@ const App = {
       datasetType: "daybook",
       fetchFn: (params) => API.getDayBook(params),
       columns: [
-        { key: "transaction_site", label: "Transaction Site" },
-        { key: "voucher_number", label: "Voucher Number" },
+        { key: "transaction_site", label: "Site" },
+        { key: "voucher_number", label: "Voucher No." },
         { key: "voucher_date", label: "Voucher Date" },
         { key: "voucher_type", label: "Voucher Type" },
         { key: "voucher_status", label: "Status", type: "badge" },

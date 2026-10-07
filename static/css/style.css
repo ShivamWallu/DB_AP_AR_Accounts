@@ -906,9 +906,9 @@ body {
 .data-table td.dt-sticky-col-idx {
   position: sticky !important;
   left: 0 !important;
-  width: 44px !important;
-  min-width: 44px !important;
-  max-width: 44px !important;
+  width: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
   text-align: center !important;
   box-sizing: border-box !important;
   padding-left: 2px !important;
@@ -937,14 +937,16 @@ body {
 .data-table th.dt-sticky-col-site,
 .data-table td.dt-sticky-col-site {
   position: sticky !important;
-  left: 44px !important;
-  width: 118px !important;
-  min-width: 118px !important;
-  max-width: 118px !important;
+  left: 48px !important;
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
   box-sizing: border-box !important;
-  padding-left: 6px !important;
-  padding-right: 6px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
   white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .data-table th.dt-sticky-col-site {
@@ -972,14 +974,16 @@ body {
 .data-table th.dt-sticky-col-voucher,
 .data-table td.dt-sticky-col-voucher {
   position: sticky !important;
-  left: 162px !important; /* 44px (#) + 118px (Site) = 162px */
-  width: 142px !important;
-  min-width: 142px !important;
-  max-width: 142px !important;
+  left: 168px !important; /* 48px (#) + 120px (Site) = 168px */
+  width: 148px !important;
+  min-width: 148px !important;
+  max-width: 148px !important;
   box-sizing: border-box !important;
   padding-left: 8px !important;
   padding-right: 8px !important;
   white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .data-table th.dt-sticky-col-voucher {
