@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: excel_data_app
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://excel_user:SecurePassword2026@postgres:5432/excel_db
+      - SECRET_KEY=production-secure-jwt-secret-key-shivam-ai-2026-aws
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+    volumes:
+      - app_uploads:/app/uploads
+      - app_data_files:/app/data_files
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: excel_postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=excel_user
+      - POSTGRES_PASSWORD=SecurePassword2026
+      - POSTGRES_DB=excel_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U excel_user -d excel_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  app_uploads:
+  app_data_files:
