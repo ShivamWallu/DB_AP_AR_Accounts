@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import User
+from app.models import User, ImportBatch
 from app.schemas import (
     PaginatedResponse, DayBookRecordResponse, APRecordResponse, ARRecordResponse,
     FilterOptionsResponse
@@ -19,11 +19,20 @@ router = APIRouter(prefix="/api/data", tags=["Data Management"])
 def get_filters(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return get_filter_options(db)
 
-def _parse_int_param(val: Optional[str]) -> Optional[int]:
-    if not val:
+def _resolve_batch_id(db: Session, batch_id: Optional[str]) -> Optional[int]:
+    """
+    Smart Batch Resolution:
+    - If empty/omitted -> defaults to the LATEST active batch ID.
+    - If explicitly 'all' or 'all_batches' -> returns None (all batches).
+    - If specific numeric ID -> returns integer ID.
+    """
+    if not batch_id or not str(batch_id).strip():
+        latest = db.query(ImportBatch).filter(ImportBatch.status == "Completed").order_by(ImportBatch.id.desc()).first()
+        return latest.id if latest else None
+    if str(batch_id).strip().lower() in ("all", "all_batches", "0", "-1"):
         return None
     try:
-        return int(val)
+        return int(batch_id)
     except (ValueError, TypeError):
         return None
 
@@ -42,7 +51,7 @@ def get_master_360_records(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    b_id = _parse_int_param(batch_id)
+    b_id = _resolve_batch_id(db, batch_id)
     total, records = query_master_360(
         db, page=page, page_size=page_size, search=search,
         site=site, voucher_type=voucher_type, register_type=register_type,
@@ -74,7 +83,7 @@ def get_daybook_records(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    b_id = _parse_int_param(batch_id)
+    b_id = _resolve_batch_id(db, batch_id)
     total, records = query_daybook(
         db, page=page, page_size=page_size, search=search,
         site=site, voucher_type=voucher_type, approved_by=approved_by, batch_id=b_id,
@@ -107,7 +116,7 @@ def get_ap_records(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    b_id = _parse_int_param(batch_id)
+    b_id = _resolve_batch_id(db, batch_id)
     total, records = query_ap(
         db, page=page, page_size=page_size, search=search,
         site=site, voucher_type=voucher_type, voucher_subtype=voucher_subtype,
@@ -139,7 +148,7 @@ def get_ar_records(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    b_id = _parse_int_param(batch_id)
+    b_id = _resolve_batch_id(db, batch_id)
     total, records = query_ar(
         db, page=page, page_size=page_size, search=search,
         site=site, voucher_type=voucher_type, voucher_subtype=voucher_subtype,
