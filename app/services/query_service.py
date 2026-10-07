@@ -415,8 +415,8 @@ def query_master_360(
 ) -> Tuple[int, List[Dict[str, Any]]]:
     """
     Day Book Master 360° Ledger: True Multi-Register Unified Engine.
-    Aggregates Day Book (enriched with matching AP & AR), plus any standalone AP & AR records
-    so that if Day Book data is absent or AP/AR contains extra data, it is 100% visible and filterable.
+    Expands multi-item vouchers into detailed individual item lines (retaining parent voucher metadata,
+    approval status, verification, and site info) so that all multi-line items from AP and AR are 100% visible.
     """
     syns = expand_voucher_type_synonyms(voucher_type) if (voucher_type and voucher_type.strip()) else []
 
@@ -424,19 +424,29 @@ def query_master_360(
     q_db = db.query(DayBookRecord)
     if site and site.strip():
         q_db = q_db.filter(DayBookRecord.transaction_site == site.strip())
+    if batch_id:
+        q_db = q_db.filter(DayBookRecord.batch_id == batch_id)
     if syns:
         vt_subq_ap = db.query(APRecord.voucher_number).filter(
             or_(
                 APRecord.voucher_type.in_(syns),
                 APRecord.voucher_sub_type.in_(syns)
             )
-        ).scalar_subquery()
+        )
+        if batch_id:
+            vt_subq_ap = vt_subq_ap.filter(APRecord.batch_id == batch_id)
+        vt_subq_ap = vt_subq_ap.scalar_subquery()
+
         vt_subq_ar = db.query(ARRecord.voucher_number).filter(
             or_(
                 ARRecord.voucher_type.in_(syns),
                 ARRecord.voucher_sub_type.in_(syns)
             )
-        ).scalar_subquery()
+        )
+        if batch_id:
+            vt_subq_ar = vt_subq_ar.filter(ARRecord.batch_id == batch_id)
+        vt_subq_ar = vt_subq_ar.scalar_subquery()
+
         q_db = q_db.filter(
             or_(
                 DayBookRecord.voucher_type.in_(syns),
@@ -464,354 +474,397 @@ def query_master_360(
             )
         else:
             q_db = q_db.filter(DayBookRecord.approved_by == appr)
+
+    # Order DayBook query
+    if sort_order.lower() == "desc":
+        q_db = q_db.order_by(desc(DayBookRecord.id))
+    else:
+        q_db = q_db.order_by(asc(DayBookRecord.id))
+
+    db_records = q_db.all()
+
+    # Pre-fetch all AP and AR records matching this batch for rapid in-memory expansion
+    q_all_ap = db.query(APRecord)
+    q_all_ar = db.query(ARRecord)
     if batch_id:
-        q_db = q_db.filter(DayBookRecord.batch_id == batch_id)
+        q_all_ap = q_all_ap.filter(APRecord.batch_id == batch_id)
+        q_all_ar = q_all_ar.filter(ARRecord.batch_id == batch_id)
 
-    # Filter by linked register type
-    if register_type == "ap":
-        ap_vouchers_subq = db.query(APRecord.voucher_number).filter(APRecord.voucher_number.isnot(None)).scalar_subquery()
-        q_db = q_db.filter(DayBookRecord.voucher_number.in_(ap_vouchers_subq))
-    elif register_type == "ar":
-        ar_vouchers_subq = db.query(ARRecord.voucher_number).filter(ARRecord.voucher_number.isnot(None)).scalar_subquery()
-        q_db = q_db.filter(DayBookRecord.voucher_number.in_(ar_vouchers_subq))
-    elif register_type == "daybook_only":
-        ap_vouchers_subq = db.query(APRecord.voucher_number).filter(APRecord.voucher_number.isnot(None)).scalar_subquery()
-        ar_vouchers_subq = db.query(ARRecord.voucher_number).filter(ARRecord.voucher_number.isnot(None)).scalar_subquery()
-        q_db = q_db.filter(
-            ~DayBookRecord.voucher_number.in_(ap_vouchers_subq),
-            ~DayBookRecord.voucher_number.in_(ar_vouchers_subq)
-        )
+    ap_rows = q_all_ap.all()
+    ar_rows = q_all_ar.all()
 
-    if search and search.strip():
-        term = f"%{search.strip()}%"
-        q_db = q_db.filter(
-            or_(
-                DayBookRecord.voucher_number.ilike(term),
-                DayBookRecord.party_code.ilike(term),
-                DayBookRecord.party_description.ilike(term),
-                DayBookRecord.account_description.ilike(term),
-                DayBookRecord.narration.ilike(term),
-                DayBookRecord.created_by.ilike(term),
-                DayBookRecord.approved_by.ilike(term)
-            )
-        )
-
-    db_total = q_db.count()
-
-    # 2. Query Standalone AP Records (vouchers in AP but not in Day Book)
-    all_db_v_subq = db.query(DayBookRecord.voucher_number).filter(DayBookRecord.voucher_number.isnot(None)).scalar_subquery()
-    include_standalone_ap = (register_type != "daybook_only" and register_type != "ar")
-    
-    q_ap_standalone = None
-    ap_standalone_total = 0
-    if include_standalone_ap:
-        q_ap_standalone = db.query(APRecord).filter(~APRecord.voucher_number.in_(all_db_v_subq))
-        if site and site.strip():
-            q_ap_standalone = q_ap_standalone.filter(APRecord.accounting_site_code == site.strip())
-        if syns:
-            q_ap_standalone = q_ap_standalone.filter(or_(APRecord.voucher_type.in_(syns), APRecord.voucher_sub_type.in_(syns)))
-        if batch_id:
-            q_ap_standalone = q_ap_standalone.filter(APRecord.batch_id == batch_id)
-        if search and search.strip():
-            term = f"%{search.strip()}%"
-            q_ap_standalone = q_ap_standalone.filter(
-                or_(
-                    APRecord.voucher_number.ilike(term),
-                    APRecord.invoice_number.ilike(term),
-                    APRecord.party_gst_tin.ilike(term),
-                    APRecord.item_service_description.ilike(term),
-                    APRecord.item_service_expense_account_desc.ilike(term),
-                    APRecord.header_narration.ilike(term),
-                    APRecord.detail_narration.ilike(term)
-                )
-            )
-        ap_standalone_total = q_ap_standalone.count()
-
-    # 3. Query Standalone AR Records (vouchers in AR but not in Day Book)
-    include_standalone_ar = (register_type != "daybook_only" and register_type != "ap")
-    q_ar_standalone = None
-    ar_standalone_total = 0
-    if include_standalone_ar:
-        q_ar_standalone = db.query(ARRecord).filter(~ARRecord.voucher_number.in_(all_db_v_subq))
-        if site and site.strip():
-            q_ar_standalone = q_ar_standalone.filter(ARRecord.accounting_site_code == site.strip())
-        if syns:
-            q_ar_standalone = q_ar_standalone.filter(or_(ARRecord.voucher_type.in_(syns), ARRecord.voucher_sub_type.in_(syns)))
-        if batch_id:
-            q_ar_standalone = q_ar_standalone.filter(ARRecord.batch_id == batch_id)
-        if search and search.strip():
-            term = f"%{search.strip()}%"
-            q_ar_standalone = q_ar_standalone.filter(
-                or_(
-                    ARRecord.voucher_number.ilike(term),
-                    ARRecord.item_service_description.ilike(term),
-                    ARRecord.narration_remarks.ilike(term)
-                )
-            )
-        ar_standalone_total = q_ar_standalone.count()
-
-    total = db_total + ap_standalone_total + ar_standalone_total
-
-    # Sort Day Book base query
-    if sort_by == "id":
-        ap_subq = db.query(APRecord.voucher_number).filter(APRecord.voucher_number.isnot(None)).scalar_subquery()
-        ar_subq = db.query(ARRecord.voucher_number).filter(ARRecord.voucher_number.isnot(None)).scalar_subquery()
-        has_match = or_(
-            DayBookRecord.voucher_number.in_(ap_subq),
-            DayBookRecord.voucher_number.in_(ar_subq)
-        )
-        if sort_order.lower() == "desc":
-            q_db = q_db.order_by(has_match.desc(), desc(DayBookRecord.id))
-        else:
-            q_db = q_db.order_by(has_match.desc(), asc(DayBookRecord.id))
-    else:
-        col = getattr(DayBookRecord, sort_by, DayBookRecord.id)
-        if sort_order.lower() == "asc":
-            q_db = q_db.order_by(asc(col))
-        else:
-            q_db = q_db.order_by(desc(col))
-
-    # Pagination handling across combined datasets
-    offset = (page - 1) * page_size
-    db_records = []
-    ap_records = []
-    ar_records = []
-
-    if offset < db_total:
-        db_records = q_db.offset(offset).limit(page_size).all()
-        slots_left = page_size - len(db_records)
-        
-        if slots_left > 0 and q_ap_standalone is not None and ap_standalone_total > 0:
-            ap_records = q_ap_standalone.limit(slots_left).all()
-            slots_left -= len(ap_records)
-            
-        if slots_left > 0 and q_ar_standalone is not None and ar_standalone_total > 0:
-            ar_records = q_ar_standalone.limit(slots_left).all()
-    else:
-        ap_offset = offset - db_total
-        if ap_offset < ap_standalone_total and q_ap_standalone is not None:
-            ap_records = q_ap_standalone.offset(ap_offset).limit(page_size).all()
-            slots_left = page_size - len(ap_records)
-            if slots_left > 0 and q_ar_standalone is not None and ar_standalone_total > 0:
-                ar_records = q_ar_standalone.limit(slots_left).all()
-        else:
-            ar_offset = ap_offset - ap_standalone_total
-            if q_ar_standalone is not None:
-                ar_records = q_ar_standalone.offset(ar_offset).limit(page_size).all()
-
-    # Collect voucher numbers for current page DayBook records to bulk fetch AP and AR
-    v_numbers = [r.voucher_number for r in db_records if r.voucher_number]
     ap_map: Dict[str, List[APRecord]] = {}
     ar_map: Dict[str, List[ARRecord]] = {}
+    matched_ap_ids = set()
+    matched_ar_ids = set()
 
-    if v_numbers:
-        matched_ap = db.query(APRecord).filter(APRecord.voucher_number.in_(v_numbers)).all()
-        for ap in matched_ap:
+    for ap in ap_rows:
+        if ap.voucher_number:
             if ap.voucher_number not in ap_map:
                 ap_map[ap.voucher_number] = []
             ap_map[ap.voucher_number].append(ap)
 
-        matched_ar = db.query(ARRecord).filter(ARRecord.voucher_number.in_(v_numbers)).all()
-        for ar in matched_ar:
+    for ar in ar_rows:
+        if ar.voucher_number:
             if ar.voucher_number not in ar_map:
                 ar_map[ar.voucher_number] = []
             ar_map[ar.voucher_number].append(ar)
 
     master_list = []
 
-    # 1. Format Day Book records
+    # 1. Expand Day Book Records
     for dbr in db_records:
         v_no = dbr.voucher_number
-        ap_list = ap_map.get(v_no, [])
-        ar_list = ar_map.get(v_no, [])
+        ap_list = ap_map.get(v_no, []) if v_no else []
+        ar_list = ar_map.get(v_no, []) if v_no else []
 
         has_ap = len(ap_list) > 0
         has_ar = len(ar_list) > 0
 
-        # Aggregate AP details
-        ap_total_amt = sum((ap.total_voucher_amount or 0.0) for ap in ap_list) if ap_list else None
-        ap_tax_amt = sum((ap.total_tax_amount or 0.0) for ap in ap_list) if ap_list else None
-        ap_tds_amt = sum((ap.total_tds or 0.0) for ap in ap_list) if ap_list else None
-        ap_qty = sum((ap.booked_item_quantity or 0.0) for ap in ap_list) if ap_list else None
-        ap_rate = ap_list[0].item_service_rate if (ap_list and ap_list[0].item_service_rate is not None) else None
-        ap_invoices = ", ".join(sorted(list(set(ap.invoice_number for ap in ap_list if ap.invoice_number)))) if ap_list else None
-        ap_items = ", ".join(sorted(list(set(ap.item_service_description for ap in ap_list if ap.item_service_description)))) if ap_list else None
-        ap_gst = ap_list[0].party_gst_tin if ap_list and ap_list[0].party_gst_tin else None
+        # Filter by register type if requested
+        if register_type == "ap" and not has_ap:
+            continue
+        if register_type == "ar" and not has_ar:
+            continue
+        if register_type == "daybook_only" and (has_ap or has_ar):
+            continue
 
-        # Aggregate AR details
-        ar_net_amt = sum((ar.net_amount or 0.0) for ar in ar_list) if ar_list else None
-        ar_tax_amt = sum(((ar.total_cgst or 0.0) + (ar.total_sgst or 0.0) + (ar.total_igst or 0.0)) for ar in ar_list) if ar_list else None
-        ar_qty = sum((ar.item_quantity or 0.0) for ar in ar_list) if ar_list else None
-        ar_rate = ar_list[0].item_service_rate if (ar_list and ar_list[0].item_service_rate is not None) else None
-        ar_subtypes = ", ".join(sorted(list(set(ar.voucher_sub_type for ar in ar_list if ar.voucher_sub_type)))) if ar_list else None
-        ar_items = ", ".join(sorted(list(set(ar.item_service_description for ar in ar_list if ar.item_service_description)))) if ar_list else None
-
-        # Determine Primary Amount & Tax & Qty & Rate
-        combined_amount = None
-        if ap_total_amt is not None and ar_net_amt is not None:
-            combined_amount = ap_total_amt + ar_net_amt
-        elif ap_total_amt is not None:
-            combined_amount = ap_total_amt
-        elif ar_net_amt is not None:
-            combined_amount = ar_net_amt
-
-        combined_tax = None
-        if ap_tax_amt is not None and ar_tax_amt is not None:
-            combined_tax = ap_tax_amt + ar_tax_amt
-        elif ap_tax_amt is not None:
-            combined_tax = ap_tax_amt
-        elif ar_tax_amt is not None:
-            combined_tax = ar_tax_amt
+        if has_ar and not has_ap:
+            # Expand each AR item line
+            for ar in ar_list:
+                matched_ar_ids.add(ar.id)
+                ar_tax = (ar.total_cgst or 0.0) + (ar.total_sgst or 0.0) + (ar.total_igst or 0.0)
+                master_list.append({
+                    "id": f"{dbr.id}_ar_{ar.id}",
+                    "batch_id": dbr.batch_id,
+                    "transaction_site": dbr.transaction_site or ar.accounting_site_code,
+                    "voucher_number": dbr.voucher_number,
+                    "voucher_date": dbr.voucher_date,
+                    "voucher_type": ar.voucher_type or dbr.voucher_type,
+                    "voucher_status": dbr.voucher_status or "Verified",
+                    "party_code": dbr.party_code,
+                    "party_description": dbr.party_description or dbr.party_code or "—",
+                    "account_description": ar.voucher_sub_type or dbr.account_description or dbr.voucher_type,
+                    "narration": ar.narration_remarks or dbr.narration or f"Voucher transaction: {dbr.voucher_type}",
+                    "created_by": dbr.created_by or "—",
+                    "approved_by": dbr.approved_by or "—",
+                    "created_date_raw": dbr.created_date_raw,
+                    "approved_date_raw": dbr.approved_date_raw,
+                    "source_tag": "DayBook + AR",
+                    "has_ap": False,
+                    "has_ar": True,
+                    "ap_count": 0,
+                    "ar_count": len(ar_list),
+                    "unified_invoice_no": ar.voucher_number or dbr.voucher_number,
+                    "unified_quantity": ar.item_quantity,
+                    "unified_rate": ar.item_service_rate,
+                    "combined_amount": ar.net_amount or ((ar.item_amount or 0.0) + (ar.item_charges or 0.0)),
+                    "unified_tax_amount": ar_tax,
+                    "unified_item_description": ar.item_service_description or dbr.account_description or dbr.voucher_type,
+                    "ap_invoice_number": None,
+                    "ap_party_gst": None,
+                    "ap_item_description": None,
+                    "ap_total_amount": None,
+                    "ap_tax_amount": None,
+                    "ap_total_tds": None,
+                    "ar_subtype": ar.voucher_sub_type,
+                    "ar_item_description": ar.item_service_description,
+                    "ar_net_amount": ar.net_amount,
+                    "ar_tax_amount": ar_tax,
+                    "source_file": dbr.source_file,
+                    "upload_timestamp": dbr.upload_timestamp
+                })
+        elif has_ap and not has_ar:
+            # Expand each AP item line
+            for ap in ap_list:
+                matched_ap_ids.add(ap.id)
+                master_list.append({
+                    "id": f"{dbr.id}_ap_{ap.id}",
+                    "batch_id": dbr.batch_id,
+                    "transaction_site": dbr.transaction_site or ap.accounting_site_code,
+                    "voucher_number": dbr.voucher_number,
+                    "voucher_date": dbr.voucher_date,
+                    "voucher_type": ap.voucher_type or dbr.voucher_type,
+                    "voucher_status": dbr.voucher_status or "Verified",
+                    "party_code": ap.party_gst_tin or dbr.party_code,
+                    "party_description": dbr.party_description or dbr.party_code or "—",
+                    "account_description": ap.item_service_expense_account_desc or dbr.account_description or dbr.voucher_type,
+                    "narration": ap.header_narration or ap.detail_narration or dbr.narration or f"Voucher transaction: {dbr.voucher_type}",
+                    "created_by": dbr.created_by or "—",
+                    "approved_by": dbr.approved_by or "—",
+                    "created_date_raw": dbr.created_date_raw,
+                    "approved_date_raw": dbr.approved_date_raw,
+                    "source_tag": "DayBook + AP",
+                    "has_ap": True,
+                    "has_ar": False,
+                    "ap_count": len(ap_list),
+                    "ar_count": 0,
+                    "unified_invoice_no": ap.invoice_number or dbr.voucher_number,
+                    "unified_quantity": ap.booked_item_quantity,
+                    "unified_rate": ap.item_service_rate,
+                    "combined_amount": ap.total_voucher_amount,
+                    "unified_tax_amount": ap.total_tax_amount,
+                    "unified_item_description": ap.item_service_description or dbr.account_description or dbr.voucher_type,
+                    "ap_invoice_number": ap.invoice_number,
+                    "ap_party_gst": ap.party_gst_tin,
+                    "ap_item_description": ap.item_service_description,
+                    "ap_total_amount": ap.total_voucher_amount,
+                    "ap_tax_amount": ap.total_tax_amount,
+                    "ap_total_tds": ap.total_tds,
+                    "ar_subtype": None,
+                    "ar_item_description": None,
+                    "ar_net_amount": None,
+                    "ar_tax_amount": None,
+                    "source_file": dbr.source_file,
+                    "upload_timestamp": dbr.upload_timestamp
+                })
+        elif has_ap and has_ar:
+            for ap in ap_list:
+                matched_ap_ids.add(ap.id)
+                master_list.append({
+                    "id": f"{dbr.id}_ap_{ap.id}",
+                    "batch_id": dbr.batch_id,
+                    "transaction_site": dbr.transaction_site or ap.accounting_site_code,
+                    "voucher_number": dbr.voucher_number,
+                    "voucher_date": dbr.voucher_date,
+                    "voucher_type": ap.voucher_type or dbr.voucher_type,
+                    "voucher_status": dbr.voucher_status or "Verified",
+                    "party_code": ap.party_gst_tin or dbr.party_code,
+                    "party_description": dbr.party_description or dbr.party_code or "—",
+                    "account_description": ap.item_service_expense_account_desc or dbr.account_description,
+                    "narration": ap.header_narration or ap.detail_narration or dbr.narration,
+                    "created_by": dbr.created_by or "—",
+                    "approved_by": dbr.approved_by or "—",
+                    "created_date_raw": dbr.created_date_raw,
+                    "approved_date_raw": dbr.approved_date_raw,
+                    "source_tag": "DayBook + AP + AR",
+                    "has_ap": True,
+                    "has_ar": True,
+                    "ap_count": len(ap_list),
+                    "ar_count": len(ar_list),
+                    "unified_invoice_no": ap.invoice_number or dbr.voucher_number,
+                    "unified_quantity": ap.booked_item_quantity,
+                    "unified_rate": ap.item_service_rate,
+                    "combined_amount": ap.total_voucher_amount,
+                    "unified_tax_amount": ap.total_tax_amount,
+                    "unified_item_description": ap.item_service_description,
+                    "ap_invoice_number": ap.invoice_number,
+                    "ap_party_gst": ap.party_gst_tin,
+                    "ap_item_description": ap.item_service_description,
+                    "ap_total_amount": ap.total_voucher_amount,
+                    "ap_tax_amount": ap.total_tax_amount,
+                    "ap_total_tds": ap.total_tds,
+                    "ar_subtype": None,
+                    "ar_item_description": None,
+                    "ar_net_amount": None,
+                    "ar_tax_amount": None,
+                    "source_file": dbr.source_file,
+                    "upload_timestamp": dbr.upload_timestamp
+                })
+            for ar in ar_list:
+                matched_ar_ids.add(ar.id)
+                ar_tax = (ar.total_cgst or 0.0) + (ar.total_sgst or 0.0) + (ar.total_igst or 0.0)
+                master_list.append({
+                    "id": f"{dbr.id}_ar_{ar.id}",
+                    "batch_id": dbr.batch_id,
+                    "transaction_site": dbr.transaction_site or ar.accounting_site_code,
+                    "voucher_number": dbr.voucher_number,
+                    "voucher_date": dbr.voucher_date,
+                    "voucher_type": ar.voucher_type or dbr.voucher_type,
+                    "voucher_status": dbr.voucher_status or "Verified",
+                    "party_code": dbr.party_code,
+                    "party_description": dbr.party_description or dbr.party_code or "—",
+                    "account_description": ar.voucher_sub_type or dbr.account_description,
+                    "narration": ar.narration_remarks or dbr.narration,
+                    "created_by": dbr.created_by or "—",
+                    "approved_by": dbr.approved_by or "—",
+                    "created_date_raw": dbr.created_date_raw,
+                    "approved_date_raw": dbr.approved_date_raw,
+                    "source_tag": "DayBook + AP + AR",
+                    "has_ap": True,
+                    "has_ar": True,
+                    "ap_count": len(ap_list),
+                    "ar_count": len(ar_list),
+                    "unified_invoice_no": ar.voucher_number or dbr.voucher_number,
+                    "unified_quantity": ar.item_quantity,
+                    "unified_rate": ar.item_service_rate,
+                    "combined_amount": ar.net_amount or ((ar.item_amount or 0.0) + (ar.item_charges or 0.0)),
+                    "unified_tax_amount": ar_tax,
+                    "unified_item_description": ar.item_service_description,
+                    "ap_invoice_number": None,
+                    "ap_party_gst": None,
+                    "ap_item_description": None,
+                    "ap_total_amount": None,
+                    "ap_tax_amount": None,
+                    "ap_total_tds": None,
+                    "ar_subtype": ar.voucher_sub_type,
+                    "ar_item_description": ar.item_service_description,
+                    "ar_net_amount": ar.net_amount,
+                    "ar_tax_amount": ar_tax,
+                    "source_file": dbr.source_file,
+                    "upload_timestamp": dbr.upload_timestamp
+                })
         else:
-            combined_tax = 0.0
+            # Pure Day Book entry (no AP/AR)
+            master_list.append({
+                "id": dbr.id,
+                "batch_id": dbr.batch_id,
+                "transaction_site": dbr.transaction_site,
+                "voucher_number": dbr.voucher_number,
+                "voucher_date": dbr.voucher_date,
+                "voucher_type": dbr.voucher_type,
+                "voucher_status": dbr.voucher_status or "Verified",
+                "party_code": dbr.party_code,
+                "party_description": dbr.party_description or dbr.party_code or "—",
+                "account_description": dbr.account_description or dbr.voucher_type,
+                "narration": dbr.narration or f"Voucher transaction: {dbr.voucher_type} - {dbr.party_description or dbr.party_code or dbr.transaction_site}",
+                "created_by": dbr.created_by or "—",
+                "approved_by": dbr.approved_by or "—",
+                "created_date_raw": dbr.created_date_raw,
+                "approved_date_raw": dbr.approved_date_raw,
+                "source_tag": "Day Book Only",
+                "has_ap": False,
+                "has_ar": False,
+                "ap_count": 0,
+                "ar_count": 0,
+                "unified_invoice_no": dbr.voucher_number,
+                "unified_quantity": None,
+                "unified_rate": None,
+                "combined_amount": None,
+                "unified_tax_amount": 0.0,
+                "unified_item_description": dbr.account_description or dbr.voucher_type,
+                "ap_invoice_number": None,
+                "ap_party_gst": None,
+                "ap_item_description": None,
+                "ap_total_amount": None,
+                "ap_tax_amount": None,
+                "ap_total_tds": None,
+                "ar_subtype": None,
+                "ar_item_description": None,
+                "ar_net_amount": None,
+                "ar_tax_amount": None,
+                "source_file": dbr.source_file,
+                "upload_timestamp": dbr.upload_timestamp
+            })
 
-        combined_qty = ap_qty if ap_qty is not None else ar_qty
-        combined_rate = ap_rate if ap_rate is not None else ar_rate
+    # 2. Append Standalone AP Records (vouchers in AP but not in Day Book)
+    if register_type != "daybook_only" and register_type != "ar":
+        for ap in ap_rows:
+            if ap.id not in matched_ap_ids:
+                if site and site.strip() and ap.accounting_site_code != site.strip():
+                    continue
+                if syns and (ap.voucher_type not in syns and ap.voucher_sub_type not in syns):
+                    continue
+                master_list.append({
+                    "id": f"ap_{ap.id}",
+                    "batch_id": ap.batch_id,
+                    "transaction_site": ap.accounting_site_code,
+                    "voucher_number": ap.voucher_number,
+                    "voucher_date": ap.invoice_date or (ap.upload_timestamp.strftime("%d/%m/%Y") if ap.upload_timestamp else "—"),
+                    "voucher_type": ap.voucher_type or "Purchase Voucher",
+                    "voucher_status": "Reconciled (AP)",
+                    "party_code": ap.party_gst_tin or "—",
+                    "party_description": ap.item_service_expense_account_desc or "Supplier / Vendor",
+                    "account_description": ap.item_service_expense_account_desc or ap.item_service_description,
+                    "narration": ap.header_narration or ap.detail_narration or f"AP Entry: {ap.item_service_description}",
+                    "created_by": "—",
+                    "approved_by": "—",
+                    "created_date_raw": None,
+                    "approved_date_raw": None,
+                    "source_tag": "AP Register Only",
+                    "has_ap": True,
+                    "has_ar": False,
+                    "ap_count": 1,
+                    "ar_count": 0,
+                    "unified_invoice_no": ap.invoice_number or ap.voucher_number,
+                    "unified_quantity": ap.booked_item_quantity,
+                    "unified_rate": ap.item_service_rate,
+                    "combined_amount": ap.total_voucher_amount,
+                    "unified_tax_amount": ap.total_tax_amount,
+                    "unified_item_description": ap.item_service_description,
+                    "ap_invoice_number": ap.invoice_number,
+                    "ap_party_gst": ap.party_gst_tin,
+                    "ap_item_description": ap.item_service_description,
+                    "ap_total_amount": ap.total_voucher_amount,
+                    "ap_tax_amount": ap.total_tax_amount,
+                    "ap_total_tds": ap.total_tds,
+                    "ar_subtype": None,
+                    "ar_item_description": None,
+                    "ar_net_amount": None,
+                    "ar_tax_amount": None,
+                    "source_file": ap.source_file,
+                    "upload_timestamp": ap.upload_timestamp
+                })
 
-        # Smart fallback fields
-        unified_invoice = ap_invoices or (ar_list[0].voucher_number if ar_list else dbr.voucher_number)
-        unified_item = ap_items or ar_items or (dbr.account_description if dbr.account_description else dbr.voucher_type)
-        unified_account = dbr.account_description or (ap_list[0].item_service_expense_account_desc if ap_list and ap_list[0].item_service_expense_account_desc else dbr.party_description or dbr.voucher_type)
-        
-        ap_narr_candidate = (ap_list[0].header_narration or ap_list[0].detail_narration) if ap_list else None
-        ar_narr_candidate = ar_list[0].narration_remarks if ar_list else None
-        unified_narr = dbr.narration or ap_narr_candidate or ar_narr_candidate or f"Voucher transaction: {dbr.voucher_type} - {dbr.party_description or dbr.party_code or dbr.transaction_site}"
+    # 3. Append Standalone AR Records (vouchers in AR but not in Day Book)
+    if register_type != "daybook_only" and register_type != "ap":
+        for ar in ar_rows:
+            if ar.id not in matched_ar_ids:
+                if site and site.strip() and ar.accounting_site_code != site.strip():
+                    continue
+                if syns and (ar.voucher_type not in syns and ar.voucher_sub_type not in syns):
+                    continue
+                ar_tax = (ar.total_cgst or 0.0) + (ar.total_sgst or 0.0) + (ar.total_igst or 0.0)
+                master_list.append({
+                    "id": f"ar_{ar.id}",
+                    "batch_id": ar.batch_id,
+                    "transaction_site": ar.accounting_site_code,
+                    "voucher_number": ar.voucher_number,
+                    "voucher_date": ar.invoice_date or (ar.upload_timestamp.strftime("%d/%m/%Y") if ar.upload_timestamp else "—"),
+                    "voucher_type": ar.voucher_type or "Sales Invoice",
+                    "voucher_status": "Reconciled (AR)",
+                    "party_code": "—",
+                    "party_description": ar.voucher_sub_type or "Customer Account",
+                    "account_description": ar.voucher_sub_type or ar.item_service_description,
+                    "narration": ar.narration_remarks or f"AR Entry: {ar.item_service_description}",
+                    "created_by": "—",
+                    "approved_by": "—",
+                    "created_date_raw": None,
+                    "approved_date_raw": None,
+                    "source_tag": "AR Register Only",
+                    "has_ap": False,
+                    "has_ar": True,
+                    "ap_count": 0,
+                    "ar_count": 1,
+                    "unified_invoice_no": ar.voucher_number,
+                    "unified_quantity": ar.item_quantity,
+                    "unified_rate": ar.item_service_rate,
+                    "combined_amount": ar.net_amount or ((ar.item_amount or 0.0) + (ar.item_charges or 0.0)),
+                    "unified_tax_amount": ar_tax,
+                    "unified_item_description": ar.item_service_description,
+                    "ap_invoice_number": None,
+                    "ap_party_gst": None,
+                    "ap_item_description": None,
+                    "ap_total_amount": None,
+                    "ap_tax_amount": None,
+                    "ap_total_tds": None,
+                    "ar_subtype": ar.voucher_sub_type,
+                    "ar_item_description": ar.item_service_description,
+                    "ar_net_amount": ar.net_amount,
+                    "ar_tax_amount": ar_tax,
+                    "source_file": ar.source_file,
+                    "upload_timestamp": ar.upload_timestamp
+                })
 
-        if has_ap and has_ar:
-            source_tag = "DayBook + AP + AR"
-        elif has_ap:
-            source_tag = "DayBook + AP"
-        elif has_ar:
-            source_tag = "DayBook + AR"
-        else:
-            source_tag = "Day Book Only"
+    # 4. Search Filter (if search query passed)
+    if search and search.strip():
+        term = search.strip().lower()
+        master_list = [
+            r for r in master_list
+            if term in str(r.get("voucher_number") or "").lower()
+            or term in str(r.get("party_code") or "").lower()
+            or term in str(r.get("party_description") or "").lower()
+            or term in str(r.get("account_description") or "").lower()
+            or term in str(r.get("unified_item_description") or "").lower()
+            or term in str(r.get("unified_invoice_no") or "").lower()
+            or term in str(r.get("narration") or "").lower()
+            or term in str(r.get("created_by") or "").lower()
+            or term in str(r.get("approved_by") or "").lower()
+            or term in str(r.get("transaction_site") or "").lower()
+        ]
 
-        master_list.append({
-            "id": dbr.id,
-            "batch_id": dbr.batch_id,
-            "transaction_site": dbr.transaction_site,
-            "voucher_number": dbr.voucher_number,
-            "voucher_date": dbr.voucher_date,
-            "voucher_type": dbr.voucher_type,
-            "voucher_status": dbr.voucher_status or "Verified",
-            "party_code": dbr.party_code,
-            "party_description": dbr.party_description or dbr.party_code or "—",
-            "account_description": unified_account,
-            "narration": unified_narr,
-            "created_by": dbr.created_by or "—",
-            "approved_by": dbr.approved_by or "—",
-            "created_date_raw": dbr.created_date_raw,
-            "approved_date_raw": dbr.approved_date_raw,
-            "source_tag": source_tag,
-            "has_ap": has_ap,
-            "has_ar": has_ar,
-            "ap_count": len(ap_list),
-            "ar_count": len(ar_list),
-            "unified_invoice_no": unified_invoice,
-            "unified_quantity": combined_qty,
-            "unified_rate": combined_rate,
-            "combined_amount": combined_amount,
-            "unified_tax_amount": combined_tax,
-            "unified_item_description": unified_item,
-            "ap_invoice_number": ap_invoices,
-            "ap_party_gst": ap_gst,
-            "ap_item_description": ap_items,
-            "ap_total_amount": ap_total_amt,
-            "ap_tax_amount": ap_tax_amt,
-            "ap_total_tds": ap_tds_amt,
-            "ar_subtype": ar_subtypes,
-            "ar_item_description": ar_items,
-            "ar_net_amount": ar_net_amt,
-            "ar_tax_amount": ar_tax_amt,
-            "source_file": dbr.source_file,
-            "upload_timestamp": dbr.upload_timestamp
-        })
+    total = len(master_list)
+    offset = (page - 1) * page_size
+    paged_items = master_list[offset:offset + page_size]
 
-    # 2. Format Standalone AP records (if any)
-    for ap in ap_records:
-        master_list.append({
-            "id": ap.id,
-            "batch_id": ap.batch_id,
-            "transaction_site": ap.accounting_site_code,
-            "voucher_number": ap.voucher_number,
-            "voucher_date": ap.invoice_date or (ap.upload_timestamp.strftime("%d/%m/%Y") if ap.upload_timestamp else "—"),
-            "voucher_type": ap.voucher_type or "Purchase Voucher",
-            "voucher_status": "Reconciled (AP)",
-            "party_code": ap.party_gst_tin or "—",
-            "party_description": ap.item_service_expense_account_desc or "Supplier / Vendor",
-            "account_description": ap.item_service_expense_account_desc or ap.item_service_description,
-            "narration": ap.header_narration or ap.detail_narration or f"AP Entry: {ap.item_service_description}",
-            "created_by": "—",
-            "approved_by": "—",
-            "created_date_raw": None,
-            "approved_date_raw": None,
-            "source_tag": "AP Register Only",
-            "has_ap": True,
-            "has_ar": False,
-            "ap_count": 1,
-            "ar_count": 0,
-            "unified_invoice_no": ap.invoice_number or ap.voucher_number,
-            "unified_quantity": ap.booked_item_quantity,
-            "unified_rate": ap.item_service_rate,
-            "combined_amount": ap.total_voucher_amount,
-            "unified_tax_amount": ap.total_tax_amount,
-            "unified_item_description": ap.item_service_description,
-            "ap_invoice_number": ap.invoice_number,
-            "ap_party_gst": ap.party_gst_tin,
-            "ap_item_description": ap.item_service_description,
-            "ap_total_amount": ap.total_voucher_amount,
-            "ap_tax_amount": ap.total_tax_amount,
-            "ap_total_tds": ap.total_tds,
-            "ar_subtype": None,
-            "ar_item_description": None,
-            "ar_net_amount": None,
-            "ar_tax_amount": None,
-            "source_file": ap.source_file,
-            "upload_timestamp": ap.upload_timestamp
-        })
-
-    # 3. Format Standalone AR records (if any)
-    for ar in ar_records:
-        ar_tax = (ar.total_cgst or 0.0) + (ar.total_sgst or 0.0) + (ar.total_igst or 0.0)
-        master_list.append({
-            "id": ar.id,
-            "batch_id": ar.batch_id,
-            "transaction_site": ar.accounting_site_code,
-            "voucher_number": ar.voucher_number,
-            "voucher_date": ar.upload_timestamp.strftime("%d/%m/%Y") if ar.upload_timestamp else "—",
-            "voucher_type": ar.voucher_type or "Sales Invoice",
-            "voucher_status": "Reconciled (AR)",
-            "party_code": "—",
-            "party_description": ar.voucher_sub_type or "Customer",
-            "account_description": ar.item_service_description or ar.voucher_sub_type,
-            "narration": ar.narration_remarks or f"AR Entry: {ar.item_service_description}",
-            "created_by": "—",
-            "approved_by": "—",
-            "created_date_raw": None,
-            "approved_date_raw": None,
-            "source_tag": "AR Register Only",
-            "has_ap": False,
-            "has_ar": True,
-            "ap_count": 0,
-            "ar_count": 1,
-            "unified_invoice_no": ar.voucher_number,
-            "unified_quantity": ar.item_quantity,
-            "unified_rate": ar.item_service_rate,
-            "combined_amount": ar.net_amount,
-            "unified_tax_amount": ar_tax,
-            "unified_item_description": ar.item_service_description,
-            "ap_invoice_number": None,
-            "ap_party_gst": None,
-            "ap_item_description": None,
-            "ap_total_amount": None,
-            "ap_tax_amount": None,
-            "ap_total_tds": None,
-            "ar_subtype": ar.voucher_sub_type,
-            "ar_item_description": ar.item_service_description,
-            "ar_net_amount": ar.net_amount,
-            "ar_tax_amount": ar_tax,
-            "source_file": ar.source_file,
-            "upload_timestamp": ar.upload_timestamp
-        })
-
-    return total, master_list
+    return total, paged_items
