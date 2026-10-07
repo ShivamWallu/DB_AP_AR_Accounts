@@ -12,7 +12,7 @@ from app.routers import (
     dashboard_router, imports_router, audit_router, export_router
 )
 from app.models import ImportBatch, User
-from app.services.upload_service import process_import_batch
+from app.services.upload_service import process_import_batch, cleanup_old_batches
 from app.excel_parser import detect_file_type
 from app.config import DATA_DIR, BASE_DIR
 
@@ -21,6 +21,7 @@ init_db()
 _db_init = SessionLocal()
 try:
     init_default_users(_db_init)
+    cleanup_old_batches(_db_init, max_retained_batches=2)
 finally:
     _db_init.close()
 
@@ -34,6 +35,8 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         init_default_users(db)
+        # Strictly enforce 2 batches max retention on startup
+        cleanup_old_batches(db, max_retained_batches=2)
         
         # Check if database has any existing batches, if not, auto-import data_files
         existing_batch = db.query(ImportBatch).first()

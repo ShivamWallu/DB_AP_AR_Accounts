@@ -287,9 +287,9 @@ def process_import_batch(
         db.commit()
         db.refresh(batch)
 
-        # Auto Retention Cleanup: Keep only the latest 5 completed batches and purge older/empty ones
+        # Auto Retention Cleanup: Keep only the latest 2 completed batches and purge older/empty ones
         try:
-            cleanup_old_batches(db, max_retained_batches=5)
+            cleanup_old_batches(db, max_retained_batches=2)
         except Exception:
             pass
 
@@ -325,13 +325,13 @@ def process_import_batch(
         )
         raise e
 
-def cleanup_old_batches(db: Session, max_retained_batches: int = 5) -> int:
+def cleanup_old_batches(db: Session, max_retained_batches: int = 2) -> int:
     """
     Auto-retention policy:
     1. Removes empty, duplicate (new_records == 0), or failed batches to avoid clutter.
-    2. Retains up to `max_retained_batches` (e.g. 5) completed batches with actual new/stored records.
+    2. Retains up to `max_retained_batches` (strictly 2 batches: Latest + 1 Previous) completed batches with actual new/stored records.
     3. Purges older batches and their child records (DayBookRecord, APRecord, ARRecord, ImportFile)
-       beyond the retention limit to keep the database lean and lightning-fast.
+       beyond the retention limit to keep the database lean, fast, and prevent record accumulation.
     Returns the count of purged batches.
     """
     purged_count = 0

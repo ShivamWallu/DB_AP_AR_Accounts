@@ -29,11 +29,11 @@ def get_filter_options(db: Session) -> Dict[str, Any]:
     ]
     all_approvers = sorted(list(set(db_approvers)))
 
-    # Batch list - only show valid completed batches with data, max latest 5
+    # Batch list - strictly keep and show max latest 2 batches
     batches = db.query(ImportBatch).filter(
         ImportBatch.status == "Completed",
         ImportBatch.total_rows > 0
-    ).order_by(desc(ImportBatch.id)).limit(5).all()
+    ).order_by(desc(ImportBatch.id)).limit(2).all()
     batch_list = [
         {
             "id": b.id,
