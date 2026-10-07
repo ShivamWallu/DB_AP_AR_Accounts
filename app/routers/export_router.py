@@ -119,14 +119,13 @@ def build_export_response(
         )
         total_exported = len(records)
         headers = [
-            "ID", "Transaction Site", "Voucher Number", "Voucher Date", "Voucher Type",
-            "Voucher Status", "Party Code", "Party Description", "Account Description",
+            "Site", "Voucher No.", "Voucher Date", "Voucher Type",
+            "Status", "Party Code", "Party Description", "Account Description",
             "Narration", "Created By", "Approved By", "Verified Status"
         ]
         writer.writerow(headers)
         for r in records:
             writer.writerow([
-                r.id,
                 r.transaction_site or "",
                 r.voucher_number or "",
                 r.voucher_date or "",
@@ -149,17 +148,16 @@ def build_export_response(
         )
         total_exported = len(records)
         headers = [
-            "ID", "Accounting Site Code", "Voucher Number", "Voucher Type", "Voucher Sub-Type",
-            "Party GST TIN", "Invoice Number", "Invoice Date", "Due Date",
-            "Item/Service Description", "Expense Account Description",
-            "Booked Quantity", "Rate", "Detail Amount",
-            "Tax Amount", "Total Voucher Amount", "Total TDS",
-            "Narration", "Created By", "Approved By"
+            "Site Code", "Voucher No.", "Voucher Type", "Voucher Sub-Type",
+            "Party GST TIN", "Invoice No.", "Invoice Date", "Due Date",
+            "Item / Service Description", "Expense Account",
+            "Quantity", "Rate (INR)", "Detail Amount (INR)",
+            "Tax Amount (INR)", "Total Voucher Amount (INR)", "Total TDS (INR)",
+            "Narration", "Created By", "Approved By", "Verified Status"
         ]
         writer.writerow(headers)
         for r in records:
             writer.writerow([
-                r.get("id", ""),
                 r.get("accounting_site_code", ""),
                 r.get("voucher_number", ""),
                 r.get("voucher_type", ""),
@@ -178,7 +176,8 @@ def build_export_response(
                 f"{float(r.get('total_tds') or 0):.2f}" if r.get("total_tds") is not None else "",
                 r.get("narration", ""),
                 r.get("created_by", ""),
-                r.get("approved_by", "")
+                r.get("approved_by", ""),
+                resolve_verifier_name(r, verifications)
             ])
 
     elif ds_lower == "ar":
@@ -189,16 +188,15 @@ def build_export_response(
         )
         total_exported = len(records)
         headers = [
-            "ID", "Accounting Site Code", "Voucher Number", "Voucher Type", "Voucher Sub-Type",
-            "Item/Service Description", "Item Quantity", "Rate",
-            "Item Amount", "Charges", "Net Off Discount",
-            "Taxes", "Net Amount", "Total CGST", "Total SGST", "Total IGST",
-            "Narration", "Created By", "Approved By"
+            "Site Code", "Voucher No.", "Voucher Type", "Voucher Sub-Type",
+            "Item / Service Description", "Item Qty", "Rate (INR)",
+            "Amount (INR)", "Charges (INR)", "Net of Discount (INR)",
+            "Taxes (INR)", "Net Amount (INR)", "Total CGST (INR)", "Total SGST (INR)", "Total IGST (INR)",
+            "Narration", "Created By", "Approved By", "Verified Status"
         ]
         writer.writerow(headers)
         for r in records:
             writer.writerow([
-                r.get("id", ""),
                 r.get("accounting_site_code", ""),
                 r.get("voucher_number", ""),
                 r.get("voucher_type", ""),
@@ -216,7 +214,8 @@ def build_export_response(
                 f"{float(r.get('total_igst') or 0):.2f}" if r.get("total_igst") is not None else "",
                 r.get("narration", ""),
                 r.get("created_by", ""),
-                r.get("approved_by", "")
+                r.get("approved_by", ""),
+                resolve_verifier_name(r, verifications)
             ])
 
     elif ds_lower == "master":
@@ -227,37 +226,30 @@ def build_export_response(
         )
         total_exported = len(records)
         headers = [
-            "Source Register", "Transaction Site", "Voucher Number", "Voucher Date", "Voucher Type",
-            "Voucher Status", "Party Code", "Party Description", "Account Description",
-            "Linked AP Invoice No", "Linked AP Party GST", "Linked AP Item", "Linked AP Amount", "Linked AP Tax", "Linked AP TDS",
-            "Linked AR Sub-Type", "Linked AR Item", "Linked AR Net Amount", "Linked AR Tax",
-            "Total Financial Amount (INR)", "Tax Amount (GST)", "Narration", "Created By", "Approved By",
+            "Site", "Voucher No.", "Voucher Date", "Voucher Type", "Linked Register",
+            "Invoice / Ref No.", "Item / Expense Description", "Quantity", "Rate (INR)",
+            "Total Amount (INR)", "Tax Amount (GST)", "Party Code", "Party Description",
+            "Account Description", "Status", "Narration", "Created By", "Approved By",
             "Verified Status"
         ]
         writer.writerow(headers)
         for r in records:
             writer.writerow([
-                r.get("source_tag", ""),
                 r.get("transaction_site", ""),
                 r.get("voucher_number", ""),
                 r.get("voucher_date", ""),
                 r.get("voucher_type", ""),
-                r.get("voucher_status", ""),
+                r.get("source_tag", ""),
+                r.get("unified_invoice_no", ""),
+                r.get("unified_item_description", ""),
+                r.get("unified_quantity", "") if r.get("unified_quantity") is not None else "",
+                f"{float(r.get('unified_rate') or 0):.2f}" if r.get("unified_rate") is not None else "",
+                f"{float(r.get('combined_amount') or 0):.2f}" if r.get("combined_amount") is not None else "",
+                f"{float(r.get('unified_tax_amount') or 0):.2f}" if r.get("unified_tax_amount") is not None else "",
                 r.get("party_code", ""),
                 r.get("party_description", ""),
                 r.get("account_description", ""),
-                r.get("ap_invoice_number", ""),
-                r.get("ap_party_gst", ""),
-                r.get("ap_item_description", ""),
-                f"{float(r.get('ap_total_amount') or 0):.2f}" if r.get("ap_total_amount") is not None else "",
-                f"{float(r.get('ap_tax_amount') or 0):.2f}" if r.get("ap_tax_amount") is not None else "",
-                f"{float(r.get('ap_total_tds') or 0):.2f}" if r.get("ap_total_tds") is not None else "",
-                r.get("ar_subtype", ""),
-                r.get("ar_item_description", ""),
-                f"{float(r.get('ar_net_amount') or 0):.2f}" if r.get("ar_net_amount") is not None else "",
-                f"{float(r.get('ar_tax_amount') or 0):.2f}" if r.get("ar_tax_amount") is not None else "",
-                f"{float(r.get('combined_amount') or 0):.2f}" if r.get("combined_amount") is not None else "",
-                f"{float(r.get('unified_tax_amount') or 0):.2f}" if r.get("unified_tax_amount") is not None else "",
+                r.get("voucher_status", ""),
                 r.get("narration", ""),
                 r.get("created_by", ""),
                 r.get("approved_by", ""),

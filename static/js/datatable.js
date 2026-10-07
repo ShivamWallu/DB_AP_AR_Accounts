@@ -2086,6 +2086,7 @@ class DataTableController {
                   <th>Voucher Number</th>
                   <th>Voucher Date</th>
                   <th>Voucher Type</th>
+                  <th>Item / Expense Description</th>
                   <th>Register</th>
                   <th>Invoice / Ref No.</th>
                   <th style="text-align: right;">Quantity</th>
@@ -2101,6 +2102,7 @@ class DataTableController {
         const vNo = r.voucher_number || r.voucher_no || "—";
         const vDate = r.voucher_date || "—";
         const vType = r.voucher_type || "—";
+        const itemDesc = r.unified_item_description || r.item_service_description || r.item_service_expense_account_desc || r.account_description || "—";
         const reg = r.source_tag || (this.datasetType.toUpperCase());
         const inv = r.unified_invoice_no || r.invoice_number || "—";
 
@@ -2125,6 +2127,7 @@ class DataTableController {
                       <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${vNo}</td>
                       <td>${vDate}</td>
                       <td>${vType}</td>
+                      <td style="max-width: 175px; font-weight: 600; color: #1e293b; line-height: 1.25;">${itemDesc}</td>
                       <td><span style="background: #e2e8f0; color: #1e293b; padding: 1px 5px; border-radius: 3px; font-size: 0.68rem; font-weight: 700;">${reg}</span></td>
                       <td style="font-family: 'JetBrains Mono', monospace;">${inv}</td>
                       <td style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 600;">${qtyStr}</td>
