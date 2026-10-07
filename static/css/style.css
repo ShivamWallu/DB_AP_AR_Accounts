@@ -3416,3 +3416,168 @@ body.sidebar-collapsed .main-content {
 .hud-step-item.completed .hud-step-status {
   color: #16a34a !important;
 }
+
+/* ==============================================================================
+   ACTIVE FILTER INDICATORS, CHIPS & HIGHLIGHTS (EXECUTIVE UI)
+   ============================================================================== */
+.form-control.filter-active,
+.form-select.filter-active {
+  background-color: #f0f7ff !important;
+  border-color: #3b82f6 !important;
+  color: #1e40af !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 0 2.5px rgba(59, 130, 246, 0.18) !important;
+}
+
+.filter-group.has-active-filter .filter-label {
+  color: #2563eb !important;
+  font-weight: 700 !important;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.filter-group.has-active-filter .filter-label::after {
+  content: '●';
+  font-size: 8px;
+  color: #2563eb;
+  animation: filterDotPulse 2s infinite ease-in-out;
+}
+
+@keyframes filterDotPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.dt-active-filters-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3.5px solid #3b82f6;
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+  margin: 0.45rem 0 0.25rem 0;
+  animation: fadeInFilterBar 0.2s ease-out;
+}
+
+@keyframes fadeInFilterBar {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.active-filters-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #1e40af;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-right: 0.35rem;
+  border-right: 1px solid #cbd5e1;
+}
+
+.active-filters-chips-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.active-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #ffffff;
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+}
+
+.active-filter-chip:hover {
+  border-color: #93c5fd;
+  background: #f0f7ff;
+}
+
+.active-filter-chip .chip-label {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 500;
+}
+
+.active-filter-chip .chip-val {
+  color: #1e40af;
+  font-weight: 700;
+}
+
+.active-filter-chip .chip-remove {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  margin-left: 2px;
+}
+
+.active-filter-chip .chip-remove:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-clear-all-chips {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-clear-all-chips:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.btn-clear-active {
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
+  color: #dc2626 !important;
+}
+
+.btn-clear-active:hover {
+  background: #fee2e2 !important;
+  border-color: #f87171 !important;
+}
+
+.dt-filter-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: #dc2626;
+  color: #ffffff;
+  border-radius: 10px;
+  margin-left: 3px;
+}

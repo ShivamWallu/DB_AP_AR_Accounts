@@ -371,6 +371,18 @@ class DataTableController {
         </div>
       </div>
 
+      <!-- Dynamic Active Filters Indicator Bar -->
+      <div class="dt-active-filters-bar" style="display: none;">
+        <div class="active-filters-header">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          <span>Active Filters:</span>
+        </div>
+        <div class="active-filters-chips-list"></div>
+        <button type="button" class="btn-clear-all-chips" title="Clear all active filters">
+          Reset All
+        </button>
+      </div>
+
       <div class="dt-sub-bar" style="display: flex; justify-content: space-between; align-items: center; margin: 0.55rem 0 0.35rem 0; flex-wrap: wrap; gap: 0.5rem;">
         <div class="dt-records-badge" style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 500; display: flex; align-items: center; gap: 0.35rem;">
           <span>Showing</span> <strong class="dt-count-text" style="color: var(--text-primary); font-weight: 700; background: #e2e8f0; padding: 0.1rem 0.45rem; border-radius: 4px;">0</strong> <span>records</span>
@@ -949,7 +961,206 @@ class DataTableController {
     }
   }
 
+  updateActiveFilterVisuals() {
+    const container = document.getElementById(this.containerId);
+    if (!container) return;
+
+    const searchInput = container.querySelector(".dt-search");
+    const siteSelect = container.querySelector(".dt-site-filter");
+    const vtypeSelect = container.querySelector(".dt-vtype-filter");
+    const vsubtypeSelect = container.querySelector(".dt-vsubtype-filter");
+    const approvedBySelect = container.querySelector(".dt-approved-by-filter");
+    const registerSelect = container.querySelector(".dt-register-filter");
+    const clearBtn = container.querySelector(".dt-btn-clear");
+    const activeFiltersBar = container.querySelector(".dt-active-filters-bar");
+    const chipsList = container.querySelector(".active-filters-chips-list");
+
+    const activeList = [];
+
+    // Search Filter
+    if (this.search && this.search.trim()) {
+      if (searchInput) {
+        searchInput.classList.add("filter-active");
+        searchInput.closest(".filter-group")?.classList.add("has-active-filter");
+      }
+      activeList.push({ key: "search", label: "Search", value: `"${this.search}"` });
+    } else if (searchInput) {
+      searchInput.classList.remove("filter-active");
+      searchInput.closest(".filter-group")?.classList.remove("has-active-filter");
+    }
+
+    // Register Type (for Master Ledger)
+    if (this.registerType && this.registerType.trim()) {
+      if (registerSelect) {
+        registerSelect.classList.add("filter-active");
+        registerSelect.closest(".filter-group")?.classList.add("has-active-filter");
+      }
+      const labelMap = { ap: "AP Register", ar: "AR Register", daybook_only: "Day Book Only" };
+      activeList.push({ key: "registerType", label: "Register", value: labelMap[this.registerType] || this.registerType });
+    } else if (registerSelect) {
+      registerSelect.classList.remove("filter-active");
+      registerSelect.closest(".filter-group")?.classList.remove("has-active-filter");
+    }
+
+    // Site
+    if (this.site && this.site.trim()) {
+      if (siteSelect) {
+        siteSelect.classList.add("filter-active");
+        siteSelect.closest(".filter-group")?.classList.add("has-active-filter");
+      }
+      activeList.push({ key: "site", label: "Site", value: this.site });
+    } else if (siteSelect) {
+      siteSelect.classList.remove("filter-active");
+      siteSelect.closest(".filter-group")?.classList.remove("has-active-filter");
+    }
+
+    // Voucher Type
+    if (this.voucherType && this.voucherType.trim()) {
+      if (vtypeSelect) {
+        vtypeSelect.classList.add("filter-active");
+        vtypeSelect.closest(".filter-group")?.classList.add("has-active-filter");
+      }
+      activeList.push({ key: "voucherType", label: "Voucher Type", value: this.voucherType });
+    } else if (vtypeSelect) {
+      vtypeSelect.classList.remove("filter-active");
+      vtypeSelect.closest(".filter-group")?.classList.remove("has-active-filter");
+    }
+
+    // Voucher Sub-Type
+    if (this.voucherSubtype && this.voucherSubtype.trim()) {
+      if (vsubtypeSelect) {
+        vsubtypeSelect.classList.add("filter-active");
+        vsubtypeSelect.closest(".filter-group")?.classList.add("has-active-filter");
+      }
+      activeList.push({ key: "voucherSubtype", label: "Sub-Type", value: this.voucherSubtype });
+    } else if (vsubtypeSelect) {
+      vsubtypeSelect.classList.remove("filter-active");
+      vsubtypeSelect.closest(".filter-group")?.classList.remove("has-active-filter");
+    }
+
+    // Approved By
+    if (this.approvedBy && this.approvedBy.trim()) {
+      if (approvedBySelect) {
+        approvedBySelect.classList.add("filter-active");
+        approvedBySelect.closest(".filter-group")?.classList.add("has-active-filter");
+      }
+      const appLabel = this.approvedBy === "approved" ? "Approved Only" : (this.approvedBy === "pending" ? "Pending Approval" : this.approvedBy);
+      activeList.push({ key: "approvedBy", label: "Approver", value: appLabel });
+    } else if (approvedBySelect) {
+      approvedBySelect.classList.remove("filter-active");
+      approvedBySelect.closest(".filter-group")?.classList.remove("has-active-filter");
+    }
+
+    // Verification Status
+    if (this.verifyStatus && this.verifyStatus !== "all") {
+      const vGroup = container.querySelector(".filter-group-verify");
+      if (vGroup) vGroup.classList.add("has-active-filter");
+      const vLabel = this.verifyStatus === "verified" ? "Verified" : "Pending";
+      activeList.push({ key: "verifyStatus", label: "Status", value: vLabel });
+    } else {
+      const vGroup = container.querySelector(".filter-group-verify");
+      if (vGroup) vGroup.classList.remove("has-active-filter");
+    }
+
+    // Update Clear Button with Active Count Badge
+    if (clearBtn) {
+      if (activeList.length > 0) {
+        clearBtn.classList.add("btn-clear-active");
+        clearBtn.innerHTML = `
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Clear Filters <span class="dt-filter-count-badge">${activeList.length}</span>
+        `;
+      } else {
+        clearBtn.classList.remove("btn-clear-active");
+        clearBtn.innerHTML = `
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Clear Filters
+        `;
+      }
+    }
+
+    // Render Active Filter Chips in the dynamic bar
+    if (activeFiltersBar && chipsList) {
+      if (activeList.length > 0) {
+        activeFiltersBar.style.display = "flex";
+        chipsList.innerHTML = activeList.map(item => `
+          <span class="active-filter-chip" title="Active Filter: ${item.label} = ${item.value}">
+            <span class="chip-label">${item.label}:</span>
+            <strong class="chip-val">${item.value}</strong>
+            <button type="button" class="chip-remove" data-key="${item.key}" title="Remove this filter">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </span>
+        `).join("");
+
+        // Individual chip remove buttons
+        chipsList.querySelectorAll(".chip-remove").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const key = btn.dataset.key;
+            this.removeSingleFilter(key);
+          });
+        });
+
+        // Reset All button
+        const resetAllBtn = activeFiltersBar.querySelector(".btn-clear-all-chips");
+        if (resetAllBtn) {
+          resetAllBtn.onclick = () => {
+            if (clearBtn) clearBtn.click();
+          };
+        }
+      } else {
+        activeFiltersBar.style.display = "none";
+        chipsList.innerHTML = "";
+      }
+    }
+  }
+
+  removeSingleFilter(key) {
+    const container = document.getElementById(this.containerId);
+    if (!container) return;
+
+    if (key === "search") {
+      this.search = "";
+      const el = container.querySelector(".dt-search");
+      if (el) el.value = "";
+    } else if (key === "site") {
+      this.site = "";
+      const el = container.querySelector(".dt-site-filter");
+      if (el) el.value = "";
+    } else if (key === "voucherType") {
+      this.voucherType = "";
+      const el = container.querySelector(".dt-vtype-filter");
+      if (el) el.value = "";
+    } else if (key === "voucherSubtype") {
+      this.voucherSubtype = "";
+      const el = container.querySelector(".dt-vsubtype-filter");
+      if (el) el.value = "";
+    } else if (key === "approvedBy") {
+      this.approvedBy = "";
+      const el = container.querySelector(".dt-approved-by-filter");
+      if (el) el.value = "";
+    } else if (key === "registerType") {
+      this.registerType = "";
+      const el = container.querySelector(".dt-register-filter");
+      if (el) el.value = "";
+    } else if (key === "verifyStatus") {
+      this.verifyStatus = "all";
+      const pills = container.querySelectorAll(".verify-radio-pill");
+      pills.forEach(p => {
+        if (p.dataset.value === "all") p.classList.add("active");
+        else p.classList.remove("active");
+      });
+      this.renderTableData();
+      return;
+    }
+
+    this.page = 1;
+    this.loadData();
+  }
+
   renderTableData() {
+    this.updateActiveFilterVisuals();
     const container = document.getElementById(this.containerId);
     const tableWrapper = container ? container.querySelector(".table-responsive") : null;
     const currentScroll = tableWrapper ? tableWrapper.scrollLeft : (this.savedScrollLeft || 0);
