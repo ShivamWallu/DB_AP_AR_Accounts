@@ -493,30 +493,33 @@ def query_master_360(
     ap_rows = q_all_ap.all()
     ar_rows = q_all_ar.all()
 
-    ap_map: Dict[str, List[APRecord]] = {}
-    ar_map: Dict[str, List[ARRecord]] = {}
+    ap_map: Dict[Tuple[str, Optional[int]], List[APRecord]] = {}
+    ar_map: Dict[Tuple[str, Optional[int]], List[ARRecord]] = {}
     matched_ap_ids = set()
     matched_ar_ids = set()
 
     for ap in ap_rows:
         if ap.voucher_number:
-            if ap.voucher_number not in ap_map:
-                ap_map[ap.voucher_number] = []
-            ap_map[ap.voucher_number].append(ap)
+            key = (ap.voucher_number, ap.batch_id)
+            if key not in ap_map:
+                ap_map[key] = []
+            ap_map[key].append(ap)
 
     for ar in ar_rows:
         if ar.voucher_number:
-            if ar.voucher_number not in ar_map:
-                ar_map[ar.voucher_number] = []
-            ar_map[ar.voucher_number].append(ar)
+            key = (ar.voucher_number, ar.batch_id)
+            if key not in ar_map:
+                ar_map[key] = []
+            ar_map[key].append(ar)
 
     master_list = []
 
     # 1. Expand Day Book Records
     for dbr in db_records:
         v_no = dbr.voucher_number
-        ap_list = ap_map.get(v_no, []) if v_no else []
-        ar_list = ar_map.get(v_no, []) if v_no else []
+        b_id = dbr.batch_id
+        ap_list = ap_map.get((v_no, b_id), []) if v_no else []
+        ar_list = ar_map.get((v_no, b_id), []) if v_no else []
 
         has_ap = len(ap_list) > 0
         has_ar = len(ar_list) > 0

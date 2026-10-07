@@ -20,8 +20,16 @@ def generate_next_batch_code(db: Session) -> str:
     today_str = datetime.utcnow().strftime("%Y%m%d")
     prefix = f"BATCH-{today_str}-"
     
-    count_today = db.query(ImportBatch).filter(ImportBatch.batch_code.like(f"{prefix}%")).count()
-    return f"{prefix}{count_today + 1:03d}"
+    existing = db.query(ImportBatch.batch_code).filter(ImportBatch.batch_code.like(f"{prefix}%")).all()
+    max_num = 0
+    for (b_code,) in existing:
+        try:
+            num = int(b_code.split("-")[-1])
+            if num > max_num:
+                max_num = num
+        except Exception:
+            pass
+    return f"{prefix}{max_num + 1:03d}"
 
 def validate_uploaded_files(file_paths: List[str]) -> Dict[str, Any]:
     """Validate a set of uploaded files before committing an import, enforcing mandatory 3 files"""

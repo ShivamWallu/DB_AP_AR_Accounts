@@ -879,10 +879,12 @@ class DataTableController {
 
     // Populate Batches (Compact & Clean Labels)
     const batchSelect = container.querySelector(".dt-batch-filter");
+    let batchAssigned = false;
     if (batchSelect && filterData.batches && filterData.batches.length > 0) {
       const latestBatch = filterData.batches[0];
       if (!this.batchId) {
         this.batchId = String(latestBatch.id);
+        batchAssigned = true;
       }
       batchSelect.innerHTML = filterData.batches.map((b, idx) => {
         const isLatest = idx === 0;
@@ -898,6 +900,11 @@ class DataTableController {
     } else if (batchSelect) {
       batchSelect.innerHTML = `<option value="">All Batches</option>`;
       batchSelect.value = "";
+    }
+
+    if (batchAssigned) {
+      this.page = 1;
+      this.loadData();
     }
   }
 
