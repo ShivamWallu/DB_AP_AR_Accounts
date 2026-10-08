@@ -224,3 +224,27 @@ class AuditLogResponse(BaseModel):
     batch_id: Optional[int] = None
     timestamp: datetime
     model_config = ConfigDict(from_attributes=True)
+
+
+# Verification Schemas
+class ToggleVerificationRequest(BaseModel):
+    dataset_type: str
+    record_id: Optional[int] = None
+    voucher_number: Optional[str] = None
+
+class VerificationItem(BaseModel):
+    id: Optional[int] = None
+    dataset_type: str
+    identifier_key: str
+    voucher_number: Optional[str] = None
+    record_id: Optional[int] = None
+    verified_by: str
+    user_role: Optional[str] = None
+    timestamp: Optional[str] = None
+    date: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+class VerificationListResponse(BaseModel):
+    verifications: Dict[str, Dict[str, Any]]
+    total: int
+

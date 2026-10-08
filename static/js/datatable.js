@@ -153,20 +153,92 @@ const StatusBadge = {
 };
 
 const VerificationManager = {
+  _cache: {},
+  _initialized: false,
+  _syncTimer: null,
+  _lastHash: "",
+
+  async init() {
+    if (this._initialized) return;
+    this._initialized = true;
+    await this.loadFromServer(true);
+    this.startLiveSync();
+
+    // Listen for tab focus/visibility change to immediately refresh verifications
+    window.addEventListener("focus", () => {
+      this.loadFromServer(true);
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        this.loadFromServer(true);
+      }
+    });
+  },
+
+  startLiveSync() {
+    if (this._syncTimer) clearInterval(this._syncTimer);
+    // Poll server every 4 seconds for real-time multiplayer updates across accounts
+    this._syncTimer = setInterval(() => {
+      const token = API.getToken();
+      if (token) {
+        this.loadFromServer(true);
+      }
+    }, 4000);
+  },
+
+  async loadFromServer(silent = true) {
+    try {
+      const token = API.getToken();
+      if (!token) return;
+      const res = await API.getVerifications();
+      if (res && res.verifications) {
+        const hash = JSON.stringify(res.verifications);
+        if (hash !== this._lastHash) {
+          this._lastHash = hash;
+          this._cache = res.verifications;
+
+          // Sync into localStorage for offline/fast startup
+          Object.keys(this._cache).forEach(k => {
+            if (k.startsWith("voucher_verified_")) {
+              try {
+                localStorage.setItem(k, JSON.stringify(this._cache[k]));
+              } catch (_) { }
+            }
+          });
+
+          // Dispatch event to update all visible tables in place
+          window.dispatchEvent(new CustomEvent("verifications:updated", {
+            detail: { verifications: this._cache }
+          }));
+        }
+      }
+    } catch (e) {
+      if (!silent) console.warn("Failed to load server verifications:", e);
+    }
+  },
+
   getStorageKey(datasetType, rowId, voucherNo) {
-    const ident = (voucherNo && voucherNo !== "—" && voucherNo !== "null") ? voucherNo : rowId;
+    const ident = (voucherNo && voucherNo !== "—" && voucherNo !== "null" && voucherNo !== "None") ? voucherNo : rowId;
     return `voucher_verified_${datasetType}_${ident}`;
   },
 
   isVerified(datasetType, rowId, voucherNo) {
-    const ident = (voucherNo && voucherNo !== "—" && voucherNo !== "null") ? voucherNo : rowId;
+    const ident = (voucherNo && voucherNo !== "—" && voucherNo !== "null" && voucherNo !== "None") ? voucherNo : rowId;
     const candidates = [
       `voucher_verified_${datasetType}_${ident}`,
       `voucher_verified_master_${ident}`,
       `voucher_verified_daybook_${ident}`,
       `voucher_verified_ap_${ident}`,
-      `voucher_verified_ar_${ident}`
+      `voucher_verified_ar_${ident}`,
+      `voucher_${ident}`
     ];
+    // 1. Check in-memory server cache first
+    for (const k of candidates) {
+      if (this._cache && this._cache[k]) {
+        return this._cache[k];
+      }
+    }
+    // 2. Check localStorage fallback
     for (const k of candidates) {
       const data = localStorage.getItem(k);
       if (data) {
@@ -180,17 +252,33 @@ const VerificationManager = {
 
   getAllVerificationsMap(datasetType) {
     const map = {};
+    // Populate from server cache
+    if (this._cache) {
+      Object.keys(this._cache).forEach(k => {
+        const val = this._cache[k];
+        if (val && val.verified_by) {
+          if (val.voucher_number) map[val.voucher_number] = val.verified_by;
+          if (val.record_id) map[String(val.record_id)] = val.verified_by;
+          if (k.startsWith("voucher_verified_")) {
+            const parts = k.split("_");
+            if (parts.length >= 4) {
+              map[parts.slice(3).join("_")] = val.verified_by;
+            }
+          }
+        }
+      });
+    }
+    // Also check localStorage
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && key.startsWith("voucher_verified_")) {
           const parts = key.split("_");
-          // key format: voucher_verified_<datasetType>_<ident>
           if (parts.length >= 4) {
             const ident = parts.slice(3).join("_");
             try {
               const val = JSON.parse(localStorage.getItem(key));
-              if (val && val.verified_by) {
+              if (val && val.verified_by && !map[ident]) {
                 map[ident] = val.verified_by;
               }
             } catch (_) { }
@@ -203,37 +291,86 @@ const VerificationManager = {
     return map;
   },
 
-  toggleVerify(datasetType, rowId, voucherNo) {
+  async toggleVerify(datasetType, rowId, voucherNo) {
     const user = API.getUser();
     const userName = user.fullName || user.username || "Authorized Verifier";
-    const ident = (voucherNo && voucherNo !== "—" && voucherNo !== "null") ? voucherNo : rowId;
+    const ident = (voucherNo && voucherNo !== "—" && voucherNo !== "null" && voucherNo !== "None") ? voucherNo : rowId;
     const key = this.getStorageKey(datasetType, rowId, voucherNo);
     const current = this.isVerified(datasetType, rowId, voucherNo);
 
+    // Optimistic local state update
     if (current) {
+      delete this._cache[key];
+      delete this._cache[`voucher_${ident}`];
       const candidates = [
         `voucher_verified_${datasetType}_${ident}`,
         `voucher_verified_master_${ident}`,
         `voucher_verified_daybook_${ident}`,
         `voucher_verified_ap_${ident}`,
-        `voucher_verified_ar_${ident}`
+        `voucher_verified_ar_${ident}`,
+        `voucher_${ident}`
       ];
-      candidates.forEach(k => localStorage.removeItem(k));
-      App.toast(`Unmarked verification for ${voucherNo || 'record'}`, "info");
-      return null;
+      candidates.forEach(k => {
+        delete this._cache[k];
+        try { localStorage.removeItem(k); } catch (_) { }
+      });
     } else {
-      const payload = {
+      const now = new Date();
+      const localData = {
         verified_by: userName,
         role: user.role || "User",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        date: new Date().toLocaleDateString()
+        timestamp: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        date: now.toLocaleDateString(),
+        voucher_number: voucherNo,
+        dataset_type: datasetType,
+        record_id: rowId
       };
-      localStorage.setItem(key, JSON.stringify(payload));
-      if (voucherNo && voucherNo !== "—" && voucherNo !== "null") {
-        localStorage.setItem(`voucher_verified_master_${voucherNo}`, JSON.stringify(payload));
+      this._cache[key] = localData;
+      if (voucherNo) this._cache[`voucher_${voucherNo}`] = localData;
+      try {
+        localStorage.setItem(key, JSON.stringify(localData));
+        if (voucherNo) localStorage.setItem(`voucher_verified_master_${voucherNo}`, JSON.stringify(localData));
+      } catch (_) { }
+    }
+
+    // Call server API for centralized DB persistence & multiplayer sync
+    try {
+      const resp = await API.toggleVerification({
+        dataset_type: datasetType,
+        record_id: parseInt(rowId, 10) || null,
+        voucher_number: (voucherNo && voucherNo !== "—" && voucherNo !== "null" && voucherNo !== "None") ? voucherNo : null
+      });
+
+      if (resp.status === "verified") {
+        const payload = {
+          verified_by: resp.data.verified_by,
+          role: resp.data.role,
+          timestamp: resp.data.timestamp,
+          date: resp.data.date,
+          voucher_number: resp.voucher_number,
+          dataset_type: resp.dataset_type,
+          record_id: resp.record_id
+        };
+        this._cache[resp.identifier_key] = payload;
+        if (resp.voucher_number) {
+          this._cache[`voucher_${resp.voucher_number}`] = payload;
+          this._cache[`voucher_verified_master_${resp.voucher_number}`] = payload;
+        }
+        try {
+          localStorage.setItem(resp.identifier_key, JSON.stringify(payload));
+        } catch (_) { }
+        App.toast(`✓ ${resp.message || 'Verified successfully'}`, "success");
+        this.loadFromServer(true); // silent refresh all
+        return payload;
+      } else {
+        App.toast(resp.message || "Verification unmarked", "info");
+        this.loadFromServer(true); // silent refresh all
+        return null;
       }
-      App.toast(`✓ Successfully verified by ${userName}`, "success");
-      return payload;
+    } catch (err) {
+      console.error("Failed to persist verification to server:", err);
+      App.toast(`Saved locally, server sync error: ${err.message}`, "warning");
+      return current ? null : this._cache[key];
     }
   },
 
@@ -244,7 +381,7 @@ const VerificationManager = {
 
     if (verification) {
       return `
-        <button type="button" class="btn-verify-badge verified" data-dataset="${datasetType}" data-id="${rowId}" data-voucher="${voucherNo}" title="Verified by ${verification.verified_by} at ${verification.timestamp} (${verification.date}). Click to toggle.">
+        <button type="button" class="btn-verify-badge verified" data-dataset="${datasetType}" data-id="${rowId}" data-voucher="${voucherNo}" title="Verified by ${verification.verified_by} at ${verification.timestamp || ''} (${verification.date || ''}). Click to toggle.">
           <svg class="anim-pop" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
@@ -266,6 +403,8 @@ const VerificationManager = {
     }
   }
 };
+window.VerificationManager = VerificationManager;
+
 window.PersonBadge = PersonBadge;
 
 class DataTableController {
@@ -298,8 +437,48 @@ class DataTableController {
     this.renderSkeleton();
     this.bindControls();
     this.bindScrollSync();
+    this.bindVerificationSync();
     this.loadData();
   }
+
+  bindVerificationSync() {
+    window.addEventListener("verifications:updated", () => {
+      const container = document.getElementById(this.containerId);
+      if (!container) return;
+      const tbody = container.querySelector(".data-table tbody");
+      if (!tbody) return;
+      
+      tbody.querySelectorAll(".btn-verify-badge").forEach(btn => {
+        const ds = btn.dataset.dataset || this.datasetType;
+        const rId = btn.dataset.id;
+        const vNo = btn.dataset.voucher;
+        const row = this.data.find(r => String(r.id) === String(rId)) || { id: rId, voucher_number: vNo };
+        const newHtml = VerificationManager.renderButton(row, ds);
+        const parent = btn.parentElement;
+        if (parent) {
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = newHtml.trim();
+          const freshBtn = tempDiv.firstElementChild;
+          if (btn.className !== freshBtn.className || btn.innerHTML.trim() !== freshBtn.innerHTML.trim()) {
+            parent.innerHTML = newHtml;
+            const updatedBtn = parent.querySelector(".btn-verify-badge");
+            if (updatedBtn) {
+              updatedBtn.onclick = (e) => {
+                e.stopPropagation();
+                updatedBtn.style.opacity = '0.6';
+                VerificationManager.toggleVerify(ds, rId, vNo).then(() => {
+                  parent.innerHTML = VerificationManager.renderButton(row, ds);
+                }).catch(() => {
+                  updatedBtn.style.opacity = '1';
+                });
+              };
+            }
+          }
+        }
+      });
+    });
+  }
+
 
   renderSkeleton() {
     const container = document.getElementById(this.containerId);
@@ -1510,17 +1689,26 @@ class DataTableController {
     // Bind verify action buttons
     const bindVerifyButtons = (scope) => {
       scope.querySelectorAll(".btn-verify-badge").forEach(btn => {
-        btn.onclick = (e) => {
+        btn.onclick = async (e) => {
           e.stopPropagation();
           const ds = btn.dataset.dataset;
           const rId = btn.dataset.id;
           const vNo = btn.dataset.voucher;
           const row = this.data.find(r => String(r.id) === String(rId)) || { id: rId, voucher_number: vNo };
-          VerificationManager.toggleVerify(ds, rId, vNo);
-          const parent = btn.parentElement;
-          if (parent) {
-            btn.outerHTML = VerificationManager.renderButton(row, ds);
-            bindVerifyButtons(parent);
+          
+          btn.style.opacity = '0.6';
+          btn.style.pointerEvents = 'none';
+
+          try {
+            await VerificationManager.toggleVerify(ds, rId, vNo);
+            const parent = btn.parentElement;
+            if (parent) {
+              parent.innerHTML = VerificationManager.renderButton(row, ds);
+              bindVerifyButtons(parent);
+            }
+          } catch (err) {
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
           }
         };
       });

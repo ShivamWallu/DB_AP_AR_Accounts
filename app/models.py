@@ -213,3 +213,24 @@ class AuditLog(Base):
     ip_address = Column(String(100), nullable=True)
     batch_id = Column(Integer, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+class VoucherVerification(Base):
+    __tablename__ = "voucher_verifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    dataset_type = Column(String(50), index=True, nullable=False) # 'master', 'daybook', 'ap', 'ar'
+    identifier_key = Column(String(200), unique=True, index=True, nullable=False) # e.g. "voucher_verified_master_V123"
+    voucher_number = Column(String(150), index=True, nullable=True)
+    record_id = Column(Integer, index=True, nullable=True)
+    verified_by = Column(String(150), nullable=False)
+    user_role = Column(String(50), nullable=True)
+    timestamp_str = Column(String(50), nullable=True)
+    date_str = Column(String(50), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    __table_args__ = (
+        Index("idx_verif_vno", "voucher_number"),
+        Index("idx_verif_dataset_ident", "dataset_type", "identifier_key"),
+    )
+

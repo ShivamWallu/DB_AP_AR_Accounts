@@ -6,7 +6,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import User
+from app.models import User, VoucherVerification
 from app.auth import oauth2_scheme, SECRET_KEY, ALGORITHM
 import jwt
 from app.services.query_service import query_daybook, query_ap, query_ar, query_master_360
@@ -126,6 +126,19 @@ def build_export_response(
     db: Session,
     current_user: User
 ) -> Response:
+    # If client did not provide verifications or only partial, pull all from database
+    if not verifications:
+        verifications = {}
+    try:
+        db_verifs = db.query(VoucherVerification).all()
+        for v in db_verifs:
+            if v.voucher_number and str(v.voucher_number) not in verifications:
+                verifications[str(v.voucher_number)] = v.verified_by
+            if v.record_id and str(v.record_id) not in verifications:
+                verifications[str(v.record_id)] = v.verified_by
+    except Exception as e:
+        print(f"Warning: Failed to load db verifications for export: {e}")
+
     output = io.StringIO()
     # Write UTF-8 BOM so Microsoft Excel cleanly renders symbols and UTF-8 characters
     output.write('\ufeff')

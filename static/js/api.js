@@ -186,5 +186,19 @@ const API = {
   async getAuditLogs(params = {}) {
     const qs = new URLSearchParams(params).toString();
     return await this.request(`/api/audit/logs?${qs}`);
+  },
+
+  // Real-time Server Verification Endpoints
+  async getVerifications(params = {}) {
+    const qs = this.buildQueryString(params);
+    return await this.request(`/api/data/verifications?${qs}`);
+  },
+
+  async toggleVerification(payload) {
+    return await this.request("/api/data/verify", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
   }
 };
+

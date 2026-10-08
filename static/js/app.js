@@ -15,6 +15,9 @@ const App = {
     this.setupDataTables();
     this.bindCrossReference();
     this.bindKeyboardNavigation();
+    if (window.VerificationManager && typeof window.VerificationManager.init === "function") {
+      window.VerificationManager.init();
+    }
   },
 
   bindKeyboardNavigation() {

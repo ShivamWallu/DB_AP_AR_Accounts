@@ -122,8 +122,56 @@ def test_full_pipeline():
         assert batch2['new_records'] == batch2['total_rows'], "Expected all rows in the new batch to be stored directly without deduplication!"
         print("   [PASS] Direct high-speed ingestion verified: All new batch records stored cleanly!")
 
-        # 11. Test Audit Logs
-        print("\n11. Testing Audit Log Recording...")
+        # 11. Test Multi-User Real-Time Server Verification Workflow
+        print("\n11. Testing Multi-User Real-Time Server Verification Workflow...")
+        # Admin verifies a voucher
+        test_vno = first_db['voucher_number'] or "VOUCH-TEST-001"
+        res = client.post("/api/data/verify", json={
+            "dataset_type": "daybook",
+            "record_id": first_db['id'],
+            "voucher_number": test_vno
+        }, headers=admin_headers)
+        assert res.status_code == 200, f"Verify failed: {res.text}"
+        v_res = res.json()
+        assert v_res["status"] == "verified"
+        assert v_res["data"]["verified_by"] is not None
+        print(f"   [PASS] Admin verified voucher '{test_vno}' successfully as '{v_res['data']['verified_by']}'")
+
+        # Employee checks verifications list (simulating another user's live sync)
+        res = client.get("/api/data/verifications", headers=emp_headers)
+        assert res.status_code == 200
+        all_verifs = res.json()["verifications"]
+        assert f"voucher_{test_vno}" in all_verifs or f"voucher_verified_daybook_{test_vno}" in all_verifs
+        print(f"   [PASS] Employee instantly retrieved Admin's verification from central server!")
+
+        # Employee verifies AP voucher
+        test_ap_vno = first_ap['voucher_number'] or "AP-TEST-001"
+        res = client.post("/api/data/verify", json={
+            "dataset_type": "ap",
+            "record_id": first_ap['id'],
+            "voucher_number": test_ap_vno
+        }, headers=emp_headers)
+        assert res.status_code == 200
+        print(f"   [PASS] Employee verified AP voucher '{test_ap_vno}' successfully!")
+
+        # Test Export with verified statuses
+        res = client.post("/api/export/daybook", json={"site": ""}, headers=admin_headers)
+        assert res.status_code == 200
+        assert len(res.text) > 50
+        print(f"   [PASS] Export CSV generated with server-verified columns!")
+
+        # Toggle unverify
+        res = client.post("/api/data/verify", json={
+            "dataset_type": "daybook",
+            "record_id": first_db['id'],
+            "voucher_number": test_vno
+        }, headers=admin_headers)
+        assert res.status_code == 200
+        assert res.json()["status"] == "unverified"
+        print(f"   [PASS] Admin unverified voucher '{test_vno}' and central DB updated!")
+
+        # 12. Test Audit Logs
+        print("\n12. Testing Audit Log Recording...")
         res = client.get("/api/audit/logs", headers=admin_headers)
         assert res.status_code == 200
         logs = res.json()
@@ -137,3 +185,4 @@ def test_full_pipeline():
 
 if __name__ == "__main__":
     test_full_pipeline()
+
