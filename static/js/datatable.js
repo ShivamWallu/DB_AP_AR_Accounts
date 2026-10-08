@@ -486,8 +486,8 @@ class DataTableController {
           </th>
         `;
     }).join("")}
-      <th style="text-align: center; width: 145px; min-width: 135px;">Verified By</th>
-      <th style="text-align: center; width: 90px; min-width: 85px;">Action</th>
+      <th style="text-align: center; width: 118px; min-width: 110px;">Verified By</th>
+      <th style="text-align: center; width: 78px; min-width: 72px;">Action</th>
     `;
 
     // Bind sort events
@@ -597,7 +597,7 @@ class DataTableController {
       this.approvedBy = "";
       this.verifyStatus = "all";
       this.registerType = "";
-      
+
       // Reset batch to latest if available, else empty
       const firstOpt = batchSelect && batchSelect.options.length > 0 ? batchSelect.options[0].value : "";
       this.batchId = firstOpt;
@@ -891,8 +891,8 @@ class DataTableController {
         // e.g. BATCH-20261007-001 -> B-001
         const shortCode = b.batch_code ? b.batch_code.replace(/^BATCH-\d{8}-/, 'B-') : `B-${b.id}`;
         const shortDate = b.date ? b.date.replace(/-\d{4}$/, '') : '';
-        const label = isLatest 
-          ? `⚡ ${shortCode} (Latest)` 
+        const label = isLatest
+          ? `⚡ ${shortCode} (Latest)`
           : `📁 ${shortCode} (${shortDate})`;
         return `<option value="${b.id}">${label}</option>`;
       }).join("") + `<option value="">🌐 All Batches</option>`;
@@ -1228,13 +1228,13 @@ class DataTableController {
           let badgeHtml = '';
           const sVal = String(val || '');
           if (sVal.includes("DayBook + AP + AR")) {
-            badgeHtml = `<span class="badge" style="background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; font-weight: 700; white-space: nowrap;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>3-WAY MATCHED</span>`;
+            badgeHtml = `<span class="badge" style="background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; font-weight: 700; white-space: nowrap; padding: 0.16rem 0.42rem; font-size: 0.76rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>3-WAY</span>`;
           } else if (sVal.includes("DayBook + AP")) {
-            badgeHtml = `<span class="badge" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; font-weight: 600; white-space: nowrap;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>DayBook + AP</span>`;
+            badgeHtml = `<span class="badge" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; font-weight: 600; white-space: nowrap; padding: 0.16rem 0.42rem; font-size: 0.76rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>DayBook + AP</span>`;
           } else if (sVal.includes("DayBook + AR")) {
-            badgeHtml = `<span class="badge" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-weight: 600; white-space: nowrap;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>DayBook + AR</span>`;
+            badgeHtml = `<span class="badge" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-weight: 600; white-space: nowrap; padding: 0.16rem 0.42rem; font-size: 0.76rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>DayBook + AR</span>`;
           } else {
-            badgeHtml = `<span class="badge" style="background: #f8fafc; color: #64748b; border: 1px solid #cbd5e1; font-weight: 500; white-space: nowrap;">Day Book Only</span>`;
+            badgeHtml = `<span class="badge" style="background: #f8fafc; color: #64748b; border: 1px solid #cbd5e1; font-weight: 500; white-space: nowrap; padding: 0.16rem 0.42rem; font-size: 0.76rem;">Day Book Only</span>`;
           }
           return `<td class="${stickyClass}">${badgeHtml}</td>`;
         }
@@ -1274,32 +1274,31 @@ class DataTableController {
 
         if (col.key === "unified_quantity" || col.key === "booked_item_quantity" || col.key === "item_quantity") {
           const numVal = Number(val);
-          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span class="cell-empty-dash">—</span>' : numVal.toLocaleString("en-IN");
+          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : numVal.toLocaleString("en-IN");
           return `<td class="${stickyClass} cell-quantity">${formatted}</td>`;
         }
 
         if (col.key === "unified_rate" || col.key === "item_service_rate") {
           const numVal = Number(val);
-          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span class="cell-empty-dash">—</span>' : ("₹ " + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : ("₹" + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
           return `<td class="${stickyClass} cell-rate">${formatted}</td>`;
         }
 
         if (col.key === "unified_tax_amount" || col.key === "total_tax_amount" || col.key === "item_service_taxes" || col.key.includes("total_cgst") || col.key.includes("total_sgst") || col.key.includes("total_igst")) {
           const numVal = Number(val);
-          const isZero = !isNaN(numVal) && numVal === 0;
-          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span class="cell-empty-dash">—</span>' : ("₹ " + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-          return `<td class="${stickyClass} cell-tax ${isZero ? 'cell-tax-zero' : ''}">${formatted}</td>`;
+          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : ("₹" + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          return `<td class="${stickyClass} cell-tax">${formatted}</td>`;
         }
 
         if (col.key === "combined_amount" || col.key === "total_voucher_amount" || col.key === "net_amount" || col.key === "item_service_amount" || col.key === "item_service_detail_amount" || col.key === "item_amount_net_off_discount") {
           const numVal = Number(val);
-          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span class="cell-empty-dash">—</span>' : ("₹ " + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : ("₹" + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
           return `<td class="${stickyClass} cell-total-amount">${formatted}</td>`;
         }
 
         if (col.type === "currency" || col.key.includes("_amount") || col.key.includes("_taxes") || col.key.includes("total_tds")) {
           const numVal = Number(val);
-          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span class="cell-empty-dash">—</span>' : ("₹ " + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : ("₹" + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
           return `<td class="${stickyClass} cell-currency">${formatted}</td>`;
         }
 
