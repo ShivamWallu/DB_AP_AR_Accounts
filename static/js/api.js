@@ -189,7 +189,7 @@ const API = {
 
   // Audit Logs
   async getAuditLogs(params = {}) {
-    const qs = new URLSearchParams(params).toString();
+    const qs = this.buildQueryString(params);
     return await this.request(`/api/audit/logs?${qs}`);
   },
 

@@ -14,6 +14,7 @@ router = APIRouter(prefix="/api/audit", tags=["Audit Logs"])
 def get_audit_logs(
     page: int = Query(1, ge=1),
     page_size: int = Query(15, ge=1, le=1000),
+    limit: Optional[int] = Query(None, ge=1, le=1000),
     search: Optional[str] = None,
     action: Optional[str] = None,
     user: Optional[str] = None,
@@ -22,6 +23,7 @@ def get_audit_logs(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    actual_page_size = limit if limit is not None else page_size
     q = db.query(AuditLog)
 
     if search and search.strip():
@@ -44,14 +46,14 @@ def get_audit_logs(
         q = q.filter(AuditLog.status == status.strip())
 
     total = q.count()
-    total_pages = (total + page_size - 1) // page_size if total > 0 else 1
-    logs = q.order_by(desc(AuditLog.id)).offset((page - 1) * page_size).limit(page_size).all()
+    total_pages = (total + actual_page_size - 1) // actual_page_size if total > 0 else 1
+    logs = q.order_by(desc(AuditLog.id)).offset((page - 1) * actual_page_size).limit(actual_page_size).all()
     items = [AuditLogResponse.model_validate(l) for l in logs]
 
     return {
         "total": total,
         "page": page,
-        "page_size": page_size,
+        "page_size": actual_page_size,
         "total_pages": total_pages,
         "items": items
     }
