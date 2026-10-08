@@ -1,7 +1,7 @@
 from typing import Optional, List, Dict, Any, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, desc, asc, func
-from app.models import DayBookRecord, APRecord, ARRecord, ImportBatch
+from app.models import DayBookRecord, APRecord, ARRecord, ImportBatch, VoucherVerification
 
 def get_filter_options(db: Session) -> Dict[str, Any]:
     """Retrieve dynamic unique filter values across all tables"""
@@ -90,6 +90,7 @@ def query_daybook(
     batch_id: Optional[int] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
+    verify_status: Optional[str] = None,
     sort_by: str = "id",
     sort_order: str = "desc"
 ) -> Tuple[int, List[DayBookRecord]]:
@@ -133,6 +134,30 @@ def query_daybook(
     if date_to and date_to.strip():
         q = q.filter(DayBookRecord.voucher_date <= date_to.strip())
 
+    # Verification status filter
+    if verify_status and verify_status.strip().lower() in ("verified", "pending"):
+        v_status = verify_status.strip().lower()
+        verified_subq = db.query(VoucherVerification.voucher_number).filter(
+            VoucherVerification.voucher_number.isnot(None)
+        ).scalar_subquery()
+        verified_id_subq = db.query(VoucherVerification.record_id).filter(
+            VoucherVerification.dataset_type == "daybook",
+            VoucherVerification.record_id.isnot(None)
+        ).scalar_subquery()
+
+        if v_status == "verified":
+            q = q.filter(
+                or_(
+                    DayBookRecord.voucher_number.in_(verified_subq),
+                    DayBookRecord.id.in_(verified_id_subq)
+                )
+            )
+        elif v_status == "pending":
+            q = q.filter(
+                ~DayBookRecord.voucher_number.in_(verified_subq),
+                ~DayBookRecord.id.in_(verified_id_subq)
+            )
+
     if search and search.strip():
         term = f"%{search.strip()}%"
         q = q.filter(
@@ -160,6 +185,7 @@ def query_daybook(
     records = q.offset((page - 1) * page_size).limit(page_size).all()
     return total, records
 
+
 def query_ap(
     db: Session,
     page: int = 1,
@@ -170,6 +196,7 @@ def query_ap(
     voucher_subtype: Optional[str] = None,
     approved_by: Optional[str] = None,
     batch_id: Optional[int] = None,
+    verify_status: Optional[str] = None,
     sort_by: str = "id",
     sort_order: str = "desc"
 ) -> Tuple[int, List[Dict[str, Any]]]:
@@ -212,6 +239,30 @@ def query_ap(
         q = q.filter(APRecord.voucher_number.in_(db_appr_q.scalar_subquery()))
     if batch_id:
         q = q.filter(APRecord.batch_id == batch_id)
+
+    # Verification status filter
+    if verify_status and verify_status.strip().lower() in ("verified", "pending"):
+        v_status = verify_status.strip().lower()
+        verified_subq = db.query(VoucherVerification.voucher_number).filter(
+            VoucherVerification.voucher_number.isnot(None)
+        ).scalar_subquery()
+        verified_id_subq = db.query(VoucherVerification.record_id).filter(
+            VoucherVerification.dataset_type == "ap",
+            VoucherVerification.record_id.isnot(None)
+        ).scalar_subquery()
+
+        if v_status == "verified":
+            q = q.filter(
+                or_(
+                    APRecord.voucher_number.in_(verified_subq),
+                    APRecord.id.in_(verified_id_subq)
+                )
+            )
+        elif v_status == "pending":
+            q = q.filter(
+                ~APRecord.voucher_number.in_(verified_subq),
+                ~APRecord.id.in_(verified_id_subq)
+            )
 
     if search and search.strip():
         term = f"%{search.strip()}%"
@@ -298,6 +349,7 @@ def query_ar(
     voucher_subtype: Optional[str] = None,
     approved_by: Optional[str] = None,
     batch_id: Optional[int] = None,
+    verify_status: Optional[str] = None,
     sort_by: str = "id",
     sort_order: str = "desc"
 ) -> Tuple[int, List[Dict[str, Any]]]:
@@ -340,6 +392,30 @@ def query_ar(
         q = q.filter(ARRecord.voucher_number.in_(db_appr_q.scalar_subquery()))
     if batch_id:
         q = q.filter(ARRecord.batch_id == batch_id)
+
+    # Verification status filter
+    if verify_status and verify_status.strip().lower() in ("verified", "pending"):
+        v_status = verify_status.strip().lower()
+        verified_subq = db.query(VoucherVerification.voucher_number).filter(
+            VoucherVerification.voucher_number.isnot(None)
+        ).scalar_subquery()
+        verified_id_subq = db.query(VoucherVerification.record_id).filter(
+            VoucherVerification.dataset_type == "ar",
+            VoucherVerification.record_id.isnot(None)
+        ).scalar_subquery()
+
+        if v_status == "verified":
+            q = q.filter(
+                or_(
+                    ARRecord.voucher_number.in_(verified_subq),
+                    ARRecord.id.in_(verified_id_subq)
+                )
+            )
+        elif v_status == "pending":
+            q = q.filter(
+                ~ARRecord.voucher_number.in_(verified_subq),
+                ~ARRecord.id.in_(verified_id_subq)
+            )
 
     if search and search.strip():
         term = f"%{search.strip()}%"
@@ -437,6 +513,7 @@ def query_master_360(
     register_type: Optional[str] = None, # 'all', 'ap', 'ar', 'daybook_only'
     approved_by: Optional[str] = None,
     batch_id: Optional[int] = None,
+    verify_status: Optional[str] = None,
     sort_by: str = "id",
     sort_order: str = "desc"
 ) -> Tuple[int, List[Dict[str, Any]]]:
@@ -898,8 +975,41 @@ def query_master_360(
             or term in str(r.get("transaction_site") or "").lower()
         ]
 
+    # 5. Verification Status Filter
+    if verify_status and verify_status.strip().lower() in ("verified", "pending"):
+        v_status = verify_status.strip().lower()
+        verified_vnos = {
+            r[0] for r in db.query(VoucherVerification.voucher_number).filter(
+                VoucherVerification.voucher_number.isnot(None)
+            ).all() if r[0]
+        }
+        verified_keys = {
+            r[0] for r in db.query(VoucherVerification.identifier_key).all() if r[0]
+        }
+        if v_status == "verified":
+            master_list = [
+                r for r in master_list
+                if (r.get("voucher_number") and r.get("voucher_number") in verified_vnos)
+                or f"voucher_verified_master_{r.get('id')}" in verified_keys
+                or f"voucher_verified_daybook_{r.get('id')}" in verified_keys
+                or f"voucher_verified_ap_{r.get('id')}" in verified_keys
+                or f"voucher_verified_ar_{r.get('id')}" in verified_keys
+            ]
+        elif v_status == "pending":
+            master_list = [
+                r for r in master_list
+                if not (
+                    (r.get("voucher_number") and r.get("voucher_number") in verified_vnos)
+                    or f"voucher_verified_master_{r.get('id')}" in verified_keys
+                    or f"voucher_verified_daybook_{r.get('id')}" in verified_keys
+                    or f"voucher_verified_ap_{r.get('id')}" in verified_keys
+                    or f"voucher_verified_ar_{r.get('id')}" in verified_keys
+                )
+            ]
+
     total = len(master_list)
     offset = (page - 1) * page_size
     paged_items = master_list[offset:offset + page_size]
 
     return total, paged_items
+

@@ -48,6 +48,7 @@ def get_master_360_records(
     register_type: Optional[str] = None,
     approved_by: Optional[str] = None,
     batch_id: Optional[str] = None,
+    verify_status: Optional[str] = None,
     sort_by: str = "id",
     sort_order: str = "desc",
     db: Session = Depends(get_db),
@@ -57,7 +58,8 @@ def get_master_360_records(
     total, records = query_master_360(
         db, page=page, page_size=page_size, search=search,
         site=site, voucher_type=voucher_type, register_type=register_type,
-        approved_by=approved_by, batch_id=b_id, sort_by=sort_by, sort_order=sort_order
+        approved_by=approved_by, batch_id=b_id, verify_status=verify_status,
+        sort_by=sort_by, sort_order=sort_order
     )
     total_pages = (total + page_size - 1) // page_size if total > 0 else 1
 
@@ -80,6 +82,7 @@ def get_daybook_records(
     batch_id: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
+    verify_status: Optional[str] = None,
     sort_by: str = "id",
     sort_order: str = "desc",
     db: Session = Depends(get_db),
@@ -89,7 +92,7 @@ def get_daybook_records(
     total, records = query_daybook(
         db, page=page, page_size=page_size, search=search,
         site=site, voucher_type=voucher_type, approved_by=approved_by, batch_id=b_id,
-        date_from=date_from, date_to=date_to,
+        date_from=date_from, date_to=date_to, verify_status=verify_status,
         sort_by=sort_by, sort_order=sort_order
     )
     total_pages = (total + page_size - 1) // page_size if total > 0 else 1
@@ -113,6 +116,7 @@ def get_ap_records(
     voucher_subtype: Optional[str] = None,
     approved_by: Optional[str] = None,
     batch_id: Optional[str] = None,
+    verify_status: Optional[str] = None,
     sort_by: str = "id",
     sort_order: str = "desc",
     db: Session = Depends(get_db),
@@ -122,7 +126,8 @@ def get_ap_records(
     total, records = query_ap(
         db, page=page, page_size=page_size, search=search,
         site=site, voucher_type=voucher_type, voucher_subtype=voucher_subtype,
-        approved_by=approved_by, batch_id=b_id, sort_by=sort_by, sort_order=sort_order
+        approved_by=approved_by, batch_id=b_id, verify_status=verify_status,
+        sort_by=sort_by, sort_order=sort_order
     )
     total_pages = (total + page_size - 1) // page_size if total > 0 else 1
     items = [APRecordResponse(**r) for r in records]
@@ -145,6 +150,7 @@ def get_ar_records(
     voucher_subtype: Optional[str] = None,
     approved_by: Optional[str] = None,
     batch_id: Optional[str] = None,
+    verify_status: Optional[str] = None,
     sort_by: str = "id",
     sort_order: str = "desc",
     db: Session = Depends(get_db),
@@ -154,7 +160,8 @@ def get_ar_records(
     total, records = query_ar(
         db, page=page, page_size=page_size, search=search,
         site=site, voucher_type=voucher_type, voucher_subtype=voucher_subtype,
-        approved_by=approved_by, batch_id=b_id, sort_by=sort_by, sort_order=sort_order
+        approved_by=approved_by, batch_id=b_id, verify_status=verify_status,
+        sort_by=sort_by, sort_order=sort_order
     )
     total_pages = (total + page_size - 1) // page_size if total > 0 else 1
     items = [ARRecordResponse(**r) for r in records]

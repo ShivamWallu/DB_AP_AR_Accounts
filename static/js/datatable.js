@@ -841,9 +841,11 @@ class DataTableController {
         verifyPills.forEach(p => p.classList.remove("active"));
         pill.classList.add("active");
         this.verifyStatus = pill.dataset.value || "all";
-        this.renderTableData();
+        this.page = 1;
+        this.loadData();
       });
     });
+
 
     // Batch filter
     const batchSelect = container.querySelector(".dt-batch-filter");
@@ -1255,12 +1257,13 @@ class DataTableController {
       page: this.page,
       page_size: this.pageSize,
       search: this.search,
-      site: this.site,
+      site: (this.selectedSites && this.selectedSites.length > 0) ? this.selectedSites.join(",") : (this.site || undefined),
       voucher_type: this.voucherType,
       voucher_subtype: this.voucherSubtype,
       approved_by: this.approvedBy,
       register_type: this.registerType,
       batch_id: this.batchId,
+      verify_status: (this.verifyStatus && this.verifyStatus !== "all") ? this.verifyStatus : undefined,
       sort_by: this.sortBy,
       sort_order: this.sortOrder
     };
@@ -1488,7 +1491,8 @@ class DataTableController {
         if (p.dataset.value === "all") p.classList.add("active");
         else p.classList.remove("active");
       });
-      this.renderTableData();
+      this.page = 1;
+      this.loadData();
       return;
     }
 
@@ -1507,14 +1511,9 @@ class DataTableController {
     const tbody = container.querySelector(".dt-tbody");
     const countText = container.querySelector(".dt-count-text");
 
-    let displayedRows = this.data;
-    if (this.verifyStatus === "verified") {
-      displayedRows = this.data.filter(r => VerificationManager.isVerified(this.datasetType, r.id, r.voucher_number) !== null);
-    } else if (this.verifyStatus === "pending") {
-      displayedRows = this.data.filter(r => VerificationManager.isVerified(this.datasetType, r.id, r.voucher_number) === null);
-    }
+    const displayedRows = this.data;
 
-    if (countText) countText.innerText = (this.verifyStatus === "all" ? this.total : displayedRows.length).toLocaleString();
+    if (countText) countText.innerText = (this.total || displayedRows.length).toLocaleString();
 
     if (!tbody) return;
 
