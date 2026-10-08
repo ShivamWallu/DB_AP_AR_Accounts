@@ -91,6 +91,28 @@ def resolve_verifier_name(r_or_dict, verifications_map: Optional[Dict[str, str]]
     # 4. Default: Pending verification
     return "Pending"
 
+def clean_val(val: Any) -> str:
+    """Sanitize string values, eliminating any Unicode em-dash, None, or null to prevent Excel mojibake (â€”)"""
+    if val is None:
+        return ""
+    s = str(val).strip()
+    if s in ("—", "-", "None", "null", "undefined"):
+        return ""
+    return s
+
+def clean_num(val: Any) -> str:
+    """Sanitize numeric values for clean Excel display without garbled characters or NaN"""
+    if val is None:
+        return ""
+    s = str(val).strip()
+    if s in ("", "—", "-", "None", "null", "undefined"):
+        return ""
+    try:
+        f = float(val)
+        return f"{f:.2f}"
+    except (ValueError, TypeError):
+        return ""
+
 def build_export_response(
     dataset: str,
     search: Optional[str],
@@ -126,18 +148,18 @@ def build_export_response(
         writer.writerow(headers)
         for r in records:
             writer.writerow([
-                r.transaction_site or "",
-                r.voucher_number or "",
-                r.voucher_date or "",
-                r.voucher_type or "",
-                r.voucher_status or "",
-                r.party_code or "",
-                r.party_description or "",
-                r.account_description or "",
-                r.narration or "",
-                r.created_by or "",
-                r.approved_by or "",
-                resolve_verifier_name(r, verifications)
+                clean_val(r.transaction_site),
+                clean_val(r.voucher_number),
+                clean_val(r.voucher_date),
+                clean_val(r.voucher_type),
+                clean_val(r.voucher_status),
+                clean_val(r.party_code),
+                clean_val(r.party_description),
+                clean_val(r.account_description),
+                clean_val(r.narration),
+                clean_val(r.created_by),
+                clean_val(r.approved_by),
+                clean_val(resolve_verifier_name(r, verifications))
             ])
 
     elif ds_lower == "ap":
@@ -158,26 +180,26 @@ def build_export_response(
         writer.writerow(headers)
         for r in records:
             writer.writerow([
-                r.get("accounting_site_code", ""),
-                r.get("voucher_number", ""),
-                r.get("voucher_type", ""),
-                r.get("voucher_sub_type", ""),
-                r.get("party_gst_tin", ""),
-                r.get("invoice_number", ""),
-                r.get("invoice_date", ""),
-                r.get("due_date", ""),
-                r.get("item_service_description", ""),
-                r.get("item_service_expense_account_desc", ""),
-                r.get("booked_item_quantity", ""),
-                f"{float(r.get('item_service_rate') or 0):.2f}" if r.get("item_service_rate") is not None else "",
-                f"{float(r.get('item_service_detail_amount') or 0):.2f}" if r.get("item_service_detail_amount") is not None else "",
-                f"{float(r.get('total_tax_amount') or 0):.2f}" if r.get("total_tax_amount") is not None else "",
-                f"{float(r.get('total_voucher_amount') or 0):.2f}" if r.get("total_voucher_amount") is not None else "",
-                f"{float(r.get('total_tds') or 0):.2f}" if r.get("total_tds") is not None else "",
-                r.get("narration", ""),
-                r.get("created_by", ""),
-                r.get("approved_by", ""),
-                resolve_verifier_name(r, verifications)
+                clean_val(r.get("accounting_site_code")),
+                clean_val(r.get("voucher_number")),
+                clean_val(r.get("voucher_type")),
+                clean_val(r.get("voucher_sub_type")),
+                clean_val(r.get("party_gst_tin")),
+                clean_val(r.get("invoice_number")),
+                clean_val(r.get("invoice_date")),
+                clean_val(r.get("due_date")),
+                clean_val(r.get("item_service_description")),
+                clean_val(r.get("item_service_expense_account_desc")),
+                clean_val(r.get("booked_item_quantity")),
+                clean_num(r.get("item_service_rate")),
+                clean_num(r.get("item_service_detail_amount")),
+                clean_num(r.get("total_tax_amount")),
+                clean_num(r.get("total_voucher_amount")),
+                clean_num(r.get("total_tds")),
+                clean_val(r.get("narration")),
+                clean_val(r.get("created_by")),
+                clean_val(r.get("approved_by")),
+                clean_val(resolve_verifier_name(r, verifications))
             ])
 
     elif ds_lower == "ar":
@@ -197,25 +219,25 @@ def build_export_response(
         writer.writerow(headers)
         for r in records:
             writer.writerow([
-                r.get("accounting_site_code", ""),
-                r.get("voucher_number", ""),
-                r.get("voucher_type", ""),
-                r.get("voucher_sub_type", ""),
-                r.get("item_service_description", ""),
-                r.get("item_quantity", ""),
-                f"{float(r.get('item_service_rate') or 0):.2f}" if r.get("item_service_rate") is not None else "",
-                f"{float(r.get('item_service_amount') or 0):.2f}" if r.get("item_service_amount") is not None else "",
-                f"{float(r.get('item_service_charges') or 0):.2f}" if r.get("item_service_charges") is not None else "",
-                f"{float(r.get('item_amount_net_off_discount') or 0):.2f}" if r.get("item_amount_net_off_discount") is not None else "",
-                f"{float(r.get('item_service_taxes') or 0):.2f}" if r.get("item_service_taxes") is not None else "",
-                f"{float(r.get('net_amount') or 0):.2f}" if r.get("net_amount") is not None else "",
-                f"{float(r.get('total_cgst') or 0):.2f}" if r.get("total_cgst") is not None else "",
-                f"{float(r.get('total_sgst') or 0):.2f}" if r.get("total_sgst") is not None else "",
-                f"{float(r.get('total_igst') or 0):.2f}" if r.get("total_igst") is not None else "",
-                r.get("narration", ""),
-                r.get("created_by", ""),
-                r.get("approved_by", ""),
-                resolve_verifier_name(r, verifications)
+                clean_val(r.get("accounting_site_code")),
+                clean_val(r.get("voucher_number")),
+                clean_val(r.get("voucher_type")),
+                clean_val(r.get("voucher_sub_type")),
+                clean_val(r.get("item_service_description")),
+                clean_val(r.get("item_quantity")),
+                clean_num(r.get("item_service_rate")),
+                clean_num(r.get("item_service_amount")),
+                clean_num(r.get("item_service_charges")),
+                clean_num(r.get("item_amount_net_off_discount")),
+                clean_num(r.get("item_service_taxes")),
+                clean_num(r.get("net_amount")),
+                clean_num(r.get("total_cgst")),
+                clean_num(r.get("total_sgst")),
+                clean_num(r.get("total_igst")),
+                clean_val(r.get("narration")),
+                clean_val(r.get("created_by")),
+                clean_val(r.get("approved_by")),
+                clean_val(resolve_verifier_name(r, verifications))
             ])
 
     elif ds_lower == "master":
@@ -235,25 +257,25 @@ def build_export_response(
         writer.writerow(headers)
         for r in records:
             writer.writerow([
-                r.get("transaction_site", ""),
-                r.get("voucher_number", ""),
-                r.get("voucher_date", ""),
-                r.get("voucher_type", ""),
-                r.get("source_tag", ""),
-                r.get("unified_invoice_no", ""),
-                r.get("unified_item_description", ""),
-                r.get("unified_quantity", "") if r.get("unified_quantity") is not None else "",
-                f"{float(r.get('unified_rate') or 0):.2f}" if r.get("unified_rate") is not None else "",
-                f"{float(r.get('combined_amount') or 0):.2f}" if r.get("combined_amount") is not None else "",
-                f"{float(r.get('unified_tax_amount') or 0):.2f}" if r.get("unified_tax_amount") is not None else "",
-                r.get("party_code", ""),
-                r.get("party_description", ""),
-                r.get("account_description", ""),
-                r.get("voucher_status", ""),
-                r.get("narration", ""),
-                r.get("created_by", ""),
-                r.get("approved_by", ""),
-                resolve_verifier_name(r, verifications)
+                clean_val(r.get("transaction_site")),
+                clean_val(r.get("voucher_number")),
+                clean_val(r.get("voucher_date")),
+                clean_val(r.get("voucher_type")),
+                clean_val(r.get("source_tag")),
+                clean_val(r.get("unified_invoice_no")),
+                clean_val(r.get("unified_item_description")),
+                clean_val(r.get("unified_quantity")),
+                clean_num(r.get("unified_rate")),
+                clean_num(r.get("combined_amount")),
+                clean_num(r.get("unified_tax_amount")),
+                clean_val(r.get("party_code")),
+                clean_val(r.get("party_description")),
+                clean_val(r.get("account_description")),
+                clean_val(r.get("voucher_status")),
+                clean_val(r.get("narration")),
+                clean_val(r.get("created_by")),
+                clean_val(r.get("approved_by")),
+                clean_val(resolve_verifier_name(r, verifications))
             ])
 
     else:
