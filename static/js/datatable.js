@@ -197,9 +197,21 @@ const VerificationManager = {
           this._lastHash = hash;
           this._cache = res.verifications;
 
+          // Prune stale localStorage keys that do not exist on the server
+          try {
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (k && (k.startsWith("voucher_verified_") || k.startsWith("voucher_")) && !this._cache[k]) {
+                keysToRemove.push(k);
+              }
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+          } catch (_) { }
+
           // Sync into localStorage for offline/fast startup
           Object.keys(this._cache).forEach(k => {
-            if (k.startsWith("voucher_verified_")) {
+            if (k.startsWith("voucher_verified_") || k.startsWith("voucher_")) {
               try {
                 localStorage.setItem(k, JSON.stringify(this._cache[k]));
               } catch (_) { }
@@ -232,13 +244,16 @@ const VerificationManager = {
       `voucher_verified_ar_${ident}`,
       `voucher_${ident}`
     ];
-    // 1. Check in-memory server cache first
-    for (const k of candidates) {
-      if (this._cache && this._cache[k]) {
-        return this._cache[k];
+    // 1. If server cache is loaded, it is the single source of truth!
+    if (this._cache) {
+      for (const k of candidates) {
+        if (this._cache[k]) {
+          return this._cache[k];
+        }
       }
+      return null;
     }
-    // 2. Check localStorage fallback
+    // 2. Check localStorage fallback only if server cache has not initialized yet
     for (const k of candidates) {
       const data = localStorage.getItem(k);
       if (data) {
@@ -267,8 +282,9 @@ const VerificationManager = {
           }
         }
       });
+      return map;
     }
-    // Also check localStorage
+    // Fallback to localStorage only if server cache not yet available
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
