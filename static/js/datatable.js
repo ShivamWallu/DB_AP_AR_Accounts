@@ -1272,9 +1272,33 @@ class DataTableController {
           return `<td class="${stickyClass}">${StatusBadge.render(val)}</td>`;
         }
 
-        if (col.type === "currency" || col.key === "combined_amount" || col.key === "unified_tax_amount" || col.key.includes("_amount") || col.key.includes("_taxes") || col.key.includes("_rate") || col.key.includes("total_cgst") || col.key.includes("total_sgst") || col.key.includes("total_igst") || col.key.includes("total_tds")) {
+        if (col.key === "unified_quantity" || col.key === "booked_item_quantity" || col.key === "item_quantity") {
           const numVal = Number(val);
-          const formatted = isNaN(numVal) ? (val || '—') : ("₹ " + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2 }));
+          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : numVal.toLocaleString("en-IN");
+          return `<td class="${stickyClass} cell-quantity">${formatted}</td>`;
+        }
+
+        if (col.key === "unified_rate" || col.key === "item_service_rate") {
+          const numVal = Number(val);
+          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : ("₹" + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          return `<td class="${stickyClass} cell-rate">${formatted}</td>`;
+        }
+
+        if (col.key === "unified_tax_amount" || col.key === "total_tax_amount" || col.key === "item_service_taxes" || col.key.includes("total_cgst") || col.key.includes("total_sgst") || col.key.includes("total_igst")) {
+          const numVal = Number(val);
+          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : ("₹" + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          return `<td class="${stickyClass} cell-tax">${formatted}</td>`;
+        }
+
+        if (col.key === "combined_amount" || col.key === "total_voucher_amount" || col.key === "net_amount" || col.key === "item_service_amount" || col.key === "item_service_detail_amount" || col.key === "item_amount_net_off_discount") {
+          const numVal = Number(val);
+          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : ("₹" + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          return `<td class="${stickyClass} cell-total-amount">${formatted}</td>`;
+        }
+
+        if (col.type === "currency" || col.key.includes("_amount") || col.key.includes("_taxes") || col.key.includes("total_tds")) {
+          const numVal = Number(val);
+          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : ("₹" + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
           return `<td class="${stickyClass} cell-currency">${formatted}</td>`;
         }
 
