@@ -710,53 +710,67 @@ body {
 
 /* Specific Cell Typography for Numbers across all tables */
 .cell-quantity {
-  font-family: 'JetBrains Mono', 'Inter', monospace;
+  font-family: 'JetBrains Mono', 'Inter', -apple-system, monospace !important;
   font-variant-numeric: tabular-nums;
-  font-weight: 750;
-  font-size: 0.96rem;
-  color: #0f172a;
-  text-align: right;
+  font-weight: 750 !important;
+  font-size: 1.10rem !important;
+  color: #0f172a !important;
+  text-align: right !important;
   letter-spacing: -0.01em;
 }
 
 .cell-rate {
-  font-family: 'JetBrains Mono', 'Inter', monospace;
+  font-family: 'JetBrains Mono', 'Inter', -apple-system, monospace !important;
   font-variant-numeric: tabular-nums;
-  font-weight: 750;
-  font-size: 0.96rem;
-  color: #1e293b;
-  text-align: right;
+  font-weight: 750 !important;
+  font-size: 1.10rem !important;
+  color: #1e293b !important;
+  text-align: right !important;
   letter-spacing: -0.01em;
 }
 
 .cell-tax {
-  font-family: 'JetBrains Mono', 'Inter', monospace;
+  font-family: 'JetBrains Mono', 'Inter', -apple-system, monospace !important;
   font-variant-numeric: tabular-nums;
-  font-weight: 800;
-  font-size: 0.96rem;
-  color: #059669;
-  text-align: right;
+  font-weight: 800 !important;
+  font-size: 1.10rem !important;
+  color: #059669 !important;
+  text-align: right !important;
   letter-spacing: -0.01em;
+}
+
+.cell-tax.cell-tax-zero {
+  color: #475569 !important;
+  font-weight: 650 !important;
+  font-size: 1.05rem !important;
 }
 
 .cell-total-amount {
-  font-family: 'JetBrains Mono', 'Inter', monospace;
+  font-family: 'JetBrains Mono', 'Inter', -apple-system, monospace !important;
   font-variant-numeric: tabular-nums;
-  font-weight: 850;
-  font-size: 1.02rem;
-  color: #0f172a;
-  text-align: right;
-  letter-spacing: -0.01em;
+  font-weight: 850 !important;
+  font-size: 1.18rem !important;
+  color: #0f172a !important;
+  text-align: right !important;
+  letter-spacing: -0.015em;
 }
 
 .cell-currency {
-  font-family: 'JetBrains Mono', 'Inter', monospace;
+  font-family: 'JetBrains Mono', 'Inter', -apple-system, monospace !important;
   font-variant-numeric: tabular-nums;
-  font-weight: 800;
-  font-size: 0.96rem;
-  color: #0f172a;
-  text-align: right;
+  font-weight: 800 !important;
+  font-size: 1.10rem !important;
+  color: #0f172a !important;
+  text-align: right !important;
   letter-spacing: -0.01em;
+}
+
+.cell-empty-dash {
+  color: #94a3b8;
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: normal;
+  display: inline-block;
 }
 
 .site-badge {
@@ -766,7 +780,7 @@ body {
   background: #f1f5f9;
   color: #0f172a;
   font-weight: 750;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   padding: 0.22rem 0.55rem;
   border-radius: 6px;
   border: 1px solid #cbd5e1;
@@ -3134,11 +3148,11 @@ body.sidebar-collapsed .main-content {
   display: inline-block;
 }
 .statement-table .col-inv { width: 9.5% !important; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; overflow: hidden; text-overflow: ellipsis; }
-.statement-table .col-qty { width: 5.5% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', 'Inter', monospace; font-weight: 750; font-size: 0.76rem; }
-.statement-table .col-rate { width: 6.5% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', 'Inter', monospace; font-weight: 750; font-size: 0.76rem; color: #1e293b; }
-.statement-table .col-tax { width: 8.0% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', 'Inter', monospace; color: #059669; font-weight: 800; font-size: 0.76rem; }
-.statement-table .col-tot { width: 8.5% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', 'Inter', monospace; font-weight: 850; color: #0f172a; font-size: 0.80rem; }
-.statement-table .col-status { width: 5.0% !important; white-space: nowrap; text-align: center; font-size: 0.65rem; }
+.statement-table .col-qty { width: 5.5% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', 'Inter', monospace; font-weight: 750; font-size: 0.82rem; }
+.statement-table .col-rate { width: 6.5% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', 'Inter', monospace; font-weight: 750; font-size: 0.82rem; color: #1e293b; }
+.statement-table .col-tax { width: 8.0% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', 'Inter', monospace; color: #059669; font-weight: 800; font-size: 0.82rem; }
+.statement-table .col-tot { width: 8.5% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', 'Inter', monospace; font-weight: 850; color: #0f172a; font-size: 0.86rem; }
+.statement-table .col-status { width: 5.0% !important; white-space: nowrap; text-align: center; font-size: 0.68rem; font-weight: 600; }
 
 .statement-table tbody tr:hover td {
   background: #f1f5f9;
