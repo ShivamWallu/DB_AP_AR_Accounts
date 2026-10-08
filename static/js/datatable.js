@@ -2088,19 +2088,19 @@ class DataTableController {
             <table class="statement-table">
               <thead>
                 <tr>
-                  <th style="width: 28px; text-align: center;">#</th>
-                  <th>Site</th>
-                  <th>Voucher Number</th>
-                  <th>Voucher Date</th>
-                  <th>Voucher Type</th>
-                  <th>Item / Expense Description</th>
-                  <th>Register</th>
-                  <th>Invoice / Ref No.</th>
-                  <th style="text-align: right;">Quantity</th>
-                  <th style="text-align: right;">Rate (₹)</th>
-                  <th style="text-align: right;">Tax Amount (₹)</th>
-                  <th style="text-align: right;">Total Amount (₹)</th>
-                  <th style="text-align: center;">Status</th>
+                  <th class="col-num" style="width: 32px; text-align: center;">#</th>
+                  <th class="col-site">Site</th>
+                  <th class="col-vno">Voucher Number</th>
+                  <th class="col-date">Voucher Date</th>
+                  <th class="col-vtype">Voucher Type</th>
+                  <th class="col-desc">Item / Expense Description</th>
+                  <th class="col-reg">Register</th>
+                  <th class="col-inv">Invoice / Ref No.</th>
+                  <th class="col-qty" style="text-align: right;">Quantity</th>
+                  <th class="col-rate" style="text-align: right;">Rate (₹)</th>
+                  <th class="col-tax" style="text-align: right;">Tax Amount (₹)</th>
+                  <th class="col-tot" style="text-align: right;">Total Amount (₹)</th>
+                  <th class="col-status" style="text-align: center;">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -2129,19 +2129,19 @@ class DataTableController {
 
         return `
                     <tr>
-                      <td style="text-align: center; font-weight: 600; color: #94a3b8;">${idx + 1}</td>
-                      <td style="font-weight: 700; color: #0f172a;">${site}</td>
-                      <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${vNo}</td>
-                      <td>${vDate}</td>
-                      <td>${vType}</td>
-                      <td style="max-width: 175px; font-weight: 600; color: #1e293b; line-height: 1.25;">${itemDesc}</td>
-                      <td><span style="background: #e2e8f0; color: #1e293b; padding: 1px 5px; border-radius: 3px; font-size: 0.68rem; font-weight: 700;">${reg}</span></td>
-                      <td style="font-family: 'JetBrains Mono', monospace;">${inv}</td>
-                      <td style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 600;">${qtyStr}</td>
-                      <td style="text-align: right; font-variant-numeric: tabular-nums;">${rateStr}</td>
-                      <td style="text-align: right; font-variant-numeric: tabular-nums; color: #059669; font-weight: 600;">${taxStr}</td>
-                      <td style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #0f172a;">${totStr}</td>
-                      <td style="text-align: center; font-weight: 700; color: #15803d; font-size: 0.68rem;">${statusStr}</td>
+                      <td class="col-num" style="text-align: center; font-weight: 600; color: #94a3b8;">${idx + 1}</td>
+                      <td class="col-site" style="font-weight: 700; color: #0f172a;">${site}</td>
+                      <td class="col-vno" style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${vNo}</td>
+                      <td class="col-date">${vDate}</td>
+                      <td class="col-vtype">${vType}</td>
+                      <td class="col-desc" style="font-weight: 600; color: #1e293b;">${itemDesc}</td>
+                      <td class="col-reg"><span class="reg-badge">${reg}</span></td>
+                      <td class="col-inv" style="font-family: 'JetBrains Mono', monospace;">${inv}</td>
+                      <td class="col-qty" style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 600;">${qtyStr}</td>
+                      <td class="col-rate" style="text-align: right; font-variant-numeric: tabular-nums;">${rateStr}</td>
+                      <td class="col-tax" style="text-align: right; font-variant-numeric: tabular-nums; color: #059669; font-weight: 600;">${taxStr}</td>
+                      <td class="col-tot" style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #0f172a;">${totStr}</td>
+                      <td class="col-status" style="text-align: center; font-weight: 700; color: #15803d; font-size: 0.68rem;">${statusStr}</td>
                     </tr>
                   `;
       }).join('')}

@@ -2999,6 +2999,13 @@ body.sidebar-collapsed .main-content {
   color: #0f172a;
 }
 
+/* Statement Dialog Container Sizing */
+.modal-content.modal-report-dialog {
+  max-width: 95vw;
+  width: 1440px;
+  max-height: 94vh;
+}
+
 .statement-table-wrapper {
   margin-bottom: 0.55rem;
   overflow-x: auto;
@@ -3019,7 +3026,7 @@ body.sidebar-collapsed .main-content {
   color: #1e293b;
   font-weight: 800;
   text-align: left;
-  padding: 0.35rem 0.45rem;
+  padding: 0.45rem 0.55rem;
   border-bottom: 1.5px solid #cbd5e1;
   border-right: 1px solid #e2e8f0;
   text-transform: uppercase;
@@ -3033,18 +3040,52 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table td {
-  padding: 0.28rem 0.45rem;
+  padding: 0.35rem 0.55rem;
   border-bottom: 1px solid #edf2f7;
   border-right: 1px solid #edf2f7;
   color: #334155;
   vertical-align: middle;
-  white-space: nowrap;
   font-size: 0.72rem;
+  box-sizing: border-box;
 }
 
 .statement-table td:last-child {
   border-right: none;
 }
+
+/* Statement Table Column Rules */
+.statement-table .col-num { width: 34px; text-align: center; white-space: nowrap; }
+.statement-table .col-site { white-space: nowrap; font-weight: 700; color: #0f172a; min-width: 80px; }
+.statement-table .col-vno { white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-weight: 600; min-width: 110px; }
+.statement-table .col-date { white-space: nowrap; min-width: 85px; }
+.statement-table .col-vtype { white-space: normal; word-break: break-word; min-width: 110px; max-width: 160px; }
+.statement-table .col-desc { 
+  white-space: normal !important; 
+  word-break: break-word !important; 
+  overflow-wrap: break-word !important;
+  min-width: 180px; 
+  max-width: 280px; 
+  font-weight: 600; 
+  color: #1e293b; 
+  line-height: 1.35;
+}
+.statement-table .col-reg { white-space: nowrap !important; text-align: center; min-width: 105px; }
+.statement-table .col-reg .reg-badge {
+  background: #e2e8f0;
+  color: #1e293b;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+  display: inline-block;
+}
+.statement-table .col-inv { white-space: nowrap; font-family: 'JetBrains Mono', monospace; min-width: 110px; }
+.statement-table .col-qty { white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; min-width: 75px; }
+.statement-table .col-rate { white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; min-width: 80px; }
+.statement-table .col-tax { white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; color: #059669; font-weight: 600; min-width: 90px; }
+.statement-table .col-tot { white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #0f172a; min-width: 95px; }
+.statement-table .col-status { white-space: nowrap; text-align: center; min-width: 75px; }
 
 .statement-table tbody tr:hover td {
   background: #f1f5f9;
@@ -3295,7 +3336,7 @@ body.sidebar-collapsed .main-content {
   .statement-table-wrapper {
     display: block !important;
     overflow: visible !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 6px !important;
     border: 1px solid #94a3b8 !important;
     border-radius: 4px !important;
   }
@@ -3303,8 +3344,9 @@ body.sidebar-collapsed .main-content {
   .statement-table {
     width: 100% !important;
     border-collapse: collapse !important;
-    font-size: 6.8pt !important;
+    font-size: 6.0pt !important;
     page-break-inside: auto !important;
+    table-layout: fixed !important;
   }
 
   .statement-table thead {
@@ -3319,23 +3361,59 @@ body.sidebar-collapsed .main-content {
   .statement-table th {
     background: #f1f5f9 !important;
     color: #0f172a !important;
-    border: 1px solid #cbd5e1 !important;
-    padding: 2.5px 4px !important;
+    border: 0.8px solid #cbd5e1 !important;
+    padding: 2.5px 2.5px !important;
     font-weight: 800 !important;
-    font-size: 6.4pt !important;
+    font-size: 5.6pt !important;
     text-transform: uppercase !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    box-sizing: border-box !important;
   }
 
   .statement-table td {
-    border: 1px solid #e2e8f0 !important;
-    padding: 2px 4px !important;
+    border: 0.8px solid #e2e8f0 !important;
+    padding: 2px 2.5px !important;
     color: #1e293b !important;
     background: #ffffff !important;
-    white-space: nowrap !important;
+    font-size: 5.8pt !important;
+    vertical-align: middle !important;
+    box-sizing: border-box !important;
   }
+
+  /* Specific Print Column Widths (100% Total Distribution) */
+  .statement-table .col-num { width: 3.0% !important; text-align: center !important; white-space: nowrap !important; }
+  .statement-table .col-site { width: 6.5% !important; white-space: nowrap !important; font-weight: 700 !important; font-size: 5.8pt !important; }
+  .statement-table .col-vno { width: 9.5% !important; white-space: nowrap !important; font-size: 5.5pt !important; font-family: 'JetBrains Mono', monospace !important; }
+  .statement-table .col-date { width: 6.5% !important; white-space: nowrap !important; font-size: 5.5pt !important; }
+  .statement-table .col-vtype { width: 9.0% !important; white-space: normal !important; word-break: break-word !important; font-size: 5.5pt !important; line-height: 1.15 !important; }
+  .statement-table .col-desc { 
+    width: 18.0% !important; 
+    white-space: normal !important; 
+    word-break: break-word !important; 
+    overflow-wrap: break-word !important;
+    font-weight: 600 !important; 
+    font-size: 5.6pt !important; 
+    line-height: 1.15 !important; 
+  }
+  .statement-table .col-reg { width: 8.0% !important; white-space: nowrap !important; text-align: center !important; }
+  .statement-table .col-reg .reg-badge { 
+    font-size: 5.0pt !important; 
+    padding: 1px 3px !important; 
+    border-radius: 2px !important;
+    background: #e2e8f0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .statement-table .col-inv { width: 9.0% !important; white-space: nowrap !important; font-size: 5.4pt !important; font-family: 'JetBrains Mono', monospace !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+  .statement-table .col-qty { width: 5.5% !important; text-align: right !important; white-space: nowrap !important; }
+  .statement-table .col-rate { width: 7.0% !important; text-align: right !important; white-space: nowrap !important; }
+  .statement-table .col-tax { width: 7.5% !important; text-align: right !important; white-space: nowrap !important; }
+  .statement-table .col-tot { width: 8.5% !important; text-align: right !important; white-space: nowrap !important; font-weight: 700 !important; }
+  .statement-table .col-status { width: 6.0% !important; text-align: center !important; white-space: nowrap !important; font-size: 5.4pt !important; }
 
   .statement-table tr:nth-child(even) td {
     background: #f8fafc !important;
