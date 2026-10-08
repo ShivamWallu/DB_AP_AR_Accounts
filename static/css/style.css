@@ -2452,6 +2452,8 @@ body.sidebar-collapsed .btn-sidebar-bottom-toggle .bottom-toggle-text {
 body.sidebar-collapsed .main-content {
   margin-left: 72px;
   max-width: calc(100vw - 72px);
+}
+
 /* Auth Login Modal / Screen with Executive 3D Fintech Theme */
 .auth-wrapper {
   min-height: 100vh;

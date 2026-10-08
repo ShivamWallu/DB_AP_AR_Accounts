@@ -1255,6 +1255,7 @@ class DataTableController {
   }
 
   async loadData() {
+    if (!API.getToken()) return;
     const container = document.getElementById(this.containerId);
     const tableWrapper = container ? container.querySelector(".table-responsive") : null;
     if (tableWrapper && tableWrapper.scrollLeft > 0) {

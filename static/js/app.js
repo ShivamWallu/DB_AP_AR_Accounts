@@ -151,6 +151,7 @@ const App = {
   },
 
   async refreshFilterOptions() {
+    if (!API.getToken()) return;
     try {
       this.filterData = await API.getFilterOptions();
       if (this.dtMaster) this.dtMaster.populateFilterOptions(this.filterData);
