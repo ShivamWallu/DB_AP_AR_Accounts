@@ -38,7 +38,19 @@ def login(request_data: LoginRequest, req: Request, db: Session = Depends(get_db
         )
     
     if not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user account")
+        log_activity(
+            db=db,
+            username=user.username,
+            role=user.role,
+            action="Blocked User Login Attempt",
+            status="Denied",
+            details=f"Blocked/Suspended user '{user.username}' attempted to log in",
+            ip_address=req.client.host if req.client else None
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="🚫 Your account has been blocked/suspended by administrator. You are not permitted to log in."
+        )
 
     token = create_access_token(data={"sub": user.username, "role": user.role})
     
@@ -70,6 +82,20 @@ def send_registration_otp(data: SendOTPRequest, req: Request, db: Session = Depe
     # Check if user already exists with this email
     existing_user_email = db.query(User).filter(User.email == email).first()
     if existing_user_email:
+        if not existing_user_email.is_active:
+            log_activity(
+                db=db,
+                username=email,
+                role="Guest",
+                action="Blocked Account Registration Attempt",
+                status="Denied",
+                details=f"Blocked email '{email}' attempted to request registration OTP",
+                ip_address=req.client.host if req.client else None
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"🚫 This email '{email}' has been blocked/suspended by administrator. Registration or recovery is not allowed."
+            )
         raise HTTPException(
             status_code=400,
             detail="An account is already registered with this email address. Please sign in."
@@ -79,6 +105,11 @@ def send_registration_otp(data: SendOTPRequest, req: Request, db: Session = Depe
         u_name = data.username.strip()
         existing_username = db.query(User).filter(User.username == u_name).first()
         if existing_username:
+            if not existing_username.is_active:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"🚫 The username '{u_name}' belongs to a blocked account."
+                )
             raise HTTPException(
                 status_code=400,
                 detail=f"Username '{u_name}' is already taken. Please choose another username."
@@ -139,7 +170,6 @@ def register_with_otp(data: RegisterRequest, req: Request, db: Session = Depends
     full_name = data.full_name.strip()
     otp_code = data.otp.strip()
     role = data.role.strip() if data.role in ["Admin", "Employee"] else "Admin"
-    # Ensure default is Admin as requested so all users get full access
     if not role or role == "Employee":
         role = "Admin"
 
@@ -149,9 +179,16 @@ def register_with_otp(data: RegisterRequest, req: Request, db: Session = Depends
         raise HTTPException(status_code=400, detail="Password must be at least 6 characters long.")
 
     # Check for existing email or username
-    if db.query(User).filter(User.username == username).first():
+    existing_u = db.query(User).filter(User.username == username).first()
+    if existing_u:
+        if not existing_u.is_active:
+            raise HTTPException(status_code=403, detail=f"🚫 Username '{username}' has been blocked by administrator.")
         raise HTTPException(status_code=400, detail=f"Username '{username}' is already taken.")
-    if db.query(User).filter(User.email == email).first():
+
+    existing_e = db.query(User).filter(User.email == email).first()
+    if existing_e:
+        if not existing_e.is_active:
+            raise HTTPException(status_code=403, detail=f"🚫 Email '{email}' has been blocked by administrator.")
         raise HTTPException(status_code=400, detail=f"Email '{email}' is already registered.")
 
     # Validate OTP
@@ -226,5 +263,44 @@ def get_all_users(
     db: Session = Depends(get_db),
     admin_user: User = Depends(require_admin)
 ):
-    return db.query(User).all()
+    return db.query(User).order_by(User.id.asc()).all()
+
+@router.put("/users/{user_id}/status", response_model=UserResponse)
+def update_user_status(
+    user_id: int,
+    status_data: dict,
+    req: Request,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin)
+):
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User account not found.")
+    
+    # Prevent self lockout
+    if target_user.id == admin_user.id or target_user.username == admin_user.username:
+        raise HTTPException(
+            status_code=400,
+            detail="Security restriction: You cannot block or deactivate your own administrator account."
+        )
+    
+    new_is_active = bool(status_data.get("is_active", not target_user.is_active))
+    target_user.is_active = new_is_active
+    db.commit()
+    db.refresh(target_user)
+
+    action_label = "User Account Activated" if target_user.is_active else "User Account Blocked"
+    status_str = "Active" if target_user.is_active else "Blocked / Suspended"
+
+    log_activity(
+        db=db,
+        username=admin_user.username,
+        role=admin_user.role,
+        action=action_label,
+        status="Success",
+        details=f"Admin '{admin_user.username}' changed user '{target_user.username}' ({target_user.full_name or 'N/A'}) status to '{status_str}'",
+        ip_address=req.client.host if req.client else None
+    )
+
+    return target_user
 

@@ -123,6 +123,13 @@ const API = {
     return await this.request("/api/auth/users");
   },
 
+  async updateUserStatus(userId, isActive) {
+    return await this.request(`/api/auth/users/${userId}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ is_active: isActive })
+    });
+  },
+
   // Dashboard Endpoints
   async getDashboardStats() {
     return await this.request("/api/dashboard/stats");

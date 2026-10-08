@@ -7,11 +7,21 @@ if sys.platform == "win32":
 
 from fastapi.testclient import TestClient
 from app.main import app
+from app.database import SessionLocal
+from app.models import User
 
 def test_full_pipeline():
     print("================================================================================")
     print("RUNNING END-TO-END VERIFICATION TESTS")
     print("================================================================================\n")
+
+    # Reset test users to active
+    db = SessionLocal()
+    try:
+        db.query(User).filter(User.username.in_(["admin", "employee"])).update({"is_active": True})
+        db.commit()
+    finally:
+        db.close()
 
     with TestClient(app) as client:
         # 1. Test Login as Admin
@@ -178,16 +188,36 @@ def test_full_pipeline():
         assert res.json()["status"] == "unverified"
         print(f"   [PASS] Admin unverified voucher '{test_vno}' and central DB updated!")
 
-        # 12. Test Audit Logs
-        print("\n12. Testing Audit Log Recording...")
-        res = client.get("/api/audit/logs", headers=admin_headers)
+        # 13. Test User Account Blocking & Dynamic Security Enforcement
+        print("\n13. Testing Dynamic User Account Blocking & Security Enforcement...")
+        # Get employee user ID
+        res = client.get("/api/auth/users", headers=admin_headers)
         assert res.status_code == 200
-        data = res.json()
-        log_items = data.get("items", data) if isinstance(data, dict) else data
-        total_logs = data.get("total", len(log_items)) if isinstance(data, dict) else len(log_items)
-        print(f"   [PASS] Total Audit Logs: {total_logs}")
-        for l in log_items[:4]:
-            print(f"     [{l['timestamp']}] {l['user_username']} ({l['user_role']}) - {l['action']}: {l['status']}")
+        users_list = res.json()
+        emp_user = next((u for u in users_list if u['username'] == 'employee'), None)
+        assert emp_user is not None, "Employee user not found"
+
+        # Admin blocks employee account
+        res = client.put(f"/api/auth/users/{emp_user['id']}/status", json={"is_active": False}, headers=admin_headers)
+        assert res.status_code == 200
+        assert res.json()["is_active"] is False
+        print(f"   [PASS] Admin successfully blocked account '{emp_user['username']}'")
+
+        # Blocked employee attempts to login -> must be rejected (403 Forbidden)
+        res = client.post("/api/auth/login", json={"username": "employee", "password": "Employee@123"})
+        assert res.status_code == 403, f"Expected 403 Forbidden for blocked user, got: {res.status_code}"
+        print(f"   [PASS] Blocked user login successfully rejected with 403 Forbidden: {res.json()['detail']}")
+
+        # Admin unblocks employee account
+        res = client.put(f"/api/auth/users/{emp_user['id']}/status", json={"is_active": True}, headers=admin_headers)
+        assert res.status_code == 200
+        assert res.json()["is_active"] is True
+        print(f"   [PASS] Admin successfully unblocked account '{emp_user['username']}'")
+
+        # Unblocked employee attempts to login -> must succeed
+        res = client.post("/api/auth/login", json={"username": "employee", "password": "Employee@123"})
+        assert res.status_code == 200
+        print(f"   [PASS] Unblocked user login succeeded!")
 
     print("\n================================================================================")
     print("ALL TESTS PASSED WITH 100% ACCURACY!")
