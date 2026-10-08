@@ -1,3 +1,6 @@
+import os
+import re
+import base64
 import smtplib
 import ssl
 import json
@@ -5,6 +8,7 @@ import urllib.request
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
 from datetime import datetime
 
 from app.config import (
@@ -19,9 +23,34 @@ from app.config import (
 
 logger = logging.getLogger("email_service")
 
+def get_logo_base64() -> str:
+    try:
+        logo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "static", "images", "KOGM_LOgo.jpg"))
+        if os.path.exists(logo_path):
+            with open(logo_path, "rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8")
+    except Exception as e:
+        logger.warning(f"Could not load logo image for email: {e}")
+    return ""
+
 def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
     current_year = datetime.utcnow().year
     clean_otp = str(otp_code).strip()
+    logo_b64 = get_logo_base64()
+    
+    logo_html = ""
+    if logo_b64:
+        logo_html = f"""
+        <div style="background: #ffffff; display: inline-block; padding: 12px 24px; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); margin-bottom: 16px;">
+          <img src="data:image/jpeg;base64,{logo_b64}" alt="K-GM Khandelia Oil & General Mills Pvt. Ltd." width="160" style="width: 160px; max-width: 100%; height: auto; display: block; border-radius: 6px; margin: 0 auto;" />
+        </div>
+        """
+    else:
+        logo_html = """
+        <div style="background: #ffffff; color: #1e3a8a; display: inline-block; padding: 8px 22px; border-radius: 20px; font-size: 15px; font-weight: 800; margin-bottom: 14px; letter-spacing: 0.05em;">
+          K-GM &bull; KOGM 360&deg;
+        </div>
+        """
     
     html = f"""
     <!DOCTYPE html>
@@ -35,7 +64,7 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
           background-color: #0b1329;
           margin: 0;
-          padding: 20px 10px;
+          padding: 24px 10px;
           color: #1e293b;
           -webkit-font-smoothing: antialiased;
         }}
@@ -43,29 +72,16 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
           max-width: 580px;
           margin: 0 auto;
           background-color: #ffffff;
-          border-radius: 16px;
+          border-radius: 18px;
           border: 1px solid #e2e8f0;
           overflow: hidden;
-          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
         }}
         .header {{
-          background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
-          padding: 36px 24px;
+          background: linear-gradient(135deg, #0b1329 0%, #1e3a8a 55%, #2563eb 100%);
+          padding: 36px 24px 30px 24px;
           text-align: center;
           color: #ffffff;
-        }}
-        .brand-badge {{
-          display: inline-block;
-          background: #ffffff;
-          color: #1e3a8a;
-          padding: 6px 16px;
-          border-radius: 20px;
-          font-size: 13px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          margin-bottom: 12px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }}
         .header h1 {{
           margin: 0;
@@ -112,17 +128,17 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
           margin-bottom: 8px;
         }}
         .otp-code {{
-          font-size: 38px;
+          font-size: 40px;
           font-weight: 900;
           letter-spacing: 0.15em;
           color: #1e3a8a;
           font-family: 'Courier New', Courier, monospace;
           background: #ffffff;
           display: inline-block;
-          padding: 8px 24px;
+          padding: 8px 26px;
           border-radius: 8px;
-          border: 1px solid #bae6fd;
-          box-shadow: 0 2px 8px rgba(3, 105, 161, 0.08);
+          border: 1.5px solid #bae6fd;
+          box-shadow: 0 4px 12px rgba(3, 105, 161, 0.10);
           user-select: all;
           -webkit-user-select: all;
           margin: 6px 0;
@@ -153,15 +169,22 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
           padding: 24px 20px;
           text-align: center;
           font-size: 11px;
-          color: #94a3b8;
+          color: #64748b;
           border-top: 1px solid #f1f5f9;
+          line-height: 1.6;
+        }}
+        .footer-creator {{
+          color: #1e40af;
+          font-weight: 700;
+          font-size: 12px;
+          margin-top: 6px;
         }}
       </style>
     </head>
     <body>
       <div class="email-wrapper">
         <div class="header">
-          <div class="brand-badge">K-GM &bull; KOGM 360&deg;</div>
+          {logo_html}
           <h1>Enterprise Financial ERP Suite</h1>
           <p>Multi-Register Accounting &bull; Day Book &bull; AP &bull; AR Ledger Audit</p>
         </div>
@@ -183,7 +206,8 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
           </div>
         </div>
         <div class="footer">
-          &copy; {current_year} KOGM 360° Enterprise Financial Suite &bull; Sent to {to_email}
+          <div>&copy; {current_year} KOGM 360° Enterprise Financial Suite &bull; Sent to {to_email}</div>
+          <div class="footer-creator">Created by Shivam Wallu</div>
         </div>
       </div>
     </body>
@@ -220,11 +244,35 @@ def send_via_smtp(to_email: str, subject: str, html_body: str) -> bool:
     if not SMTP_USER or not SMTP_PASSWORD:
         return False
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"Day Book System <{EMAIL_FROM}>"
-        msg["To"] = to_email
-        msg.attach(MIMEText(html_body, "html"))
+        msg_root = MIMEMultipart("related")
+        msg_root["Subject"] = subject
+        msg_root["From"] = f"Day Book System <{EMAIL_FROM}>"
+        msg_root["To"] = to_email
+
+        logo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "static", "images", "KOGM_LOgo.jpg"))
+        smtp_html = html_body
+        has_logo = False
+        img_data = b""
+
+        if os.path.exists(logo_path):
+            try:
+                with open(logo_path, "rb") as f:
+                    img_data = f.read()
+                if "data:image/jpeg;base64," in smtp_html:
+                    smtp_html = re.sub(r'src="data:image\/[^"]+"', 'src="cid:kogm_logo_img"', smtp_html)
+                    has_logo = True
+            except Exception as e:
+                logger.warning(f"Could not read logo image for CID attachment: {e}")
+
+        msg_alternative = MIMEMultipart("alternative")
+        msg_root.attach(msg_alternative)
+        msg_alternative.attach(MIMEText(smtp_html, "html"))
+
+        if has_logo and img_data:
+            img = MIMEImage(img_data)
+            img.add_header("Content-ID", "<kogm_logo_img>")
+            img.add_header("Content-Disposition", "inline", filename="kogm_logo.jpg")
+            msg_root.attach(img)
 
         context = ssl.create_default_context()
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=8) as server:
@@ -232,7 +280,7 @@ def send_via_smtp(to_email: str, subject: str, html_body: str) -> bool:
             server.starttls(context=context)
             server.ehlo()
             server.login(SMTP_USER, SMTP_PASSWORD)
-            server.sendmail(EMAIL_FROM, to_email, msg.as_string())
+            server.sendmail(EMAIL_FROM, to_email, msg_root.as_string())
         logger.info(f"SMTP Email sent successfully to {to_email}")
         return True
     except Exception as e:

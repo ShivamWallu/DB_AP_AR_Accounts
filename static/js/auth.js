@@ -305,6 +305,20 @@ const Auth = {
       API.setAuth(res.access_token, res.role, res.username, res.full_name);
 
       clearInterval(this.otpTimerInterval);
+      this.pendingRegistration = null;
+      this.backToStep1();
+      this.switchAuthTab("login");
+
+      // Clear registration inputs
+      ["reg-fullname", "reg-username", "reg-email", "reg-password"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+      const boxes = document.querySelectorAll(".otp-digit-box");
+      boxes.forEach(b => b.value = "");
+      const hiddenOtp = document.getElementById("reg-otp-code");
+      if (hiddenOtp) hiddenOtp.value = "";
+
       App.toast(`🎉 Admin Account activated! Welcome, ${res.full_name || res.username}!`, "success");
 
       this.showAppView(res);
@@ -444,6 +458,26 @@ const Auth = {
 
   handleLogout() {
     API.clearAuth();
+    this.pendingRegistration = null;
+    this.backToStep1();
+    this.switchAuthTab("login");
+
+    // Clear login inputs
+    const uInput = document.getElementById("login-username");
+    const pInput = document.getElementById("login-password");
+    if (uInput) uInput.value = "";
+    if (pInput) pInput.value = "";
+
+    // Clear registration inputs
+    ["reg-fullname", "reg-username", "reg-email", "reg-password"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+    const boxes = document.querySelectorAll(".otp-digit-box");
+    boxes.forEach(b => b.value = "");
+    const hiddenOtp = document.getElementById("reg-otp-code");
+    if (hiddenOtp) hiddenOtp.value = "";
+
     this.showLoginView();
     App.toast("Logged out successfully", "info");
   },
@@ -460,6 +494,10 @@ const Auth = {
   },
 
   showLoginView() {
+    this.pendingRegistration = null;
+    this.backToStep1();
+    this.switchAuthTab("login");
+
     const authScreen = document.getElementById("auth-screen");
     const appScreen = document.getElementById("app-screen");
     if (authScreen) authScreen.style.display = "flex";
