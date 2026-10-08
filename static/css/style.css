@@ -3065,14 +3065,14 @@ body.sidebar-collapsed .main-content {
   border-right: none;
 }
 
-/* Statement Table Column Rules (100% Total Distribution - ZERO HORIZONTAL SCROLL) */
-.statement-table .col-num { width: 2.8% !important; text-align: center; white-space: nowrap; }
-.statement-table .col-site { width: 6.0% !important; white-space: nowrap; font-weight: 700; color: #0f172a; font-size: 0.68rem; }
-.statement-table .col-vno { width: 9.0% !important; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.67rem; overflow: hidden; text-overflow: ellipsis; }
-.statement-table .col-date { width: 6.2% !important; white-space: nowrap; font-size: 0.67rem; }
-.statement-table .col-vtype { width: 8.5% !important; white-space: normal; word-break: break-word; font-size: 0.66rem; line-height: 1.2; }
+/* Statement Table Column Rules (100% Balanced Distribution - ZERO UNWANTED GAPS) */
+.statement-table .col-num { width: 2.5% !important; text-align: center; white-space: nowrap; }
+.statement-table .col-site { width: 5.5% !important; white-space: nowrap; font-weight: 700; color: #0f172a; font-size: 0.69rem; }
+.statement-table .col-vno { width: 9.5% !important; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.68rem; overflow: hidden; text-overflow: ellipsis; }
+.statement-table .col-date { width: 6.5% !important; white-space: nowrap; font-size: 0.68rem; }
+.statement-table .col-vtype { width: 11.5% !important; white-space: normal; word-break: break-word; font-size: 0.68rem; line-height: 1.25; }
 .statement-table .col-desc { 
-  width: 18.5% !important; 
+  width: 14.0% !important; 
   white-space: normal !important; 
   word-break: break-word !important; 
   overflow-wrap: break-word !important;
@@ -3081,23 +3081,23 @@ body.sidebar-collapsed .main-content {
   font-size: 0.68rem;
   line-height: 1.25;
 }
-.statement-table .col-reg { width: 8.0% !important; white-space: nowrap !important; text-align: center; }
+.statement-table .col-reg { width: 7.5% !important; white-space: nowrap !important; text-align: center; }
 .statement-table .col-reg .reg-badge {
   background: #e2e8f0;
   color: #1e293b;
-  padding: 1.5px 5px;
-  border-radius: 3px;
-  font-size: 0.60rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.62rem;
   font-weight: 700;
   white-space: nowrap;
   display: inline-block;
 }
-.statement-table .col-inv { width: 8.5% !important; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; overflow: hidden; text-overflow: ellipsis; }
+.statement-table .col-inv { width: 9.5% !important; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; overflow: hidden; text-overflow: ellipsis; }
 .statement-table .col-qty { width: 5.5% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-size: 0.68rem; }
 .statement-table .col-rate { width: 6.5% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-size: 0.68rem; }
-.statement-table .col-tax { width: 7.5% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; color: #059669; font-weight: 600; font-size: 0.68rem; }
-.statement-table .col-tot { width: 8.0% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #0f172a; font-size: 0.68rem; }
-.statement-table .col-status { width: 5.0% !important; white-space: nowrap; text-align: center; font-size: 0.64rem; }
+.statement-table .col-tax { width: 8.0% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; color: #059669; font-weight: 600; font-size: 0.68rem; }
+.statement-table .col-tot { width: 8.5% !important; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #0f172a; font-size: 0.68rem; }
+.statement-table .col-status { width: 5.0% !important; white-space: nowrap; text-align: center; font-size: 0.65rem; }
 
 .statement-table tbody tr:hover td {
   background: #f1f5f9;
@@ -3396,22 +3396,22 @@ body.sidebar-collapsed .main-content {
     box-sizing: border-box !important;
   }
 
-  /* Specific Print Column Widths (100% Total Distribution) */
-  .statement-table .col-num { width: 3.0% !important; text-align: center !important; white-space: nowrap !important; }
-  .statement-table .col-site { width: 6.5% !important; white-space: nowrap !important; font-weight: 700 !important; font-size: 5.8pt !important; }
-  .statement-table .col-vno { width: 9.5% !important; white-space: nowrap !important; font-size: 5.5pt !important; font-family: 'JetBrains Mono', monospace !important; }
-  .statement-table .col-date { width: 6.5% !important; white-space: nowrap !important; font-size: 5.5pt !important; }
-  .statement-table .col-vtype { width: 9.0% !important; white-space: normal !important; word-break: break-word !important; font-size: 5.5pt !important; line-height: 1.15 !important; }
+  /* Specific Print Column Widths (100% Total Balanced Distribution) */
+  .statement-table .col-num { width: 2.5% !important; text-align: center !important; white-space: nowrap !important; }
+  .statement-table .col-site { width: 5.5% !important; white-space: nowrap !important; font-weight: 700 !important; font-size: 5.8pt !important; }
+  .statement-table .col-vno { width: 9.5% !important; white-space: nowrap !important; font-size: 5.6pt !important; font-family: 'JetBrains Mono', monospace !important; }
+  .statement-table .col-date { width: 6.5% !important; white-space: nowrap !important; font-size: 5.6pt !important; }
+  .statement-table .col-vtype { width: 11.5% !important; white-space: normal !important; word-break: break-word !important; font-size: 5.6pt !important; line-height: 1.2 !important; }
   .statement-table .col-desc { 
-    width: 18.0% !important; 
+    width: 14.0% !important; 
     white-space: normal !important; 
     word-break: break-word !important; 
     overflow-wrap: break-word !important;
     font-weight: 600 !important; 
     font-size: 5.6pt !important; 
-    line-height: 1.15 !important; 
+    line-height: 1.2 !important; 
   }
-  .statement-table .col-reg { width: 8.0% !important; white-space: nowrap !important; text-align: center !important; }
+  .statement-table .col-reg { width: 7.5% !important; white-space: nowrap !important; text-align: center !important; }
   .statement-table .col-reg .reg-badge { 
     font-size: 5.0pt !important; 
     padding: 1px 3px !important; 
@@ -3420,12 +3420,12 @@ body.sidebar-collapsed .main-content {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  .statement-table .col-inv { width: 9.0% !important; white-space: nowrap !important; font-size: 5.4pt !important; font-family: 'JetBrains Mono', monospace !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+  .statement-table .col-inv { width: 9.5% !important; white-space: nowrap !important; font-size: 5.5pt !important; font-family: 'JetBrains Mono', monospace !important; overflow: hidden !important; text-overflow: ellipsis !important; }
   .statement-table .col-qty { width: 5.5% !important; text-align: right !important; white-space: nowrap !important; }
-  .statement-table .col-rate { width: 7.0% !important; text-align: right !important; white-space: nowrap !important; }
-  .statement-table .col-tax { width: 7.5% !important; text-align: right !important; white-space: nowrap !important; }
+  .statement-table .col-rate { width: 6.5% !important; text-align: right !important; white-space: nowrap !important; }
+  .statement-table .col-tax { width: 8.0% !important; text-align: right !important; white-space: nowrap !important; }
   .statement-table .col-tot { width: 8.5% !important; text-align: right !important; white-space: nowrap !important; font-weight: 700 !important; }
-  .statement-table .col-status { width: 6.0% !important; text-align: center !important; white-space: nowrap !important; font-size: 5.4pt !important; }
+  .statement-table .col-status { width: 5.0% !important; text-align: center !important; white-space: nowrap !important; font-size: 5.4pt !important; }
 
   .statement-table tr:nth-child(even) td {
     background: #f8fafc !important;
