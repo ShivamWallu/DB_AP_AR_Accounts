@@ -2661,3 +2661,14 @@ const NarrationPopover = {
     }
   }
 };
+
+DataTableController.showRecordModal = function(record, datasetType) {
+  const dummy = new DataTableController({
+    containerId: "dummy",
+    datasetType: datasetType || "daybook",
+    columns: []
+  });
+  dummy.showDetailModal(record);
+};
+window.DataTableController = DataTableController;
+

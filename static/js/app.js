@@ -307,9 +307,25 @@ const App = {
     }
   },
 
+  _crossRefData: null,
+
+  showCrossRefDetail(datasetType, index) {
+    if (!this._crossRefData) return;
+    let list = [];
+    if (datasetType === 'daybook') list = this._crossRefData.daybook_records || [];
+    else if (datasetType === 'ap') list = this._crossRefData.ap_records || [];
+    else if (datasetType === 'ar') list = this._crossRefData.ar_records || [];
+
+    const record = list[index];
+    if (record && window.DataTableController && typeof window.DataTableController.showRecordModal === "function") {
+      window.DataTableController.showRecordModal(record, datasetType);
+    }
+  },
+
   renderExplorerResults(res) {
     const resultsEl = document.getElementById("explorer-results");
     if (!resultsEl) return;
+    this._crossRefData = res;
 
     resultsEl.innerHTML = `
       <div style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
@@ -329,12 +345,24 @@ const App = {
           <div class="card-header">
             <div class="card-title">📖 Day Book Records (${res.daybook_count})</div>
           </div>
-          ${res.daybook_count === 0 ? '<div style="color: var(--text-muted); font-size: 0.85rem;">No matching Day Book entries.</div>' : `
+          ${res.daybook_count === 0 ? '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 1rem;">No matching Day Book entries.</div>' : `
             <div class="table-responsive">
               <table class="data-table">
-                <thead><tr><th>Site</th><th>Date</th><th>Type</th><th>Party</th><th>Account</th><th>Narration</th><th>Created By</th><th>Approved By</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Site</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Party</th>
+                    <th>Account</th>
+                    <th>Narration</th>
+                    <th>Created By</th>
+                    <th>Approved By</th>
+                    <th style="width: 75px; text-align: center;">Action</th>
+                  </tr>
+                </thead>
                 <tbody>
-                  ${res.daybook_records.map(r => `
+                  ${res.daybook_records.map((r, idx) => `
                     <tr>
                       <td>${r.transaction_site || '—'}</td>
                       <td>${r.voucher_date || '—'}</td>
@@ -344,6 +372,15 @@ const App = {
                       <td>${r.narration || '—'}</td>
                       <td>${window.PersonBadge ? window.PersonBadge.render(r.created_by, "created") : (r.created_by || '—')}</td>
                       <td>${window.PersonBadge ? window.PersonBadge.render(r.approved_by, "approved") : (r.approved_by || '—')}</td>
+                      <td style="text-align: center;">
+                        <button type="button" class="btn btn-secondary btn-sm dt-btn-view" onclick="App.showCrossRefDetail('daybook', ${idx})" style="padding: 0.22rem 0.55rem; font-size: 0.76rem; border-radius: 6px;" title="View Complete Record Details">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px; vertical-align: -1px;">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          View
+                        </button>
+                      </td>
                     </tr>
                   `).join("")}
                 </tbody>
@@ -357,22 +394,44 @@ const App = {
           <div class="card-header">
             <div class="card-title">📉 Account Payable (AP) Records (${res.ap_count})</div>
           </div>
-          ${res.ap_count === 0 ? '<div style="color: var(--text-muted); font-size: 0.85rem;">No matching AP entries.</div>' : `
+          ${res.ap_count === 0 ? '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 1rem;">No matching AP entries.</div>' : `
             <div class="table-responsive">
               <table class="data-table">
-                <thead><tr><th>Site</th><th>Type</th><th>Sub-Type</th><th>Invoice No</th><th>Item Desc</th><th>Qty</th><th>Detail Amt</th><th>Tax Amt</th><th>Total Voucher Amt</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Site</th>
+                    <th>Type</th>
+                    <th>Sub-Type</th>
+                    <th>Invoice No</th>
+                    <th>Item Desc</th>
+                    <th style="text-align: right;">Qty</th>
+                    <th style="text-align: right;">Detail Amt</th>
+                    <th style="text-align: right;">Tax Amt</th>
+                    <th style="text-align: right;">Total Voucher Amt</th>
+                    <th style="width: 75px; text-align: center;">Action</th>
+                  </tr>
+                </thead>
                 <tbody>
-                  ${res.ap_records.map(r => `
+                  ${res.ap_records.map((r, idx) => `
                     <tr>
                       <td>${r.accounting_site_code || '—'}</td>
                       <td>${r.voucher_type || '—'}</td>
                       <td>${r.voucher_sub_type || '—'}</td>
                       <td>${r.invoice_number || '—'}</td>
                       <td>${r.item_service_description || '—'}</td>
-                      <td>${r.booked_item_quantity || '—'}</td>
-                      <td>₹ ${Number(r.item_service_detail_amount || 0).toLocaleString()}</td>
-                      <td>₹ ${Number(r.total_tax_amount || 0).toLocaleString()}</td>
-                      <td>₹ ${Number(r.total_voucher_amount || 0).toLocaleString()}</td>
+                      <td style="text-align: right;" class="cell-quantity">${Number(r.booked_item_quantity || 0).toLocaleString("en-IN")}</td>
+                      <td style="text-align: right;" class="cell-financial">₹ ${Number(r.item_service_detail_amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+                      <td style="text-align: right;" class="cell-financial">₹ ${Number(r.total_tax_amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+                      <td style="text-align: right;" class="cell-financial">₹ ${Number(r.total_voucher_amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+                      <td style="text-align: center;">
+                        <button type="button" class="btn btn-secondary btn-sm dt-btn-view" onclick="App.showCrossRefDetail('ap', ${idx})" style="padding: 0.22rem 0.55rem; font-size: 0.76rem; border-radius: 6px;" title="View Complete Record Details">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px; vertical-align: -1px;">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          View
+                        </button>
+                      </td>
                     </tr>
                   `).join("")}
                 </tbody>
@@ -386,23 +445,46 @@ const App = {
           <div class="card-header">
             <div class="card-title">📈 Account Receivable (AR) Records (${res.ar_count})</div>
           </div>
-          ${res.ar_count === 0 ? '<div style="color: var(--text-muted); font-size: 0.85rem;">No matching AR entries.</div>' : `
+          ${res.ar_count === 0 ? '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 1rem;">No matching AR entries.</div>' : `
             <div class="table-responsive">
               <table class="data-table">
-                <thead><tr><th>Site</th><th>Type</th><th>Sub-Type</th><th>Item Desc</th><th>Qty</th><th>Rate</th><th>Net Amt</th><th>CGST</th><th>SGST</th><th>IGST</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Site</th>
+                    <th>Type</th>
+                    <th>Sub-Type</th>
+                    <th>Item Desc</th>
+                    <th style="text-align: right;">Qty</th>
+                    <th style="text-align: right;">Rate</th>
+                    <th style="text-align: right;">Net Amt</th>
+                    <th style="text-align: right;">CGST</th>
+                    <th style="text-align: right;">SGST</th>
+                    <th style="text-align: right;">IGST</th>
+                    <th style="width: 75px; text-align: center;">Action</th>
+                  </tr>
+                </thead>
                 <tbody>
-                  ${res.ar_records.map(r => `
+                  ${res.ar_records.map((r, idx) => `
                     <tr>
                       <td>${r.accounting_site_code || '—'}</td>
                       <td>${r.voucher_type || '—'}</td>
                       <td>${r.voucher_sub_type || '—'}</td>
                       <td>${r.item_service_description || '—'}</td>
-                      <td>${r.item_quantity || '—'}</td>
-                      <td>₹ ${Number(r.item_service_rate || 0).toLocaleString()}</td>
-                      <td>₹ ${Number(r.net_amount || 0).toLocaleString()}</td>
-                      <td>₹ ${Number(r.total_cgst || 0).toLocaleString()}</td>
-                      <td>₹ ${Number(r.total_sgst || 0).toLocaleString()}</td>
-                      <td>₹ ${Number(r.total_igst || 0).toLocaleString()}</td>
+                      <td style="text-align: right;" class="cell-quantity">${Number(r.item_quantity || 0).toLocaleString("en-IN")}</td>
+                      <td style="text-align: right;" class="cell-financial">₹ ${Number(r.item_service_rate || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+                      <td style="text-align: right;" class="cell-financial">₹ ${Number(r.net_amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+                      <td style="text-align: right;" class="cell-financial">₹ ${Number(r.total_cgst || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+                      <td style="text-align: right;" class="cell-financial">₹ ${Number(r.total_sgst || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+                      <td style="text-align: right;" class="cell-financial">₹ ${Number(r.total_igst || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+                      <td style="text-align: center;">
+                        <button type="button" class="btn btn-secondary btn-sm dt-btn-view" onclick="App.showCrossRefDetail('ar', ${idx})" style="padding: 0.22rem 0.55rem; font-size: 0.76rem; border-radius: 6px;" title="View Complete Record Details">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px; vertical-align: -1px;">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          View
+                        </button>
+                      </td>
                     </tr>
                   `).join("")}
                 </tbody>
