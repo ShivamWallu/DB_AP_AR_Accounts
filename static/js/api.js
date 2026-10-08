@@ -61,18 +61,23 @@ const API = {
       }
 
       if (!response.ok) {
-        let errorMsg = "An error occurred";
+        let errorMsg = `HTTP ${response.status}`;
         try {
-          const errData = await response.json();
-          if (Array.isArray(errData.detail)) {
-            errorMsg = errData.detail.map(d => d.msg || JSON.stringify(d)).join(", ");
-          } else if (typeof errData.detail === "object" && errData.detail !== null) {
-            errorMsg = JSON.stringify(errData.detail);
-          } else {
-            errorMsg = errData.detail || errData.message || JSON.stringify(errData);
+          const rawText = await response.text();
+          try {
+            const errData = JSON.parse(rawText);
+            if (Array.isArray(errData.detail)) {
+              errorMsg = errData.detail.map(d => d.msg || JSON.stringify(d)).join(", ");
+            } else if (typeof errData.detail === "object" && errData.detail !== null) {
+              errorMsg = JSON.stringify(errData.detail);
+            } else {
+              errorMsg = errData.detail || errData.message || rawText;
+            }
+          } catch (_) {
+            errorMsg = rawText || `HTTP ${response.status}`;
           }
         } catch (e) {
-          errorMsg = await response.text() || `HTTP ${response.status}`;
+          errorMsg = `HTTP ${response.status}`;
         }
         throw new Error(errorMsg);
       }

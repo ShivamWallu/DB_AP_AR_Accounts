@@ -860,7 +860,7 @@ def query_master_360(
             })
 
     # 2. Append Standalone AP Records (vouchers in AP but not in Day Book)
-    if register_type != "daybook_only" and register_type != "ar":
+    if register_type != "daybook_only" and register_type != "ar" and not (approved_by and approved_by.strip()):
         for ap in ap_rows:
             if ap.id not in matched_ap_ids:
                 if sites_list and ap.accounting_site_code not in sites_list:
@@ -909,7 +909,7 @@ def query_master_360(
                 })
 
     # 3. Append Standalone AR Records (vouchers in AR but not in Day Book)
-    if register_type != "daybook_only" and register_type != "ap":
+    if register_type != "daybook_only" and register_type != "ap" and not (approved_by and approved_by.strip()):
         for ar in ar_rows:
             if ar.id not in matched_ar_ids:
                 if sites_list and ar.accounting_site_code not in sites_list:
@@ -922,7 +922,7 @@ def query_master_360(
                     "batch_id": ar.batch_id,
                     "transaction_site": ar.accounting_site_code,
                     "voucher_number": ar.voucher_number,
-                    "voucher_date": ar.invoice_date or (ar.upload_timestamp.strftime("%d/%m/%Y") if ar.upload_timestamp else ""),
+                    "voucher_date": ar.upload_timestamp.strftime("%d/%m/%Y") if ar.upload_timestamp else "",
                     "voucher_type": ar.voucher_type or "Sales Invoice",
                     "voucher_status": "Reconciled (AR)",
                     "party_code": "",
