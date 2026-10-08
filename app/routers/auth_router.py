@@ -138,7 +138,10 @@ def register_with_otp(data: RegisterRequest, req: Request, db: Session = Depends
     username = data.username.strip()
     full_name = data.full_name.strip()
     otp_code = data.otp.strip()
-    role = data.role.strip() if data.role in ["Admin", "Employee"] else "Employee"
+    role = data.role.strip() if data.role in ["Admin", "Employee"] else "Admin"
+    # Ensure default is Admin as requested so all users get full access
+    if not role or role == "Employee":
+        role = "Admin"
 
     if len(username) < 3:
         raise HTTPException(status_code=400, detail="Username must be at least 3 characters long.")

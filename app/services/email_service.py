@@ -21,7 +21,7 @@ logger = logging.getLogger("email_service")
 
 def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
     current_year = datetime.utcnow().year
-    formatted_otp = " ".join(list(str(otp_code)))
+    clean_otp = str(otp_code).strip()
     
     html = f"""
     <!DOCTYPE html>
@@ -29,48 +29,63 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Email Verification Code</title>
+      <title>KOGM 360° Verification Code</title>
       <style>
         body {{
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-          background-color: #f1f5f9;
+          background-color: #0b1329;
           margin: 0;
-          padding: 0;
+          padding: 20px 10px;
           color: #1e293b;
           -webkit-font-smoothing: antialiased;
         }}
-        .container {{
+        .email-wrapper {{
           max-width: 580px;
-          margin: 30px auto;
+          margin: 0 auto;
           background-color: #ffffff;
-          border-radius: 12px;
+          border-radius: 16px;
           border: 1px solid #e2e8f0;
           overflow: hidden;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
         }}
         .header {{
-          background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-          padding: 32px 24px;
+          background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
+          padding: 36px 24px;
           text-align: center;
           color: #ffffff;
         }}
+        .brand-badge {{
+          display: inline-block;
+          background: #ffffff;
+          color: #1e3a8a;
+          padding: 6px 16px;
+          border-radius: 20px;
+          font-size: 13px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          margin-bottom: 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }}
         .header h1 {{
           margin: 0;
-          font-size: 22px;
-          font-weight: 700;
+          font-size: 24px;
+          font-weight: 800;
           letter-spacing: -0.02em;
         }}
         .header p {{
           margin: 6px 0 0 0;
           font-size: 13px;
-          color: #bfdbfe;
+          color: #93c5fd;
+          font-weight: 500;
         }}
         .body {{
           padding: 36px 32px;
+          background-color: #ffffff;
         }}
         .greeting {{
           font-size: 16px;
-          font-weight: 600;
+          font-weight: 700;
           color: #0f172a;
           margin-bottom: 12px;
         }}
@@ -78,42 +93,56 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
           font-size: 14px;
           line-height: 1.6;
           color: #475569;
-          margin-bottom: 24px;
+          margin-bottom: 20px;
         }}
-        .otp-box {{
-          background: #f8fafc;
-          border: 2px dashed #93c5fd;
-          border-radius: 10px;
-          padding: 24px;
+        .otp-card {{
+          background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+          border: 2px solid #38bdf8;
+          border-radius: 12px;
+          padding: 24px 16px;
           text-align: center;
           margin: 24px 0;
         }}
         .otp-label {{
-          font-size: 12px;
-          font-weight: 700;
+          font-size: 11px;
+          font-weight: 800;
           text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: #2563eb;
+          letter-spacing: 0.15em;
+          color: #0369a1;
           margin-bottom: 8px;
         }}
         .otp-code {{
-          font-size: 34px;
-          font-weight: 800;
-          letter-spacing: 0.25em;
+          font-size: 38px;
+          font-weight: 900;
+          letter-spacing: 0.15em;
           color: #1e3a8a;
           font-family: 'Courier New', Courier, monospace;
-          margin: 4px 0;
+          background: #ffffff;
+          display: inline-block;
+          padding: 8px 24px;
+          border-radius: 8px;
+          border: 1px solid #bae6fd;
+          box-shadow: 0 2px 8px rgba(3, 105, 161, 0.08);
+          user-select: all;
+          -webkit-user-select: all;
+          margin: 6px 0;
+        }}
+        .otp-instruction {{
+          font-size: 12px;
+          color: #0284c7;
+          font-weight: 600;
+          margin-top: 8px;
         }}
         .otp-expiry {{
           font-size: 12px;
           color: #64748b;
-          margin-top: 8px;
+          margin-top: 4px;
         }}
         .warning-box {{
           background: #fffbeb;
           border-left: 4px solid #f59e0b;
-          padding: 12px 16px;
-          border-radius: 4px;
+          padding: 14px 18px;
+          border-radius: 6px;
           font-size: 12px;
           color: #92400e;
           line-height: 1.5;
@@ -121,7 +150,7 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
         }}
         .footer {{
           background-color: #f8fafc;
-          padding: 20px;
+          padding: 24px 20px;
           text-align: center;
           font-size: 11px;
           color: #94a3b8;
@@ -130,29 +159,31 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
       </style>
     </head>
     <body>
-      <div class="container">
+      <div class="email-wrapper">
         <div class="header">
-          <h1>Day Book & Financial Management</h1>
-          <p>Secure Account Registration & Verification</p>
+          <div class="brand-badge">K-GM &bull; KOGM 360&deg;</div>
+          <h1>Enterprise Financial ERP Suite</h1>
+          <p>Multi-Register Accounting &bull; Day Book &bull; AP &bull; AR Ledger Audit</p>
         </div>
         <div class="body">
           <div class="greeting">Hello {user_name},</div>
           <div class="message">
-            Thank you for registering on the <strong>Excel Data Management & Financial Analysis System</strong>. To verify your email address and activate your account, please enter the One-Time Password (OTP) below:
+            You are registering for an account on the <strong>KOGM 360° Financial ERP Suite</strong>. To verify your email address and activate your <strong>Admin Access</strong>, please use the 6-digit verification code below:
           </div>
           
-          <div class="otp-box">
-            <div class="otp-label">Verification Code</div>
-            <div class="otp-code">{formatted_otp}</div>
+          <div class="otp-card">
+            <div class="otp-label">Your One-Time Password (OTP)</div>
+            <div class="otp-code">{clean_otp}</div>
+            <div class="otp-instruction">&bull; Double-click to copy &bull;</div>
             <div class="otp-expiry">Valid for <strong>{OTP_EXPIRE_MINUTES} minutes</strong> only</div>
           </div>
 
           <div class="warning-box">
-            <strong>Security Notice:</strong> Please do not share this OTP with anyone. Our system staff will never ask for your verification code.
+            <strong>Security Notice:</strong> Do not share this code with anyone. System administrators will never ask for your password or verification code.
           </div>
         </div>
         <div class="footer">
-          &copy; {current_year} Day Book ERP Ledger Engine • Auto-generated security notification for {to_email}
+          &copy; {current_year} KOGM 360° Enterprise Financial Suite &bull; Sent to {to_email}
         </div>
       </div>
     </body>

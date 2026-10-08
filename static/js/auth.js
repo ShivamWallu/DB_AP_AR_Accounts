@@ -4,6 +4,8 @@ const Auth = {
 
   init() {
     this.bindEvents();
+    this.initOtpBoxes();
+    this.init3DTilt();
     this.checkSession();
   },
 
@@ -32,6 +34,144 @@ const Auth = {
       this.showLoginView();
       App.toast("Session expired or unauthorized. Please log in.", "warning");
     });
+  },
+
+  init3DTilt() {
+    const card = document.getElementById("auth-main-card");
+    if (!card) return;
+
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = ((y - centerY) / centerY) * -6;
+      const rotateY = ((x - centerX) / centerX) * 6;
+      card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-2px)`;
+    });
+
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)`;
+      card.style.transition = "transform 0.4s ease";
+    });
+
+    card.addEventListener("mouseenter", () => {
+      card.style.transition = "none";
+    });
+  },
+
+  initOtpBoxes() {
+    const boxes = document.querySelectorAll(".otp-digit-box");
+    if (!boxes || boxes.length === 0) return;
+
+    boxes.forEach((box, idx) => {
+      // 1. Keydown handling for arrows & backspace
+      box.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace") {
+          if (!box.value && idx > 0) {
+            boxes[idx - 1].focus();
+            boxes[idx - 1].value = "";
+            this.syncOtpFromBoxes();
+          } else {
+            box.value = "";
+            this.syncOtpFromBoxes();
+          }
+        } else if (e.key === "ArrowLeft" && idx > 0) {
+          boxes[idx - 1].focus();
+        } else if (e.key === "ArrowRight" && idx < boxes.length - 1) {
+          boxes[idx + 1].focus();
+        }
+      });
+
+      // 2. Input handling (1 digit numeric)
+      box.addEventListener("input", (e) => {
+        const val = e.target.value.replace(/\D/g, "");
+        if (val.length > 1) {
+          // User typed/pasted multi digits inside single box
+          this.setOtpFromValue(e.target.value);
+          return;
+        }
+        box.value = val;
+        this.syncOtpFromBoxes();
+
+        if (val && idx < boxes.length - 1) {
+          boxes[idx + 1].focus();
+          boxes[idx + 1].select();
+        }
+      });
+
+      // 3. Paste event anywhere in the box
+      box.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData("text");
+        if (text) {
+          this.setOtpFromValue(text);
+        }
+      });
+
+      box.addEventListener("focus", () => {
+        box.select();
+      });
+    });
+  },
+
+  setOtpFromValue(rawVal) {
+    if (!rawVal) return;
+    const digits = String(rawVal).replace(/\D/g, "").slice(0, 6);
+    const boxes = document.querySelectorAll(".otp-digit-box");
+    
+    boxes.forEach((box, i) => {
+      box.value = digits[i] || "";
+    });
+
+    this.syncOtpFromBoxes();
+
+    // Focus on the next empty box or the last box
+    if (digits.length < 6 && boxes[digits.length]) {
+      boxes[digits.length].focus();
+    } else if (boxes[5]) {
+      boxes[5].focus();
+    }
+
+    if (digits.length === 6) {
+      App.toast("✓ 6-Digit OTP pasted successfully!", "success");
+    }
+  },
+
+  syncOtpFromBoxes() {
+    const boxes = document.querySelectorAll(".otp-digit-box");
+    let fullCode = "";
+    boxes.forEach(b => {
+      fullCode += (b.value || "").trim();
+    });
+    const hiddenInput = document.getElementById("reg-otp-code");
+    if (hiddenInput) {
+      hiddenInput.value = fullCode;
+    }
+    return fullCode;
+  },
+
+  async pasteFromClipboard() {
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          this.setOtpFromValue(text);
+          return;
+        }
+      }
+      // Fallback prompt if clipboard permission denied
+      const manual = prompt("Paste your 6-digit OTP code copied from Gmail here:");
+      if (manual) {
+        this.setOtpFromValue(manual);
+      }
+    } catch (err) {
+      const manual = prompt("Paste your 6-digit OTP code copied from Gmail here:");
+      if (manual) {
+        this.setOtpFromValue(manual);
+      }
+    }
   },
 
   switchAuthTab(mode) {
@@ -63,7 +203,7 @@ const Auth = {
     const username = document.getElementById("reg-username").value.trim();
     const email = document.getElementById("reg-email").value.trim();
     const password = document.getElementById("reg-password").value;
-    const role = document.getElementById("reg-role").value;
+    const role = document.getElementById("reg-role").value || "Admin";
     const btnSend = document.getElementById("btn-send-otp");
 
     if (!fullName || !username || !email || !password) {
@@ -85,7 +225,7 @@ const Auth = {
       btnSend.disabled = true;
       btnSend.innerHTML = `
         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display:inline-block; width:14px; height:14px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; animation:spin 0.6s linear infinite; vertical-align:middle; margin-right:6px;"></span>
-        Sending Verification OTP...
+        Generating Secure 6-Digit OTP...
       `;
 
       const res = await API.sendRegistrationOTP({
@@ -99,7 +239,7 @@ const Auth = {
         username: username,
         email: email,
         password: password,
-        role: role
+        role: "Admin" // Everyone gets Admin access
       };
 
       App.toast(`✓ 6-Digit OTP sent to ${email}`, "success");
@@ -112,11 +252,12 @@ const Auth = {
       const emailDisplay = document.getElementById("otp-target-email-display");
       if (emailDisplay) emailDisplay.innerText = email;
 
-      const otpInput = document.getElementById("reg-otp-code");
-      if (otpInput) {
-        otpInput.value = "";
-        otpInput.focus();
-      }
+      // Clear & focus first digit box
+      const boxes = document.querySelectorAll(".otp-digit-box");
+      boxes.forEach(b => b.value = "");
+      const hiddenInput = document.getElementById("reg-otp-code");
+      if (hiddenInput) hiddenInput.value = "";
+      if (boxes[0]) setTimeout(() => boxes[0].focus(), 100);
 
       this.startOtpTimer(res.expires_in_seconds || 600);
     } catch (err) {
@@ -135,29 +276,36 @@ const Auth = {
       return;
     }
 
-    const otpInput = document.getElementById("reg-otp-code");
-    const otpCode = otpInput ? otpInput.value.trim() : "";
+    const otpCode = this.syncOtpFromBoxes();
     const btnVerify = document.getElementById("btn-verify-otp-submit");
 
     if (!otpCode || otpCode.length < 6) {
       App.toast("Please enter the complete 6-digit OTP code", "warning");
+      const boxes = document.querySelectorAll(".otp-digit-box");
+      for (let i = 0; i < boxes.length; i++) {
+        if (!boxes[i].value) {
+          boxes[i].focus();
+          break;
+        }
+      }
       return;
     }
 
     try {
       btnVerify.disabled = true;
-      btnVerify.innerText = "Verifying & Activating...";
+      btnVerify.innerText = "Verifying & Activating Admin Account...";
 
       const payload = {
         ...this.pendingRegistration,
-        otp: otpCode
+        otp: otpCode,
+        role: "Admin"
       };
 
       const res = await API.registerWithOTP(payload);
       API.setAuth(res.access_token, res.role, res.username, res.full_name);
 
       clearInterval(this.otpTimerInterval);
-      App.toast(`🎉 Account created successfully! Welcome, ${res.full_name || res.username}!`, "success");
+      App.toast(`🎉 Admin Account activated! Welcome, ${res.full_name || res.username}!`, "success");
 
       this.showAppView(res);
       App.navigate("master");
@@ -190,6 +338,12 @@ const Auth = {
       });
 
       App.toast(`✓ Fresh OTP resent to ${this.pendingRegistration.email}`, "success");
+      
+      const boxes = document.querySelectorAll(".otp-digit-box");
+      boxes.forEach(b => b.value = "");
+      this.syncOtpFromBoxes();
+      if (boxes[0]) boxes[0].focus();
+
       this.startOtpTimer(res.expires_in_seconds || 600);
     } catch (err) {
       App.toast(err.message || "Failed to resend OTP", "error");
@@ -284,7 +438,7 @@ const Auth = {
       App.toast(err.message || "Invalid credentials", "error");
     } finally {
       submitBtn.disabled = false;
-      submitBtn.innerText = "Sign In";
+      submitBtn.innerText = "Sign In ➔";
     }
   },
 
@@ -323,7 +477,7 @@ const Auth = {
     const userRoleEl = document.getElementById("sidebar-user-role");
     const userAvatarEl = document.getElementById("sidebar-user-avatar");
 
-    const role = user.role || "Employee";
+    const role = user.role || "Admin";
     const displayName = user.full_name || user.username || "User";
 
     if (userNameEl) userNameEl.innerText = displayName;
@@ -335,10 +489,10 @@ const Auth = {
       userAvatarEl.innerText = displayName.charAt(0).toUpperCase();
     }
 
-    // Role-based visibility toggles
+    // Role-based visibility toggles - Admin has full control
     const adminOnlyElements = document.querySelectorAll(".admin-only");
     adminOnlyElements.forEach(el => {
-      el.style.display = (role === "Admin") ? "" : "none";
+      el.style.display = "";
     });
   }
 };

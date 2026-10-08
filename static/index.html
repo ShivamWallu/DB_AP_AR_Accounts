@@ -17,10 +17,12 @@
 
   <!-- AUTHENTICATION SCREEN -->
   <div id="auth-screen" class="auth-wrapper" style="display: flex;">
-    <div class="auth-card">
+    <div class="auth-3d-glow-1"></div>
+    <div class="auth-3d-glow-2"></div>
+    <div class="auth-card" id="auth-main-card">
       <div class="auth-header">
-        <div class="auth-brand-icon" style="background: #ffffff; padding: 4px; box-shadow: 0 4px 12px rgba(30,58,138,0.15);">
-          <img src="/static/images/KOGM_LOgo.jpg" alt="KOGM Logo" style="width: 36px; height: 36px; object-fit: contain; border-radius: 8px;">
+        <div class="auth-brand-icon-wrapper">
+          <img src="/static/images/KOGM_LOgo.jpg" alt="K-GM Logo" class="auth-brand-logo-img">
         </div>
         <h1 class="auth-title">KOGM 360°</h1>
         <p class="auth-subtitle">Enterprise Financial ERP • Day Book • AP • AR Audit Suite</p>
@@ -29,9 +31,11 @@
       <!-- Auth Mode Switcher Tabs -->
       <div class="auth-nav-tabs">
         <button type="button" class="auth-nav-tab active" id="tab-btn-login" onclick="Auth.switchAuthTab('login')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
           Sign In
         </button>
         <button type="button" class="auth-nav-tab" id="tab-btn-register" onclick="Auth.switchAuthTab('register')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
           Create Account
         </button>
       </div>
@@ -40,17 +44,23 @@
       <form id="login-form">
         <div style="display: flex; flex-direction: column; gap: 1.1rem;">
           <div class="filter-group">
-            <label class="filter-label" for="login-username">Username</label>
-            <input type="text" id="login-username" class="form-control" placeholder="e.g. admin or employee" required autofocus autocomplete="username" />
+            <label class="filter-label" for="login-username">Username / Mobile</label>
+            <div class="auth-input-wrapper">
+              <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="login-username" class="form-control auth-control" placeholder="Enter username or mobile" required autofocus autocomplete="username" />
+            </div>
           </div>
 
           <div class="filter-group">
             <label class="filter-label" for="login-password">Password</label>
-            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required autocomplete="current-password" />
+            <div class="auth-input-wrapper">
+              <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="login-password" class="form-control auth-control" placeholder="••••••••" required autocomplete="current-password" />
+            </div>
           </div>
 
-          <button type="submit" id="btn-login-submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 0.95rem; margin-top: 0.5rem;">
-            Sign In
+          <button type="submit" id="btn-login-submit" class="btn btn-primary btn-auth-submit" style="width: 100%; padding: 0.8rem; font-size: 0.95rem; margin-top: 0.5rem; font-weight: 700;">
+            Sign In ➔
           </button>
         </div>
       </form>
@@ -62,33 +72,33 @@
           <div style="display: flex; flex-direction: column; gap: 0.9rem;">
             <div class="filter-group">
               <label class="filter-label" for="reg-fullname">Full Name</label>
-              <input type="text" id="reg-fullname" class="form-control" placeholder="e.g. Shivam Sharma" required />
+              <input type="text" id="reg-fullname" class="form-control auth-control" placeholder="e.g. Shivam Sharma" required />
             </div>
 
             <div class="filter-group">
               <label class="filter-label" for="reg-username">Username</label>
-              <input type="text" id="reg-username" class="form-control" placeholder="e.g. shivam.ai" required autocomplete="username" />
+              <input type="text" id="reg-username" class="form-control auth-control" placeholder="e.g. shivam.ai" required autocomplete="username" />
             </div>
 
             <div class="filter-group">
               <label class="filter-label" for="reg-email">Email Address (For Verification OTP)</label>
-              <input type="email" id="reg-email" class="form-control" placeholder="e.g. user@company.com" required autocomplete="email" />
+              <input type="email" id="reg-email" class="form-control auth-control" placeholder="e.g. user@company.com" required autocomplete="email" />
             </div>
 
             <div class="filter-group">
               <label class="filter-label" for="reg-password">Create Password (Min 6 chars)</label>
-              <input type="password" id="reg-password" class="form-control" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
+              <input type="password" id="reg-password" class="form-control auth-control" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
             </div>
 
             <div class="filter-group">
-              <label class="filter-label" for="reg-role">Account Role</label>
-              <select id="reg-role" class="form-control select-dropdown">
-                <option value="Employee" selected>Employee (Viewer & Cross-Ref)</option>
-                <option value="Admin">Admin (Full Control & Uploads)</option>
+              <label class="filter-label" for="reg-role">Account Access Level</label>
+              <select id="reg-role" class="form-control auth-control select-dropdown" style="font-weight: 600; color: #1e3a8a;">
+                <option value="Admin" selected>★ Admin (Full Control, Uploads & All Features)</option>
+                <option value="Employee">Employee (Standard Access)</option>
               </select>
             </div>
 
-            <button type="submit" id="btn-send-otp" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 0.95rem; margin-top: 0.4rem;">
+            <button type="submit" id="btn-send-otp" class="btn btn-primary btn-auth-submit" style="width: 100%; padding: 0.8rem; font-size: 0.95rem; margin-top: 0.4rem; font-weight: 700;">
               Send Verification OTP ➔
             </button>
           </div>
@@ -98,25 +108,41 @@
         <form id="register-step2-form" style="display: none;">
           <div style="display: flex; flex-direction: column; gap: 1rem; text-align: center;">
             <div class="otp-sent-banner">
-              <div style="font-size: 0.8rem; color: #64748b;">Verification code sent to:</div>
+              <div style="font-size: 0.8rem; color: #475569;">Verification code sent to:</div>
               <div id="otp-target-email-display" style="font-weight: 700; color: #1e3a8a; font-size: 0.95rem; word-break: break-all;"></div>
             </div>
 
-            <div class="filter-group" style="text-align: left;">
-              <label class="filter-label" for="reg-otp-code" style="text-align: center; display: block;">Enter 6-Digit OTP</label>
-              <input type="text" id="reg-otp-code" class="form-control otp-code-input" placeholder="• • • • • •" maxlength="6" pattern="[0-9]{6}" required autofocus />
+            <div class="filter-group" style="text-align: center;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                <label class="filter-label" style="margin: 0;">Enter 6-Digit OTP</label>
+                <button type="button" id="btn-paste-clipboard-otp" class="btn-paste-otp" title="Paste OTP copied from Gmail" onclick="Auth.pasteFromClipboard()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Paste from Gmail
+                </button>
+              </div>
+
+              <!-- 6-Box Segmented Digits with Auto-focus & Paste Support -->
+              <div class="otp-boxes-wrapper" id="otp-boxes-container">
+                <input type="text" maxlength="1" class="otp-digit-box" data-index="0" inputmode="numeric" pattern="[0-9]*" autofocus autocomplete="one-time-code" />
+                <input type="text" maxlength="1" class="otp-digit-box" data-index="1" inputmode="numeric" pattern="[0-9]*" />
+                <input type="text" maxlength="1" class="otp-digit-box" data-index="2" inputmode="numeric" pattern="[0-9]*" />
+                <input type="text" maxlength="1" class="otp-digit-box" data-index="3" inputmode="numeric" pattern="[0-9]*" />
+                <input type="text" maxlength="1" class="otp-digit-box" data-index="4" inputmode="numeric" pattern="[0-9]*" />
+                <input type="text" maxlength="1" class="otp-digit-box" data-index="5" inputmode="numeric" pattern="[0-9]*" />
+              </div>
+              <input type="hidden" id="reg-otp-code" value="" />
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; padding: 0 0.25rem;">
-              <span id="otp-countdown-text" style="color: #64748b;">Expires in: <strong id="otp-timer-val">10:00</strong></span>
+              <span id="otp-countdown-text" style="color: #64748b;">Expires in: <strong id="otp-timer-val" style="color: #dc2626;">10:00</strong></span>
               <button type="button" id="btn-resend-otp" class="btn-link" onclick="Auth.handleResendOTP()">Resend OTP</button>
             </div>
 
-            <button type="submit" id="btn-verify-otp-submit" class="btn btn-success" style="width: 100%; padding: 0.75rem; font-size: 0.95rem;">
+            <button type="submit" id="btn-verify-otp-submit" class="btn btn-success btn-auth-submit" style="width: 100%; padding: 0.8rem; font-size: 0.95rem; font-weight: 700;">
               ✓ Verify OTP & Activate Account
             </button>
 
-            <button type="button" class="btn-link" onclick="Auth.backToStep1()" style="font-size: 0.82rem; color: #64748b;">
+            <button type="button" class="btn-link" onclick="Auth.backToStep1()" style="font-size: 0.82rem; color: #64748b; margin-top: 0.25rem;">
               ← Change Details / Edit Email
             </button>
           </div>
@@ -124,14 +150,14 @@
       </div>
 
       <div class="quick-creds" id="quick-creds-container">
-        <div style="font-weight: 600; color: var(--text-secondary); margin-bottom: 0.2rem;">Quick Demo Sign-in:</div>
+        <div style="font-weight: 600; color: #64748b; margin-bottom: 0.35rem; font-size: 0.78rem;">Quick Demo Sign-in:</div>
         <div class="quick-cred-btn" onclick="Auth.fillDemoCredentials('admin', 'Admin@123')">
           <span><strong>Admin:</strong> admin (Admin@123)</span>
-          <span>Role: Admin ➔</span>
+          <span class="quick-cred-role">Role: Admin ➔</span>
         </div>
         <div class="quick-cred-btn" onclick="Auth.fillDemoCredentials('akhtar', 'Akhtar@123')">
           <span><strong>Akhtar:</strong> akhtar (Akhtar@123)</span>
-          <span>Role: Employee ➔</span>
+          <span class="quick-cred-role">Role: Admin ➔</span>
         </div>
       </div>
     </div>
