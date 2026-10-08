@@ -67,6 +67,18 @@ def expand_voucher_type_synonyms(vt: str) -> List[str]:
         synonyms.update(["Expense Voucher", "Service Expense Voucher"])
     return list(synonyms)
 
+def parse_site_filter(site: Optional[Any]) -> List[str]:
+    """Parse single or multi-select comma-delimited sites into clean list"""
+    if not site:
+        return []
+    if isinstance(site, list):
+        return [s.strip() for s in site if s and str(s).strip() and str(s).strip().lower() not in ("all", "all sites", "all_sites", "")]
+    raw = str(site).strip()
+    if raw.lower() in ("all", "all sites", "all_sites", ""):
+        return []
+    parts = [s.strip() for s in raw.split(",") if s.strip() and s.strip().lower() not in ("all", "all sites", "all_sites", "")]
+    return parts
+
 def query_daybook(
     db: Session,
     page: int = 1,
@@ -84,8 +96,13 @@ def query_daybook(
     """Query Day Book records with server-side filters, search, and pagination"""
     q = db.query(DayBookRecord)
 
-    if site and site.strip():
-        q = q.filter(DayBookRecord.transaction_site == site.strip())
+    sites_list = parse_site_filter(site)
+    if sites_list:
+        if len(sites_list) == 1:
+            q = q.filter(DayBookRecord.transaction_site == sites_list[0])
+        else:
+            q = q.filter(DayBookRecord.transaction_site.in_(sites_list))
+
     if voucher_type and voucher_type.strip():
         syns = expand_voucher_type_synonyms(voucher_type)
         q = q.filter(DayBookRecord.voucher_type.in_(syns))
@@ -159,8 +176,13 @@ def query_ap(
     """Query AP records with linked Day Book audit fields (Narration, Created By, Approved By)"""
     q = db.query(APRecord)
 
-    if site and site.strip():
-        q = q.filter(APRecord.accounting_site_code == site.strip())
+    sites_list = parse_site_filter(site)
+    if sites_list:
+        if len(sites_list) == 1:
+            q = q.filter(APRecord.accounting_site_code == sites_list[0])
+        else:
+            q = q.filter(APRecord.accounting_site_code.in_(sites_list))
+
     if voucher_type and voucher_type.strip():
         syns = expand_voucher_type_synonyms(voucher_type)
         q = q.filter(or_(APRecord.voucher_type.in_(syns), APRecord.voucher_sub_type.in_(syns)))
@@ -282,8 +304,13 @@ def query_ar(
     """Query AR records with linked Day Book audit fields (Narration, Created By, Approved By)"""
     q = db.query(ARRecord)
 
-    if site and site.strip():
-        q = q.filter(ARRecord.accounting_site_code == site.strip())
+    sites_list = parse_site_filter(site)
+    if sites_list:
+        if len(sites_list) == 1:
+            q = q.filter(ARRecord.accounting_site_code == sites_list[0])
+        else:
+            q = q.filter(ARRecord.accounting_site_code.in_(sites_list))
+
     if voucher_type and voucher_type.strip():
         syns = expand_voucher_type_synonyms(voucher_type)
         q = q.filter(or_(ARRecord.voucher_type.in_(syns), ARRecord.voucher_sub_type.in_(syns)))
@@ -419,11 +446,16 @@ def query_master_360(
     approval status, verification, and site info) so that all multi-line items from AP and AR are 100% visible.
     """
     syns = expand_voucher_type_synonyms(voucher_type) if (voucher_type and voucher_type.strip()) else []
+    sites_list = parse_site_filter(site)
 
     # 1. Base Query on DayBookRecord
     q_db = db.query(DayBookRecord)
-    if site and site.strip():
-        q_db = q_db.filter(DayBookRecord.transaction_site == site.strip())
+    if sites_list:
+        if len(sites_list) == 1:
+            q_db = q_db.filter(DayBookRecord.transaction_site == sites_list[0])
+        else:
+            q_db = q_db.filter(DayBookRecord.transaction_site.in_(sites_list))
+
     if batch_id:
         q_db = q_db.filter(DayBookRecord.batch_id == batch_id)
     if syns:
@@ -754,7 +786,7 @@ def query_master_360(
     if register_type != "daybook_only" and register_type != "ar":
         for ap in ap_rows:
             if ap.id not in matched_ap_ids:
-                if site and site.strip() and ap.accounting_site_code != site.strip():
+                if sites_list and ap.accounting_site_code not in sites_list:
                     continue
                 if syns and (ap.voucher_type not in syns and ap.voucher_sub_type not in syns):
                     continue
@@ -803,7 +835,7 @@ def query_master_360(
     if register_type != "daybook_only" and register_type != "ap":
         for ar in ar_rows:
             if ar.id not in matched_ar_ids:
-                if site and site.strip() and ar.accounting_site_code != site.strip():
+                if sites_list and ar.accounting_site_code not in sites_list:
                     continue
                 if syns and (ar.voucher_type not in syns and ar.voucher_sub_type not in syns):
                     continue

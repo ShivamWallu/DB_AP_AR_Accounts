@@ -278,6 +278,8 @@ class DataTableController {
     this.pageSize = 15;
     this.search = "";
     this.site = "";
+    this.selectedSites = []; // Array of active site codes for Multi-Select
+    this.availableSites = []; // All unique site codes from server
     this.voucherType = "";
     this.voucherSubtype = "";
     this.registerType = "";
@@ -319,11 +321,32 @@ class DataTableController {
             <option value="daybook_only">📖 Day Book Standalone Only</option>
           </select>
         </div>` : ''}
-        <div class="filter-group">
-          <label class="filter-label">Site</label>
-          <select class="form-select dt-site-filter">
-            <option value="">All Sites</option>
-          </select>
+        <div class="filter-group filter-group-site" style="min-width: 165px;">
+          <label class="filter-label">Site (Multi-Select)</label>
+          <div class="multi-select-dropdown dt-site-multiselect">
+            <button type="button" class="multi-select-btn dt-site-trigger" aria-expanded="false" title="Click to filter by one or multiple sites">
+              <span class="multi-select-btn-content">
+                <span class="multi-select-icon">🏢</span>
+                <span class="multi-select-label dt-site-label">All Sites</span>
+              </span>
+              <span class="multi-select-badge dt-site-count-badge" style="display: none;">0</span>
+              <svg class="multi-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="multi-select-menu dt-site-menu">
+              <div class="multi-select-search-box">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" class="multi-select-search-input dt-site-search" placeholder="Search site..." />
+              </div>
+              <div class="multi-select-actions">
+                <button type="button" class="multi-action-btn dt-site-select-all">✓ Select All</button>
+                <span class="multi-action-divider">•</span>
+                <button type="button" class="multi-action-btn dt-site-clear-all">✕ Clear</button>
+              </div>
+              <div class="multi-select-options dt-site-options-list">
+                <div style="padding: 0.5rem; text-align: center; color: var(--text-muted); font-size: 0.76rem;">Loading sites...</div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="filter-group">
           <label class="filter-label">Voucher Type</label>
@@ -522,13 +545,87 @@ class DataTableController {
       }, 350);
     });
 
-    // Site filter
-    const siteSelect = container.querySelector(".dt-site-filter");
-    siteSelect.addEventListener("change", (e) => {
-      this.site = e.target.value;
-      this.page = 1;
-      this.loadData();
-    });
+    // Site Multi-Select Filter Controls
+    const multiSelect = container.querySelector(".dt-site-multiselect");
+    const triggerBtn = container.querySelector(".dt-site-trigger");
+    const searchInputEl = container.querySelector(".dt-site-search");
+    const selectAllBtn = container.querySelector(".dt-site-select-all");
+    const clearAllBtn = container.querySelector(".dt-site-clear-all");
+    const optionsList = container.querySelector(".dt-site-options-list");
+
+    if (triggerBtn && multiSelect) {
+      triggerBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        // Close other open multiselects
+        document.querySelectorAll(".multi-select-dropdown.open").forEach(ms => {
+          if (ms !== multiSelect) ms.classList.remove("open");
+        });
+        multiSelect.classList.toggle("open");
+        if (multiSelect.classList.contains("open") && searchInputEl) {
+          setTimeout(() => searchInputEl.focus(), 60);
+        }
+      });
+
+      multiSelect.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+
+      if (!window.__multiSelectDocClickBound) {
+        window.__multiSelectDocClickBound = true;
+        document.addEventListener("click", () => {
+          document.querySelectorAll(".multi-select-dropdown.open").forEach(ms => ms.classList.remove("open"));
+        });
+      }
+    }
+
+    if (searchInputEl && optionsList) {
+      searchInputEl.addEventListener("input", (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        optionsList.querySelectorAll(".multi-select-option").forEach(opt => {
+          const siteName = (opt.dataset.site || "").toLowerCase();
+          opt.style.display = siteName.includes(term) ? "flex" : "none";
+        });
+      });
+    }
+
+    if (selectAllBtn) {
+      selectAllBtn.addEventListener("click", () => {
+        if (optionsList && this.availableSites) {
+          optionsList.querySelectorAll(".dt-site-cb").forEach(cb => cb.checked = true);
+          this.selectedSites = [...this.availableSites];
+          this.site = this.selectedSites.join(",");
+          this.updateSiteTriggerVisuals();
+          this.page = 1;
+          this.loadData();
+        }
+      });
+    }
+
+    if (clearAllBtn) {
+      clearAllBtn.addEventListener("click", () => {
+        if (optionsList) {
+          optionsList.querySelectorAll(".dt-site-cb").forEach(cb => cb.checked = false);
+          this.selectedSites = [];
+          this.site = "";
+          this.updateSiteTriggerVisuals();
+          this.page = 1;
+          this.loadData();
+        }
+      });
+    }
+
+    if (optionsList) {
+      optionsList.addEventListener("change", (e) => {
+        if (e.target && e.target.classList.contains("dt-site-cb")) {
+          const checked = Array.from(optionsList.querySelectorAll(".dt-site-cb:checked")).map(cb => cb.value);
+          this.selectedSites = checked;
+          this.site = checked.join(",");
+          this.updateSiteTriggerVisuals();
+          this.page = 1;
+          this.loadData();
+        }
+      });
+    }
 
     // Voucher Type filter
     const vtypeSelect = container.querySelector(".dt-vtype-filter");
@@ -592,6 +689,7 @@ class DataTableController {
     clearBtn.addEventListener("click", () => {
       this.search = "";
       this.site = "";
+      this.selectedSites = [];
       this.voucherType = "";
       this.voucherSubtype = "";
       this.approvedBy = "";
@@ -604,7 +702,10 @@ class DataTableController {
       if (batchSelect) batchSelect.value = firstOpt;
 
       searchInput.value = "";
-      siteSelect.value = "";
+      if (optionsList) {
+        optionsList.querySelectorAll(".dt-site-cb").forEach(cb => cb.checked = false);
+      }
+      this.updateSiteTriggerVisuals();
       vtypeSelect.value = "";
       if (vsubtypeSelect) vsubtypeSelect.value = "";
       if (approvedBySelect) approvedBySelect.value = "";
@@ -838,16 +939,64 @@ class DataTableController {
     }
   }
 
+  updateSiteTriggerVisuals() {
+    const container = document.getElementById(this.containerId);
+    if (!container) return;
+    const trigger = container.querySelector(".dt-site-trigger");
+    const labelEl = container.querySelector(".dt-site-label");
+    const badgeEl = container.querySelector(".dt-site-count-badge");
+    const groupEl = container.querySelector(".filter-group-site");
+
+    if (!trigger || !labelEl) return;
+
+    const count = this.selectedSites.length;
+    if (count === 0) {
+      labelEl.innerText = "All Sites";
+      if (badgeEl) badgeEl.style.display = "none";
+      trigger.classList.remove("filter-active");
+      if (groupEl) groupEl.classList.remove("has-active-filter");
+    } else if (count === 1) {
+      labelEl.innerText = this.selectedSites[0];
+      if (badgeEl) badgeEl.style.display = "none";
+      trigger.classList.add("filter-active");
+      if (groupEl) groupEl.classList.add("has-active-filter");
+    } else if (count === 2) {
+      labelEl.innerText = `${this.selectedSites[0]}, ${this.selectedSites[1]}`;
+      if (badgeEl) {
+        badgeEl.style.display = "inline-flex";
+        badgeEl.innerText = "2";
+      }
+      trigger.classList.add("filter-active");
+      if (groupEl) groupEl.classList.add("has-active-filter");
+    } else {
+      labelEl.innerText = `${count} Sites Selected`;
+      if (badgeEl) {
+        badgeEl.style.display = "inline-flex";
+        badgeEl.innerText = String(count);
+      }
+      trigger.classList.add("filter-active");
+      if (groupEl) groupEl.classList.add("has-active-filter");
+    }
+  }
+
   populateFilterOptions(filterData) {
     const container = document.getElementById(this.containerId);
     if (!container) return;
 
-    // Populate Sites
-    const siteSelect = container.querySelector(".dt-site-filter");
-    if (siteSelect) {
-      siteSelect.innerHTML = `<option value="">All Sites</option>` +
-        filterData.sites.map(s => `<option value="${s}">${s}</option>`).join("");
-      siteSelect.value = this.site;
+    // Populate Sites (Multi-Select Checkboxes)
+    const optionsContainer = container.querySelector(".dt-site-options-list");
+    if (optionsContainer && filterData.sites) {
+      this.availableSites = filterData.sites;
+      optionsContainer.innerHTML = filterData.sites.map(s => {
+        const isChecked = this.selectedSites.includes(s);
+        return `
+          <label class="multi-select-option" data-site="${s}">
+            <input type="checkbox" value="${s}" class="dt-site-cb" ${isChecked ? 'checked' : ''} />
+            <span class="option-site-name">${s}</span>
+          </label>
+        `;
+      }).join("");
+      this.updateSiteTriggerVisuals();
     }
 
     // Populate Voucher Types
@@ -1009,16 +1158,14 @@ class DataTableController {
       registerSelect.closest(".filter-group")?.classList.remove("has-active-filter");
     }
 
-    // Site
-    if (this.site && this.site.trim()) {
-      if (siteSelect) {
-        siteSelect.classList.add("filter-active");
-        siteSelect.closest(".filter-group")?.classList.add("has-active-filter");
-      }
-      activeList.push({ key: "site", label: "Site", value: this.site });
-    } else if (siteSelect) {
-      siteSelect.classList.remove("filter-active");
-      siteSelect.closest(".filter-group")?.classList.remove("has-active-filter");
+    // Site Filter (Multi-Select)
+    if (this.selectedSites && this.selectedSites.length > 0) {
+      const displayVal = this.selectedSites.length <= 3 
+        ? this.selectedSites.join(", ") 
+        : `${this.selectedSites.slice(0, 2).join(", ")} (+${this.selectedSites.length - 2} more)`;
+      activeList.push({ key: "site", label: "Sites", value: displayVal });
+    } else if (this.site && this.site.trim()) {
+      activeList.push({ key: "site", label: "Sites", value: this.site });
     }
 
     // Voucher Type
@@ -1133,8 +1280,12 @@ class DataTableController {
       if (el) el.value = "";
     } else if (key === "site") {
       this.site = "";
-      const el = container.querySelector(".dt-site-filter");
-      if (el) el.value = "";
+      this.selectedSites = [];
+      const optionsContainer = container.querySelector(".dt-site-options-list");
+      if (optionsContainer) {
+        optionsContainer.querySelectorAll(".dt-site-cb").forEach(cb => cb.checked = false);
+      }
+      this.updateSiteTriggerVisuals();
     } else if (key === "voucherType") {
       this.voucherType = "";
       const el = container.querySelector(".dt-vtype-filter");
@@ -2035,8 +2186,12 @@ class DataTableController {
       const reportTitle = titleMap[this.datasetType] || "Official Financial Ledger Statement";
 
       // Current filter summary
+      const siteSummary = (this.selectedSites && this.selectedSites.length > 0)
+        ? `Sites (${this.selectedSites.length}): ${this.selectedSites.join(", ")}`
+        : (this.site ? `Site: ${this.site}` : "All Sites");
+
       const filterSummary = [
-        this.site ? `Site: ${this.site}` : "All Sites",
+        siteSummary,
         this.voucherType ? `Type: ${this.voucherType}` : "All Voucher Types",
         this.registerType ? `Register: ${this.registerType}` : "",
         this.approvedBy ? `Approver: ${this.approvedBy}` : ""
