@@ -30,6 +30,20 @@ class OTPVerification(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    email = Column(String(200), index=True, nullable=False)
+    token = Column(String(128), unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    is_used = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+
+
 
 class ImportBatch(Base):
     __tablename__ = "import_batches"

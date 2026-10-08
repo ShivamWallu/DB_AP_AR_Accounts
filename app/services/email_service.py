@@ -301,3 +301,191 @@ def send_otp_email(to_email: str, otp_code: str, user_name: str = "User") -> boo
     
     logger.error(f"All email sending methods failed for {to_email}")
     return False
+
+def build_password_reset_html_email(user_name: str, reset_url: str, to_email: str, expires_minutes: int = 10) -> str:
+    current_year = datetime.utcnow().year
+    logo_b64 = get_logo_base64()
+    
+    logo_html = ""
+    if logo_b64:
+        logo_html = f"""
+        <div style="background: #ffffff; display: inline-block; padding: 12px 24px; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); margin-bottom: 16px;">
+          <img src="data:image/jpeg;base64,{logo_b64}" alt="K-GM Khandelia Oil & General Mills Pvt. Ltd." width="160" style="width: 160px; max-width: 100%; height: auto; display: block; border-radius: 6px; margin: 0 auto;" />
+        </div>
+        """
+    else:
+        logo_html = """
+        <div style="background: #ffffff; color: #1e3a8a; display: inline-block; padding: 8px 22px; border-radius: 20px; font-size: 15px; font-weight: 800; margin-bottom: 14px; letter-spacing: 0.05em;">
+          K-GM &bull; KOGM 360&deg;
+        </div>
+        """
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Reset Your Password - KOGM 360°</title>
+      <style>
+        body {{
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          background-color: #0b1329;
+          margin: 0;
+          padding: 24px 10px;
+          color: #1e293b;
+          -webkit-font-smoothing: antialiased;
+        }}
+        .email-wrapper {{
+          max-width: 580px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          border-radius: 18px;
+          border: 1px solid #e2e8f0;
+          overflow: hidden;
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+        }}
+        .header {{
+          background: linear-gradient(135deg, #0b1329 0%, #1e3a8a 55%, #2563eb 100%);
+          padding: 36px 24px 30px 24px;
+          text-align: center;
+          color: #ffffff;
+        }}
+        .header h1 {{
+          margin: 0;
+          font-size: 24px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+        }}
+        .header p {{
+          margin: 6px 0 0 0;
+          font-size: 13px;
+          color: #93c5fd;
+          font-weight: 500;
+        }}
+        .body {{
+          padding: 36px 32px;
+          background-color: #ffffff;
+        }}
+        .greeting {{
+          font-size: 16px;
+          font-weight: 700;
+          color: #0f172a;
+          margin-bottom: 12px;
+        }}
+        .message {{
+          font-size: 14px;
+          line-height: 1.6;
+          color: #475569;
+          margin-bottom: 24px;
+        }}
+        .cta-container {{
+          text-align: center;
+          margin: 28px 0;
+        }}
+        .btn-reset {{
+          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          color: #ffffff !important;
+          text-decoration: none;
+          font-size: 15px;
+          font-weight: 700;
+          padding: 14px 36px;
+          border-radius: 10px;
+          display: inline-block;
+          box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+          letter-spacing: 0.02em;
+        }}
+        .btn-reset:hover {{
+          background: #1d4ed8;
+        }}
+        .link-fallback-box {{
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          padding: 12px 16px;
+          font-size: 11px;
+          color: #64748b;
+          word-break: break-all;
+          margin: 20px 0;
+        }}
+        .link-fallback-box a {{
+          color: #2563eb;
+          text-decoration: underline;
+        }}
+        .warning-box {{
+          background: #fffbeb;
+          border-left: 4px solid #f59e0b;
+          padding: 14px 18px;
+          border-radius: 6px;
+          font-size: 12px;
+          color: #92400e;
+          line-height: 1.5;
+          margin-top: 24px;
+        }}
+        .footer {{
+          background-color: #f8fafc;
+          padding: 24px 20px;
+          text-align: center;
+          font-size: 11px;
+          color: #64748b;
+          border-top: 1px solid #f1f5f9;
+          line-height: 1.6;
+        }}
+        .footer-creator {{
+          color: #1e40af;
+          font-weight: 700;
+          font-size: 12px;
+          margin-top: 6px;
+        }}
+      </style>
+    </head>
+    <body>
+      <div class="email-wrapper">
+        <div class="header">
+          {logo_html}
+          <h1>Password Reset Request</h1>
+          <p>KOGM 360° Financial ERP Security Center</p>
+        </div>
+        <div class="body">
+          <div class="greeting">Hello {user_name},</div>
+          <div class="message">
+            We received a request to reset your password for your <strong>KOGM 360° Financial ERP</strong> account. Click the secure link below to set a new password:
+          </div>
+          
+          <div class="cta-container">
+            <a href="{reset_url}" class="btn-reset" target="_blank">🔒 Reset Account Password</a>
+          </div>
+
+          <div class="link-fallback-box">
+            <div>If the button above does not work, copy and paste this link into your browser:</div>
+            <div style="margin-top: 6px;"><a href="{reset_url}" target="_blank">{reset_url}</a></div>
+          </div>
+
+          <div class="warning-box">
+            <strong>Security Notice:</strong> This reset link is valid for <strong>{expires_minutes} minutes</strong> only and can be used once. If you did not request a password reset, you can safely ignore this email — your account remains secure.
+          </div>
+        </div>
+        <div class="footer">
+          <div>&copy; {current_year} KOGM 360° Enterprise Financial Suite &bull; Sent to {to_email}</div>
+          <div class="footer-creator">Created by Shivam Wallu</div>
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+    return html
+
+def send_password_reset_email(to_email: str, reset_url: str, user_name: str = "User") -> bool:
+    subject = "Reset Your Password - KOGM 360° Financial ERP Suite"
+    html_content = build_password_reset_html_email(user_name=user_name, reset_url=reset_url, to_email=to_email, expires_minutes=10)
+    
+    # 1. Try Direct SMTP
+    if send_via_smtp(to_email, subject, html_content):
+        return True
+    
+    # 2. Fallback to HTTPS Webhook Relay
+    if send_via_webhook(to_email, subject, html_content):
+        return True
+    
+    logger.error(f"All email sending methods failed for password reset email to {to_email}")
+    return False

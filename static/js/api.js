@@ -130,6 +130,24 @@ const API = {
     });
   },
 
+  async requestPasswordReset(identifier) {
+    return await this.request("/api/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ identifier })
+    });
+  },
+
+  async verifyResetToken(token) {
+    return await this.request(`/api/auth/verify-reset-token?token=${encodeURIComponent(token)}`);
+  },
+
+  async resetPassword(token, newPassword) {
+    return await this.request("/api/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, new_password: newPassword })
+    });
+  },
+
   // Dashboard Endpoints
   async getDashboardStats() {
     return await this.request("/api/dashboard/stats");

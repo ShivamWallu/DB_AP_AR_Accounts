@@ -1,11 +1,13 @@
 const Auth = {
   pendingRegistration: null,
   otpTimerInterval: null,
+  resetTimerInterval: null,
 
   init() {
     this.bindEvents();
     this.initOtpBoxes();
     this.init3DTilt();
+    this.initResetTokenCheck();
     this.checkSession();
   },
 
@@ -23,6 +25,16 @@ const Auth = {
     const regStep2Form = document.getElementById("register-step2-form");
     if (regStep2Form) {
       regStep2Form.addEventListener("submit", (e) => this.handleVerifyOTP(e));
+    }
+
+    const forgotForm = document.getElementById("forgot-password-form");
+    if (forgotForm) {
+      forgotForm.addEventListener("submit", (e) => this.handleForgotPassword(e));
+    }
+
+    const resetForm = document.getElementById("reset-password-form");
+    if (resetForm) {
+      resetForm.addEventListener("submit", (e) => this.handleResetPassword(e));
     }
 
     const logoutBtn = document.getElementById("btn-logout");
@@ -179,7 +191,14 @@ const Auth = {
     const tabRegister = document.getElementById("tab-btn-register");
     const loginForm = document.getElementById("login-form");
     const registerContainer = document.getElementById("register-container");
+    const forgotContainer = document.getElementById("forgot-container");
+    const resetContainer = document.getElementById("reset-password-container");
     const quickCreds = document.getElementById("quick-creds-container");
+    const navTabs = document.querySelector(".auth-nav-tabs");
+
+    if (navTabs) navTabs.style.display = "flex";
+    if (forgotContainer) forgotContainer.style.display = "none";
+    if (resetContainer) resetContainer.style.display = "none";
 
     if (mode === "register") {
       if (tabLogin) tabLogin.classList.remove("active");
@@ -194,6 +213,215 @@ const Auth = {
       if (loginForm) loginForm.style.display = "block";
       if (registerContainer) registerContainer.style.display = "none";
       if (quickCreds) quickCreds.style.display = "block";
+    }
+  },
+
+  showForgotPasswordView() {
+    const tabLogin = document.getElementById("tab-btn-login");
+    const tabRegister = document.getElementById("tab-btn-register");
+    const loginForm = document.getElementById("login-form");
+    const registerContainer = document.getElementById("register-container");
+    const forgotContainer = document.getElementById("forgot-container");
+    const resetContainer = document.getElementById("reset-password-container");
+    const quickCreds = document.getElementById("quick-creds-container");
+
+    if (tabLogin) tabLogin.classList.remove("active");
+    if (tabRegister) tabRegister.classList.remove("active");
+    if (loginForm) loginForm.style.display = "none";
+    if (registerContainer) registerContainer.style.display = "none";
+    if (resetContainer) resetContainer.style.display = "none";
+    if (quickCreds) quickCreds.style.display = "none";
+
+    if (forgotContainer) {
+      forgotContainer.style.display = "block";
+      const identInput = document.getElementById("forgot-identifier");
+      if (identInput) {
+        identInput.value = "";
+        setTimeout(() => identInput.focus(), 80);
+      }
+    }
+  },
+
+  async handleForgotPassword(e) {
+    if (e) e.preventDefault();
+    const identInput = document.getElementById("forgot-identifier");
+    const submitBtn = document.getElementById("btn-forgot-submit");
+    const identifier = identInput ? identInput.value.trim() : "";
+
+    if (!identifier) {
+      App.toast("Please enter your username or registered email address", "warning");
+      return;
+    }
+
+    try {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Dispatching 10-Minute Reset Link...";
+      }
+
+      const res = await API.requestPasswordReset(identifier);
+      App.toast(`✓ ${res.message}`, "success");
+      
+      // Update info banner
+      const banner = document.querySelector("#forgot-container .auth-info-banner");
+      if (banner) {
+        banner.style.background = "#f0fdf4";
+        banner.style.borderColor = "#86efac";
+        banner.style.color = "#15803d";
+        banner.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.2" style="flex-shrink:0; margin-top:2px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <div>
+            <strong>Reset Link Dispatched!</strong><br/>
+            We've sent a 10-minute password reset link to <strong>${res.email}</strong>. Please check your inbox / spam folder.
+          </div>
+        `;
+      }
+    } catch (err) {
+      App.toast(err.message || "Failed to send reset link", "error");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Send Reset Link to Email ➔";
+      }
+    }
+  },
+
+  async initResetTokenCheck() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetToken = urlParams.get("reset_token");
+    if (resetToken) {
+      this.showResetPasswordView(resetToken);
+    }
+  },
+
+  async showResetPasswordView(token) {
+    try {
+      const res = await API.verifyResetToken(token);
+      
+      const tabLogin = document.getElementById("tab-btn-login");
+      const tabRegister = document.getElementById("tab-btn-register");
+      const loginForm = document.getElementById("login-form");
+      const registerContainer = document.getElementById("register-container");
+      const forgotContainer = document.getElementById("forgot-container");
+      const resetContainer = document.getElementById("reset-password-container");
+      const quickCreds = document.getElementById("quick-creds-container");
+      const navTabs = document.querySelector(".auth-nav-tabs");
+
+      if (navTabs) navTabs.style.display = "none";
+      if (tabLogin) tabLogin.classList.remove("active");
+      if (tabRegister) tabRegister.classList.remove("active");
+      if (loginForm) loginForm.style.display = "none";
+      if (registerContainer) registerContainer.style.display = "none";
+      if (forgotContainer) forgotContainer.style.display = "none";
+      if (quickCreds) quickCreds.style.display = "none";
+
+      if (resetContainer) {
+        resetContainer.style.display = "block";
+        const hiddenToken = document.getElementById("reset-token-hidden");
+        const userDisplay = document.getElementById("reset-user-display");
+        const p1 = document.getElementById("reset-new-password");
+        const p2 = document.getElementById("reset-confirm-password");
+
+        if (hiddenToken) hiddenToken.value = token;
+        if (userDisplay) userDisplay.innerText = `@${res.username} (${res.full_name || res.username})`;
+        if (p1) p1.value = "";
+        if (p2) p2.value = "";
+        if (p1) setTimeout(() => p1.focus(), 100);
+
+        this.startResetTimer(res.remaining_seconds || 600);
+      }
+
+      App.toast(`✓ Password reset session verified for @${res.username}`, "info");
+    } catch (err) {
+      App.toast(err.message || "This password reset link is invalid or has expired.", "error");
+      window.history.replaceState({}, document.title, window.location.pathname);
+      this.switchAuthTab("login");
+    }
+  },
+
+  startResetTimer(seconds = 600) {
+    clearInterval(this.resetTimerInterval);
+    let remaining = seconds;
+    const timerEl = document.getElementById("reset-timer-val");
+
+    const updateTimer = () => {
+      const mins = Math.floor(remaining / 60);
+      const secs = remaining % 60;
+      if (timerEl) {
+        timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }
+
+      if (remaining <= 0) {
+        clearInterval(this.resetTimerInterval);
+        if (timerEl) timerEl.innerText = "00:00 (Expired)";
+        App.toast("⚠️ This password reset link has expired. Please request a new link.", "warning");
+      } else {
+        remaining--;
+      }
+    };
+
+    updateTimer();
+    this.resetTimerInterval = setInterval(updateTimer, 1000);
+  },
+
+  async handleResetPassword(e) {
+    if (e) e.preventDefault();
+    const tokenInput = document.getElementById("reset-token-hidden");
+    const p1Input = document.getElementById("reset-new-password");
+    const p2Input = document.getElementById("reset-confirm-password");
+    const submitBtn = document.getElementById("btn-reset-password-submit");
+
+    const token = tokenInput ? tokenInput.value.trim() : "";
+    const p1 = p1Input ? p1Input.value : "";
+    const p2 = p2Input ? p2Input.value : "";
+
+    if (!token) {
+      App.toast("Missing password reset token. Please request a new link.", "error");
+      return;
+    }
+
+    if (!p1 || p1.length < 6) {
+      App.toast("New password must be at least 6 characters long", "warning");
+      return;
+    }
+
+    if (p1 !== p2) {
+      App.toast("Password confirmation does not match", "warning");
+      return;
+    }
+
+    try {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Updating Password...";
+      }
+
+      const res = await API.resetPassword(token, p1);
+      clearInterval(this.resetTimerInterval);
+      
+      // Clean query param from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      App.toast(res.message || "Password updated successfully!", "success");
+
+      // Switch to login tab and prefill username
+      this.switchAuthTab("login");
+      const uInput = document.getElementById("login-username");
+      if (uInput && res.username) {
+        uInput.value = res.username;
+        const pInput = document.getElementById("login-password");
+        if (pInput) {
+          pInput.value = "";
+          pInput.focus();
+        }
+      }
+    } catch (err) {
+      App.toast(err.message || "Failed to reset password", "error");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "✓ Set New Password & Sign In";
+      }
     }
   },
 

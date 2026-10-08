@@ -219,6 +219,68 @@ def test_full_pipeline():
         assert res.status_code == 200
         print(f"   [PASS] Unblocked user login succeeded!")
 
+        # 14. Test Forgot Password & 10-Minute Expiring Reset Token Workflow
+        print("\n14. Testing Forgot Password & 10-Minute Expiring Reset Token Workflow...")
+        # Ensure admin has an email for test
+        from app.models import PasswordResetToken
+        db = SessionLocal()
+        admin_db = db.query(User).filter(User.username == "admin").first()
+        if not admin_db.email:
+            admin_db.email = "admin.test@kogm.com"
+            db.commit()
+        db.close()
+
+        # Request forgot password
+        res = client.post("/api/auth/forgot-password", json={"identifier": "admin"})
+        assert res.status_code == 200, f"Forgot password failed: {res.text}"
+        fp_res = res.json()
+        assert fp_res["status"] == "success"
+        print(f"   [PASS] Forgot password requested successfully: {fp_res['message']}")
+
+        # Fetch the token from DB
+        db = SessionLocal()
+        token_entry = db.query(PasswordResetToken).filter(PasswordResetToken.email == "admin.test@kogm.com", PasswordResetToken.is_used == False).order_by(PasswordResetToken.id.desc()).first()
+        assert token_entry is not None, "Password reset token not recorded in DB"
+        test_token = token_entry.token
+        db.close()
+
+        # Verify token endpoint
+        res = client.get(f"/api/auth/verify-reset-token?token={test_token}")
+        assert res.status_code == 200
+        assert res.json()["valid"] is True
+        print(f"   [PASS] Reset token verified successfully! User: @{res.json()['username']}")
+
+        # Reset password to new password
+        res = client.post("/api/auth/reset-password", json={
+            "token": test_token,
+            "new_password": "AdminNewPassword@999"
+        })
+        assert res.status_code == 200
+        assert res.json()["status"] == "success"
+        print(f"   [PASS] Password reset completed successfully!")
+
+        # Login with new password
+        res = client.post("/api/auth/login", json={"username": "admin", "password": "AdminNewPassword@999"})
+        assert res.status_code == 200
+        print(f"   [PASS] Logged in with newly updated password!")
+
+        # Re-use of same token must be rejected (single-use constraint)
+        res = client.post("/api/auth/reset-password", json={
+            "token": test_token,
+            "new_password": "AnotherPassword@123"
+        })
+        assert res.status_code == 400
+        print(f"   [PASS] Re-use of consumed token properly rejected with 400!")
+
+        # Restore password back to Admin@123 for default credentials consistency
+        db = SessionLocal()
+        from app.auth import get_password_hash
+        admin_restore = db.query(User).filter(User.username == "admin").first()
+        admin_restore.hashed_password = get_password_hash("Admin@123")
+        db.commit()
+        db.close()
+        print(f"   [PASS] Admin credentials restored cleanly to default test baseline.")
+
     print("\n================================================================================")
     print("ALL TESTS PASSED WITH 100% ACCURACY!")
     print("================================================================================")

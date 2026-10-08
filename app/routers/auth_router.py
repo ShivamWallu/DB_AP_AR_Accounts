@@ -2,23 +2,23 @@ from datetime import datetime, timedelta
 import secrets
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from app.database import get_db
-from app.models import User, OTPVerification
+from app.models import User, OTPVerification, PasswordResetToken
 from app.schemas import (
     Token, LoginRequest, UserResponse,
-    SendOTPRequest, RegisterRequest, OTPResponse
+    SendOTPRequest, RegisterRequest, OTPResponse,
+    ForgotPasswordRequest, ResetPasswordRequest
 )
 from app.auth import (
     verify_password, get_password_hash,
     create_access_token, get_current_user, require_admin
 )
 from app.services.audit_service import log_activity
-from app.services.email_service import send_otp_email
+from app.services.email_service import send_otp_email, send_password_reset_email
 from app.config import OTP_EXPIRE_MINUTES
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
-
-from sqlalchemy import or_
 
 @router.post("/login", response_model=Token)
 def login(request_data: LoginRequest, req: Request, db: Session = Depends(get_db)):
@@ -316,4 +316,201 @@ def update_user_status(
     )
 
     return target_user
+
+
+# ==============================================================================
+# FORGOT & RESET PASSWORD WORKFLOW (10-MINUTE EXPIRING SECURE LINK)
+# ==============================================================================
+
+@router.post("/forgot-password")
+def forgot_password(data: ForgotPasswordRequest, req: Request, db: Session = Depends(get_db)):
+    ident = data.identifier.strip()
+    clean_ident = ident.lstrip("@").strip()
+
+    # Find user by username or email
+    user = db.query(User).filter(
+        or_(
+            User.username == ident,
+            User.username == clean_ident,
+            User.email == ident.lower()
+        )
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="No registered account found with that email or username. Please verify your details."
+        )
+
+    if not user.is_active:
+        log_activity(
+            db=db,
+            username=user.username,
+            role=user.role,
+            action="Blocked User Password Reset Attempt",
+            status="Denied",
+            details=f"Blocked user '{user.username}' attempted password reset",
+            ip_address=req.client.host if req.client else None
+        )
+        raise HTTPException(
+            status_code=403,
+            detail="🚫 This account is blocked/suspended by administrator. Password reset is disabled."
+        )
+
+    if not user.email or "@" not in user.email:
+        raise HTTPException(
+            status_code=400,
+            detail="This account does not have a verified email address on file. Please contact your system administrator."
+        )
+
+    # Invalidate previous unused reset tokens for this user
+    db.query(PasswordResetToken).filter(
+        PasswordResetToken.user_id == user.id,
+        PasswordResetToken.is_used == False
+    ).update({"is_used": True})
+
+    # Generate secure 48-character token
+    token = secrets.token_urlsafe(36)
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
+
+    reset_record = PasswordResetToken(
+        user_id=user.id,
+        email=user.email,
+        token=token,
+        expires_at=expires_at,
+        is_used=False
+    )
+    db.add(reset_record)
+    db.commit()
+
+    # Determine Base URL
+    base_url = str(req.base_url).rstrip("/")
+    reset_url = f"{base_url}/?reset_token={token}"
+
+    user_display = user.full_name or user.username
+    email_sent = send_password_reset_email(to_email=user.email, reset_url=reset_url, user_name=user_display)
+
+    log_activity(
+        db=db,
+        username=user.username,
+        role=user.role,
+        action="Password Reset Requested",
+        status="Success" if email_sent else "Warning",
+        details=f"Password reset link generated for '{user.email}' (Valid 10 mins). Dispatch status: {email_sent}",
+        ip_address=req.client.host if req.client else None
+    )
+
+    if not email_sent:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to send password reset email. Please verify SMTP/Email relay configuration."
+        )
+
+    # Mask email for privacy (e.g. it***@gmail.com)
+    email_parts = user.email.split("@")
+    if len(email_parts[0]) > 2:
+        masked_user = email_parts[0][:2] + "***"
+    else:
+        masked_user = email_parts[0][:1] + "***"
+    masked_email = f"{masked_user}@{email_parts[1]}"
+
+    return {
+        "status": "success",
+        "message": f"Password reset link has been dispatched to {masked_email}. Please check your inbox and click the link within 10 minutes.",
+        "email": masked_email,
+        "expires_in_seconds": 600
+    }
+
+
+@router.get("/verify-reset-token")
+def verify_reset_token(token: str, db: Session = Depends(get_db)):
+    if not token or not token.strip():
+        raise HTTPException(status_code=400, detail="Missing reset token.")
+
+    token_rec = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token == token.strip(),
+        PasswordResetToken.is_used == False
+    ).first()
+
+    now = datetime.utcnow()
+    if not token_rec:
+        raise HTTPException(
+            status_code=400,
+            detail="This password reset link is invalid or has already been used. Please request a fresh reset link."
+        )
+
+    if token_rec.expires_at < now:
+        raise HTTPException(
+            status_code=400,
+            detail="⚠️ This password reset link has expired (10-minute validity window elapsed). Please request a new link."
+        )
+
+    user = db.query(User).filter(User.id == token_rec.user_id).first()
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=403,
+            detail="The account associated with this reset link is inactive or suspended."
+        )
+
+    remaining_seconds = int((token_rec.expires_at - now).total_seconds())
+
+    return {
+        "valid": True,
+        "username": user.username,
+        "full_name": user.full_name or user.username,
+        "email": user.email,
+        "remaining_seconds": max(remaining_seconds, 0)
+    }
+
+
+@router.post("/reset-password")
+def reset_password(data: ResetPasswordRequest, req: Request, db: Session = Depends(get_db)):
+    token = data.token.strip()
+    new_password = data.new_password
+
+    if not token:
+        raise HTTPException(status_code=400, detail="Missing password reset token.")
+
+    if not new_password or len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters long.")
+
+    token_rec = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token == token,
+        PasswordResetToken.is_used == False
+    ).first()
+
+    now = datetime.utcnow()
+    if not token_rec or token_rec.expires_at < now:
+        raise HTTPException(
+            status_code=400,
+            detail="⚠️ This password reset link has expired or is invalid. Please request a fresh reset link."
+        )
+
+    user = db.query(User).filter(User.id == token_rec.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User account not found.")
+
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="🚫 This account is blocked by administrator.")
+
+    # Update Password
+    user.hashed_password = get_password_hash(new_password)
+    token_rec.is_used = True
+    db.commit()
+
+    log_activity(
+        db=db,
+        username=user.username,
+        role=user.role,
+        action="Password Reset Completed",
+        status="Success",
+        details=f"User '{user.username}' successfully reset their password via secure email token.",
+        ip_address=req.client.host if req.client else None
+    )
+
+    return {
+        "status": "success",
+        "message": "🎉 Password has been reset successfully! You can now sign in with your new password.",
+        "username": user.username
+    }
 

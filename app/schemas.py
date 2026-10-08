@@ -34,6 +34,13 @@ class OTPResponse(BaseModel):
     email: Optional[str] = None
     expires_in_seconds: Optional[int] = 600
 
+class ForgotPasswordRequest(BaseModel):
+    identifier: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
 class UserResponse(BaseModel):
     id: int
     username: str
