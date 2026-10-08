@@ -18,9 +18,22 @@ from app.config import OTP_EXPIRE_MINUTES
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
+from sqlalchemy import or_
+
 @router.post("/login", response_model=Token)
 def login(request_data: LoginRequest, req: Request, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == request_data.username).first()
+    identifier = request_data.username.strip()
+    clean_identifier = identifier.lstrip("@").strip()
+    
+    # Query by username, handle without @, or email address
+    user = db.query(User).filter(
+        or_(
+            User.username == identifier,
+            User.username == clean_identifier,
+            User.email == identifier.lower()
+        )
+    ).first()
+
     if not user or not verify_password(request_data.password, user.hashed_password):
         log_activity(
             db=db,
@@ -33,7 +46,7 @@ def login(request_data: LoginRequest, req: Request, db: Session = Depends(get_db
         )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect username/email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
