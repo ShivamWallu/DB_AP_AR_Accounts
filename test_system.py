@@ -174,9 +174,11 @@ def test_full_pipeline():
         print("\n12. Testing Audit Log Recording...")
         res = client.get("/api/audit/logs", headers=admin_headers)
         assert res.status_code == 200
-        logs = res.json()
-        print(f"   [PASS] Total Audit Logs: {len(logs)}")
-        for l in logs[:4]:
+        data = res.json()
+        log_items = data.get("items", data) if isinstance(data, dict) else data
+        total_logs = data.get("total", len(log_items)) if isinstance(data, dict) else len(log_items)
+        print(f"   [PASS] Total Audit Logs: {total_logs}")
+        for l in log_items[:4]:
             print(f"     [{l['timestamp']}] {l['user_username']} ({l['user_role']}) - {l['action']}: {l['status']}")
 
     print("\n================================================================================")
