@@ -187,9 +187,9 @@ const Audit = {
         </thead>
         <tbody>
           ${this.logs.map(log => {
-            const dateObj = new Date(log.timestamp);
-            const dateStr = dateObj.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dateObj = (window.App && App.parseDate) ? App.parseDate(log.timestamp) : new Date(typeof log.timestamp === 'string' && !log.timestamp.endsWith('Z') ? log.timestamp + 'Z' : log.timestamp);
+            const dateStr = dateObj ? dateObj.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+            const timeStr = dateObj ? dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }) : '—';
             
             const isVerifiedAction = log.action && log.action.includes("Verified");
             const isUnverifiedAction = log.action && log.action.includes("Unverified");

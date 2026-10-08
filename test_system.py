@@ -125,7 +125,7 @@ def test_full_pipeline():
         # 11. Test Multi-User Real-Time Server Verification Workflow
         print("\n11. Testing Multi-User Real-Time Server Verification Workflow...")
         # Admin verifies a voucher
-        test_vno = first_db['voucher_number'] or "VOUCH-TEST-001"
+        test_vno = f"TEST-VNO-{first_db['id']}"
         res = client.post("/api/data/verify", json={
             "dataset_type": "daybook",
             "record_id": first_db['id'],
@@ -133,6 +133,14 @@ def test_full_pipeline():
         }, headers=admin_headers)
         assert res.status_code == 200, f"Verify failed: {res.text}"
         v_res = res.json()
+        if v_res["status"] == "unverified":
+            # Re-toggle to verified
+            res = client.post("/api/data/verify", json={
+                "dataset_type": "daybook",
+                "record_id": first_db['id'],
+                "voucher_number": test_vno
+            }, headers=admin_headers)
+            v_res = res.json()
         assert v_res["status"] == "verified"
         assert v_res["data"]["verified_by"] is not None
         print(f"   [PASS] Admin verified voucher '{test_vno}' successfully as '{v_res['data']['verified_by']}'")

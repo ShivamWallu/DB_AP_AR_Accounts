@@ -89,7 +89,7 @@ def process_import_batch(
     missing_docs = [dt for dt in ["Day Book", "AP", "AR"] if dt not in uploaded_files]
     if missing_docs:
         raise ValueError(f"Incomplete Dataset: All 3 files (Day Book, AP, AR) are mandatory. Missing: {', '.join(missing_docs)}")
-    now = datetime.utcnow()
+    now = datetime.now()
     batch_code = generate_next_batch_code(db)
     date_str = now.strftime("%d-%b-%Y")
     time_str = now.strftime("%I:%M:%S %p")

@@ -6,6 +6,36 @@ const App = {
   dtAR: null,
   filterData: null,
 
+  parseDate(rawDt) {
+    if (!rawDt) return null;
+    let d;
+    if (typeof rawDt === "string") {
+      const clean = rawDt.trim();
+      if (!clean.endsWith("Z") && !/[+-]\d{2}:\d{2}$/.test(clean)) {
+        d = new Date(clean + "Z");
+      } else {
+        d = new Date(clean);
+      }
+    } else {
+      d = new Date(rawDt);
+    }
+    return isNaN(d.getTime()) ? null : d;
+  },
+
+  formatDateTime(rawDt) {
+    const d = this.parseDate(rawDt);
+    if (!d) return rawDt ? String(rawDt) : "—";
+    return d.toLocaleString([], {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true
+    });
+  },
+
   init() {
     Auth.init();
     Upload.init();
@@ -524,7 +554,7 @@ const App = {
                   <td>${u.full_name || '—'}</td>
                   <td><span class="user-role-badge ${u.role.toLowerCase()}">${u.role}</span></td>
                   <td><span class="badge ${u.is_active ? 'badge-success' : 'badge-danger'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
-                  <td style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(u.created_at).toLocaleString()}</td>
+                  <td style="font-size: 0.8rem; color: var(--text-secondary);">${App.formatDateTime(u.created_at)}</td>
                 </tr>
               `).join("")}
             </tbody>
