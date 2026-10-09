@@ -8,287 +8,274 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Allura&family=Caveat:wght@600;700&family=Cedarville+Cursive&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Herr+Von+Muellerhoff&family=Inter:wght@400;500;600;700;800;900&family=Italianno&family=JetBrains+Mono:wght@500;600;700&family=Kristi&family=La+Belle+Aurore&family=Marck+Script&family=Meddon&family=Monsieur+La+Doulaise&family=Mr+De+Haviland&family=Mrs+Saint+Delafield&family=Nothing+You+Could+Do&family=Pinyon+Script&family=Reenie+Beanie&family=Rouge+Script&family=Sacramento&family=Satisfy&family=Whisper&family=WindSong:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=9.0">
+  <link rel="stylesheet" href="/static/css/style.css?v=10.0">
 </head>
 <body>
 
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
-  <!-- AUTHENTICATION SCREEN -->
+  <!-- AUTHENTICATION SCREEN (SLIDE LOGIN FORM DESIGN) -->
   <div id="auth-screen" class="auth-wrapper" style="display: flex;">
     
-    <!-- Finance Sticker Images (Large Standard Size, Sharp Square Corners & Full Professional Distribution) -->
-    <div class="auth-stickers-layer" id="auth-stickers-layer">
-      <!-- 1. Top-Left Outer -->
-      <div class="auth-sticker-item sticker-pos-1">
-        <img src="/static/images/Finance1.jpg" alt="Finance 1" class="auth-finance-sticker-img" />
-      </div>
-
-      <!-- 2. Top-Left Inner -->
-      <div class="auth-sticker-item sticker-pos-2">
-        <img src="/static/images/Finance2.jpg" alt="Finance 2" class="auth-finance-sticker-img" />
-      </div>
-
-      <!-- 3. Mid-Left Outer -->
-      <div class="auth-sticker-item sticker-pos-3">
-        <img src="/static/images/Finance4.jpg" alt="Finance 4" class="auth-finance-sticker-img" />
-      </div>
-
-      <!-- 4. Lower-Left Inner (Fills Bottom-Left Void) -->
-      <div class="auth-sticker-item sticker-pos-4">
-        <img src="/static/images/Finance3.jpg" alt="Finance 3" class="auth-finance-sticker-img" />
-      </div>
-
-      <!-- 5. Bottom-Left Outer -->
-      <div class="auth-sticker-item sticker-pos-5">
-        <img src="/static/images/Finance5.jpg" alt="Finance 5" class="auth-finance-sticker-img" />
-      </div>
-
-      <!-- 6. Top-Right Outer -->
-      <div class="auth-sticker-item sticker-pos-6">
-        <img src="/static/images/Finance3.jpg" alt="Finance 3" class="auth-finance-sticker-img" />
-      </div>
-
-      <!-- 7. Top-Right Inner -->
-      <div class="auth-sticker-item sticker-pos-7">
-        <img src="/static/images/Finance5.jpg" alt="Finance 5" class="auth-finance-sticker-img" />
-      </div>
-
-      <!-- 8. Mid-Right Inner (Fills Mid-Right Void) -->
-      <div class="auth-sticker-item sticker-pos-8">
-        <img src="/static/images/Finance1.jpg" alt="Finance 1" class="auth-finance-sticker-img" />
-      </div>
-
-      <!-- 9. Lower-Right Outer -->
-      <div class="auth-sticker-item sticker-pos-9">
-        <img src="/static/images/Finance2.jpg" alt="Finance 2" class="auth-finance-sticker-img" />
-      </div>
-
-      <!-- 10. Bottom-Right Outer -->
-      <div class="auth-sticker-item sticker-pos-10">
-        <img src="/static/images/Finance4.jpg" alt="Finance 4" class="auth-finance-sticker-img" />
-      </div>
+    <!-- Full-Screen Photo Collage Background Grid -->
+    <div class="auth-bg-collage">
+      <div class="auth-bg-cell"><img src="/static/images/Finance1.jpg" alt="Finance 1" /></div>
+      <div class="auth-bg-cell"><img src="/static/images/Finance2.jpg" alt="Finance 2" /></div>
+      <div class="auth-bg-cell"><img src="/static/images/Finance3.jpg" alt="Finance 3" /></div>
+      <div class="auth-bg-cell"><img src="/static/images/Finance4.jpg" alt="Finance 4" /></div>
+      <div class="auth-bg-cell"><img src="/static/images/Finance5.jpg" alt="Finance 5" /></div>
+      <div class="auth-bg-cell"><img src="/static/images/Finance2.jpg" alt="Finance 2" /></div>
+      <div class="auth-bg-cell"><img src="/static/images/Finance4.jpg" alt="Finance 4" /></div>
+      <div class="auth-bg-cell"><img src="/static/images/Finance1.jpg" alt="Finance 1" /></div>
     </div>
+    <div class="auth-bg-overlay"></div>
 
-    <div class="auth-card" id="auth-main-card">
-      <div class="auth-header">
-        <div class="auth-brand-icon-wrapper">
-          <img src="/static/images/KOGM_LOgo.jpg" alt="KOGM Logo" class="auth-brand-logo-img">
+    <!-- Centered Slide Form Container -->
+    <div class="auth-slide-container">
+      
+      <!-- Top Title (Slide Form Style) -->
+      <h1 class="auth-slide-main-title">SLIDE LOGIN FORM</h1>
+
+      <!-- Central Translucent Dark Glass Card -->
+      <div class="auth-card auth-slide-card" id="auth-main-card">
+        
+        <!-- Circular Top Concentric Emblem -->
+        <div class="auth-circle-emblem">
+          <div class="auth-circle-inner">
+            <img src="/static/images/KOGM_LOgo.jpg" alt="KOGM Logo" class="auth-emblem-logo">
+          </div>
         </div>
-        <h1 class="auth-title">Finance Day Book</h1>
-        <p class="auth-subtitle">KOGM Enterprise Financial ERP • Day Book • AP • AR Audit Suite</p>
-      </div>
 
-      <!-- Auth Mode Switcher Tabs -->
-      <div class="auth-nav-tabs">
-        <button type="button" class="auth-nav-tab active" id="tab-btn-login" onclick="Auth.switchAuthTab('login')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-          Sign In
-        </button>
-        <button type="button" class="auth-nav-tab" id="tab-btn-register" onclick="Auth.switchAuthTab('register')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-          Create Account
-        </button>
-      </div>
+        <!-- Hidden Auth Mode Switcher Tabs (Preserves JS API compatibility) -->
+        <div class="auth-nav-tabs" style="display: none;">
+          <button type="button" class="auth-nav-tab active" id="tab-btn-login" onclick="Auth.switchAuthTab('login')">Sign In</button>
+          <button type="button" class="auth-nav-tab" id="tab-btn-register" onclick="Auth.switchAuthTab('register')">Create Account</button>
+        </div>
 
-      <!-- 1. SIGN IN FORM -->
-      <form id="login-form">
-        <div style="display: flex; flex-direction: column; gap: 1.1rem;">
-          <div class="filter-group">
-            <label class="filter-label" for="login-username">Username or Email Address</label>
-            <div class="auth-input-wrapper">
-              <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              <input type="text" id="login-username" class="form-control auth-control" placeholder="e.g. shivam or itchd.kogm@gmail.com" required autofocus autocomplete="username" />
+        <!-- 1. SIGN IN FORM -->
+        <form id="login-form">
+          <div class="auth-slide-form-group">
+            <div class="auth-slide-input-wrapper">
+              <svg class="auth-slide-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="login-username" class="auth-slide-control" placeholder="Email Address or Username" required autofocus autocomplete="username" />
             </div>
           </div>
 
-          <div class="filter-group">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <label class="filter-label" for="login-password" style="margin: 0;">Password</label>
-              <a href="javascript:void(0)" onclick="Auth.showForgotPasswordView()" class="auth-link-forgot" style="font-size: 0.78rem; font-weight: 600; color: #2563eb; text-decoration: none;">
-                Forgot Password?
-              </a>
-            </div>
-            <div class="auth-input-wrapper" style="margin-top: 0.35rem;">
-              <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <input type="password" id="login-password" class="form-control auth-control" placeholder="••••••••" required autocomplete="current-password" />
+          <div class="auth-slide-form-group">
+            <div class="auth-slide-input-wrapper">
+              <svg class="auth-slide-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="login-password" class="auth-slide-control" placeholder="Password" required autocomplete="current-password" />
             </div>
           </div>
 
-          <button type="submit" id="btn-login-submit" class="btn btn-primary btn-auth-submit" style="width: 100%; padding: 0.8rem; font-size: 0.95rem; margin-top: 0.3rem; font-weight: 700;">
-            Sign In ➔
+          <div class="auth-slide-remember-row">
+            <label class="auth-slide-checkbox-label">
+              <input type="checkbox" id="login-remember-me" checked />
+              <span>Keep Me Logged In</span>
+            </label>
+          </div>
+
+          <button type="submit" id="btn-login-submit" class="auth-slide-btn-submit">
+            LOG IN
           </button>
-        </div>
-      </form>
 
-      <!-- 2. REGISTRATION CONTAINER (OTP BASED) -->
-      <div id="register-container" style="display: none;">
-        <!-- Registration Step 1: User Details Form -->
-        <form id="register-step1-form">
-          <div style="display: flex; flex-direction: column; gap: 0.9rem;">
-            <div class="filter-group">
-              <label class="filter-label" for="reg-fullname">Full Name</label>
-              <input type="text" id="reg-fullname" class="form-control auth-control" placeholder="e.g. Shivam Sharma" required />
+          <!-- Links Row: Forgot Password & Register -->
+          <div class="auth-slide-links-row">
+            <a href="javascript:void(0)" onclick="Auth.showForgotPasswordView()" class="auth-slide-link">
+              FORGOT PASSWORD?
+            </a>
+            <a href="javascript:void(0)" onclick="Auth.switchAuthTab('register')" class="auth-slide-link">
+              NEW USER? REGISTER
+            </a>
+          </div>
+
+          <!-- Or Login Using : Quick Demo Logins -->
+          <div class="auth-slide-social-row" id="quick-creds-container">
+            <span class="auth-slide-social-label">Or Login Using :</span>
+            <div class="auth-slide-social-btns">
+              <button type="button" class="auth-slide-social-btn btn-social-admin" title="Quick Login: Admin (Admin@123)" onclick="Auth.fillDemoCredentials('admin', 'Admin@123')">
+                A
+              </button>
+              <button type="button" class="auth-slide-social-btn btn-social-akhtar" title="Quick Login: Akhtar (Akhtar@123)" onclick="Auth.fillDemoCredentials('akhtar', 'Akhtar@123')">
+                Ak
+              </button>
+              <button type="button" class="auth-slide-social-btn btn-social-auditor" title="Quick Login: Auditor (Audit@123)" onclick="Auth.fillDemoCredentials('auditor', 'Audit@123')">
+                Au
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- 2. REGISTRATION CONTAINER (OTP BASED) -->
+        <div id="register-container" style="display: none;">
+          <div class="auth-slide-subview-header">
+            <h3 class="auth-slide-subview-title">CREATE ACCOUNT</h3>
+            <p class="auth-slide-subview-desc">Register for KOGM Finance Day Book ERP</p>
+          </div>
+
+          <!-- Registration Step 1: User Details Form -->
+          <form id="register-step1-form">
+            <div class="auth-slide-form-group">
+              <div class="auth-slide-input-wrapper">
+                <svg class="auth-slide-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="reg-fullname" class="auth-slide-control" placeholder="Full Name (e.g. Shivam Sharma)" required />
+              </div>
             </div>
 
-            <div class="filter-group">
-              <label class="filter-label" for="reg-username">Username</label>
-              <input type="text" id="reg-username" class="form-control auth-control" placeholder="e.g. shivam.ai" required autocomplete="username" />
+            <div class="auth-slide-form-group">
+              <div class="auth-slide-input-wrapper">
+                <svg class="auth-slide-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                <input type="text" id="reg-username" class="auth-slide-control" placeholder="Username (e.g. shivam)" required autocomplete="username" />
+              </div>
             </div>
 
-            <div class="filter-group">
-              <label class="filter-label" for="reg-email">Email Address (For Verification OTP)</label>
-              <input type="email" id="reg-email" class="form-control auth-control" placeholder="e.g. user@company.com" required autocomplete="email" />
+            <div class="auth-slide-form-group">
+              <div class="auth-slide-input-wrapper">
+                <svg class="auth-slide-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <input type="email" id="reg-email" class="auth-slide-control" placeholder="Email Address (For Verification OTP)" required autocomplete="email" />
+              </div>
             </div>
 
-            <div class="filter-group">
-              <label class="filter-label" for="reg-password">Create Password (Min 6 chars)</label>
-              <input type="password" id="reg-password" class="form-control auth-control" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
+            <div class="auth-slide-form-group">
+              <div class="auth-slide-input-wrapper">
+                <svg class="auth-slide-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="reg-password" class="auth-slide-control" placeholder="Create Password (Min 6 chars)" required minlength="6" autocomplete="new-password" />
+              </div>
             </div>
 
-            <div class="filter-group">
-              <label class="filter-label" for="reg-role">Account Access Level</label>
-              <select id="reg-role" class="form-control auth-control select-dropdown" style="font-weight: 600; color: #1e3a8a;">
-                <option value="Admin" selected>★ Admin (Full Control, Uploads & All Features)</option>
+            <div class="auth-slide-form-group">
+              <select id="reg-role" class="auth-slide-control" style="cursor: pointer;">
+                <option value="Admin" selected>★ Admin (Full Control & Uploads)</option>
                 <option value="Employee">Employee (Standard Access)</option>
               </select>
             </div>
 
-            <button type="submit" id="btn-send-otp" class="btn btn-primary btn-auth-submit" style="width: 100%; padding: 0.8rem; font-size: 0.95rem; margin-top: 0.4rem; font-weight: 700;">
-              Send Verification OTP ➔
-            </button>
-          </div>
-        </form>
-
-        <!-- Registration Step 2: 6-Digit OTP Verification Form -->
-        <form id="register-step2-form" style="display: none;">
-          <div style="display: flex; flex-direction: column; gap: 1rem; text-align: center;">
-            <div class="otp-sent-banner">
-              <div style="font-size: 0.8rem; color: #475569;">Verification code sent to:</div>
-              <div id="otp-target-email-display" style="font-weight: 700; color: #1e3a8a; font-size: 0.95rem; word-break: break-all;"></div>
-            </div>
-
-            <div class="filter-group" style="text-align: center;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                <label class="filter-label" style="margin: 0;">Enter 6-Digit OTP</label>
-                <button type="button" id="btn-paste-clipboard-otp" class="btn-paste-otp" title="Paste OTP copied from Gmail" onclick="Auth.pasteFromClipboard()">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  Paste from Gmail
-                </button>
-              </div>
-
-              <!-- 6-Box Segmented Digits with Auto-focus & Paste Support -->
-              <div class="otp-boxes-wrapper" id="otp-boxes-container">
-                <input type="text" maxlength="1" class="otp-digit-box" data-index="0" inputmode="numeric" pattern="[0-9]*" autofocus autocomplete="one-time-code" />
-                <input type="text" maxlength="1" class="otp-digit-box" data-index="1" inputmode="numeric" pattern="[0-9]*" />
-                <input type="text" maxlength="1" class="otp-digit-box" data-index="2" inputmode="numeric" pattern="[0-9]*" />
-                <input type="text" maxlength="1" class="otp-digit-box" data-index="3" inputmode="numeric" pattern="[0-9]*" />
-                <input type="text" maxlength="1" class="otp-digit-box" data-index="4" inputmode="numeric" pattern="[0-9]*" />
-                <input type="text" maxlength="1" class="otp-digit-box" data-index="5" inputmode="numeric" pattern="[0-9]*" />
-              </div>
-              <input type="hidden" id="reg-otp-code" value="" />
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; padding: 0 0.25rem;">
-              <span id="otp-countdown-text" style="color: #64748b;">Expires in: <strong id="otp-timer-val" style="color: #dc2626;">10:00</strong></span>
-              <button type="button" id="btn-resend-otp" class="btn-link" onclick="Auth.handleResendOTP()">Resend OTP</button>
-            </div>
-
-            <button type="submit" id="btn-verify-otp-submit" class="btn btn-success btn-auth-submit" style="width: 100%; padding: 0.8rem; font-size: 0.95rem; font-weight: 700;">
-              ✓ Verify OTP & Activate Account
+            <button type="submit" id="btn-send-otp" class="auth-slide-btn-submit" style="margin-top: 0.35rem;">
+              SEND VERIFICATION OTP
             </button>
 
-            <button type="button" class="btn-link" onclick="Auth.backToStep1()" style="font-size: 0.82rem; color: #64748b; margin-top: 0.25rem;">
-              ← Change Details / Edit Email
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- 3. FORGOT PASSWORD REQUEST CONTAINER -->
-      <div id="forgot-container" style="display: none;">
-        <form id="forgot-password-form">
-          <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <div class="auth-info-banner" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 12px 14px; display: flex; gap: 10px; font-size: 0.82rem; line-height: 1.45; color: #1e3a8a;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" style="flex-shrink:0; margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              <span>Enter your <strong>Username</strong> or registered <strong>Email Address</strong>. We'll send you a secure link that expires in <strong>10 minutes</strong>.</span>
-            </div>
-
-            <div class="filter-group">
-              <label class="filter-label" for="forgot-identifier">Username or Email Address</label>
-              <div class="auth-input-wrapper">
-                <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                <input type="text" id="forgot-identifier" class="form-control auth-control" placeholder="e.g. shivam or itchd.kogm@gmail.com" required autofocus />
-              </div>
-            </div>
-
-            <button type="submit" id="btn-forgot-submit" class="btn btn-primary btn-auth-submit" style="width: 100%; padding: 0.8rem; font-size: 0.95rem; font-weight: 700;">
-              Send Reset Link to Email ➔
-            </button>
-
-            <div style="text-align: center; margin-top: 0.35rem;">
-              <a href="javascript:void(0)" onclick="Auth.switchAuthTab('login')" class="btn-link" style="font-size: 0.84rem; font-weight: 600; color: #64748b; text-decoration: none;">
-                ← Back to Sign In
+            <div class="auth-slide-back-row">
+              <a href="javascript:void(0)" onclick="Auth.switchAuthTab('login')" class="auth-slide-link">
+                ALREADY REGISTERED? LOG IN
               </a>
             </div>
-          </div>
-        </form>
-      </div>
+          </form>
 
-      <!-- 4. RESET PASSWORD FORM CONTAINER (OPENED VIA EMAIL TOKEN) -->
-      <div id="reset-password-container" style="display: none;">
-        <form id="reset-password-form">
-          <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <div class="auth-info-banner" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px 14px; text-align: center;">
-              <div style="font-weight: 700; color: #166534; font-size: 0.92rem;">Set New Password for <span id="reset-user-display" style="color: #15803d;">Account</span></div>
-              <div style="font-size: 0.78rem; color: #475569; margin-top: 4px;">
-                Link expires in: <strong id="reset-timer-val" style="color: #dc2626; font-size: 0.88rem;">10:00</strong>
+          <!-- Registration Step 2: 6-Digit OTP Verification Form -->
+          <form id="register-step2-form" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 1rem; text-align: center;">
+              <div class="otp-sent-banner" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; padding: 10px; color: #ffffff;">
+                <div style="font-size: 0.8rem; color: #cbd5e1;">Verification code sent to:</div>
+                <div id="otp-target-email-display" style="font-weight: 700; color: #38bdf8; font-size: 0.95rem; word-break: break-all;"></div>
+              </div>
+
+              <div class="filter-group" style="text-align: center;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                  <label class="filter-label" style="margin: 0; color: #ffffff;">Enter 6-Digit OTP</label>
+                  <button type="button" id="btn-paste-clipboard-otp" class="btn-paste-otp" title="Paste OTP copied from Gmail" onclick="Auth.pasteFromClipboard()">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Paste OTP
+                  </button>
+                </div>
+
+                <div class="otp-boxes-wrapper" id="otp-boxes-container">
+                  <input type="text" maxlength="1" class="otp-digit-box" data-index="0" inputmode="numeric" pattern="[0-9]*" autofocus autocomplete="one-time-code" />
+                  <input type="text" maxlength="1" class="otp-digit-box" data-index="1" inputmode="numeric" pattern="[0-9]*" />
+                  <input type="text" maxlength="1" class="otp-digit-box" data-index="2" inputmode="numeric" pattern="[0-9]*" />
+                  <input type="text" maxlength="1" class="otp-digit-box" data-index="3" inputmode="numeric" pattern="[0-9]*" />
+                  <input type="text" maxlength="1" class="otp-digit-box" data-index="4" inputmode="numeric" pattern="[0-9]*" />
+                  <input type="text" maxlength="1" class="otp-digit-box" data-index="5" inputmode="numeric" pattern="[0-9]*" />
+                </div>
+                <input type="hidden" id="reg-otp-code" value="" />
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; padding: 0 0.25rem;">
+                <span id="otp-countdown-text" style="color: #cbd5e1;">Expires in: <strong id="otp-timer-val" style="color: #f87171;">10:00</strong></span>
+                <button type="button" id="btn-resend-otp" class="btn-link" style="color: #38bdf8;" onclick="Auth.handleResendOTP()">Resend OTP</button>
+              </div>
+
+              <button type="submit" id="btn-verify-otp-submit" class="auth-slide-btn-submit" style="background: #10b981;">
+                VERIFY OTP & ACTIVATE
+              </button>
+
+              <button type="button" class="btn-link" onclick="Auth.backToStep1()" style="font-size: 0.82rem; color: #94a3b8; margin-top: 0.25rem;">
+                ← Change Details / Edit Email
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 3. FORGOT PASSWORD REQUEST CONTAINER -->
+        <div id="forgot-container" style="display: none;">
+          <div class="auth-slide-subview-header">
+            <h3 class="auth-slide-subview-title">RESET PASSWORD</h3>
+            <p class="auth-slide-subview-desc">A 10-minute reset link will be sent to your email</p>
+          </div>
+
+          <form id="forgot-password-form">
+            <div class="auth-slide-form-group">
+              <div class="auth-slide-input-wrapper">
+                <svg class="auth-slide-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <input type="text" id="forgot-identifier" class="auth-slide-control" placeholder="Email Address or Username" required autofocus />
               </div>
             </div>
 
+            <button type="submit" id="btn-forgot-submit" class="auth-slide-btn-submit">
+              SEND RESET LINK
+            </button>
+
+            <div class="auth-slide-back-row">
+              <a href="javascript:void(0)" onclick="Auth.switchAuthTab('login')" class="auth-slide-link">
+                ← BACK TO LOG IN
+              </a>
+            </div>
+          </form>
+        </div>
+
+        <!-- 4. RESET PASSWORD FORM CONTAINER (OPENED VIA EMAIL TOKEN) -->
+        <div id="reset-password-container" style="display: none;">
+          <div class="auth-slide-subview-header">
+            <h3 class="auth-slide-subview-title">NEW PASSWORD</h3>
+            <p class="auth-slide-subview-desc">Link expires in: <strong id="reset-timer-val" style="color: #f87171;">10:00</strong></p>
+          </div>
+
+          <form id="reset-password-form">
             <input type="hidden" id="reset-token-hidden" value="" />
 
-            <div class="filter-group">
-              <label class="filter-label" for="reset-new-password">New Password (Min 6 chars)</label>
-              <div class="auth-input-wrapper">
-                <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <input type="password" id="reset-new-password" class="form-control auth-control" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
+            <div class="auth-slide-form-group">
+              <div class="auth-slide-input-wrapper">
+                <svg class="auth-slide-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="reset-new-password" class="auth-slide-control" placeholder="New Password (Min 6 chars)" required minlength="6" autocomplete="new-password" />
               </div>
             </div>
 
-            <div class="filter-group">
-              <label class="filter-label" for="reset-confirm-password">Confirm New Password</label>
-              <div class="auth-input-wrapper">
-                <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <input type="password" id="reset-confirm-password" class="form-control auth-control" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
+            <div class="auth-slide-form-group">
+              <div class="auth-slide-input-wrapper">
+                <svg class="auth-slide-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="reset-confirm-password" class="auth-slide-control" placeholder="Confirm New Password" required minlength="6" autocomplete="new-password" />
               </div>
             </div>
 
-            <button type="submit" id="btn-reset-password-submit" class="btn btn-success btn-auth-submit" style="width: 100%; padding: 0.8rem; font-size: 0.95rem; font-weight: 700;">
-              ✓ Set New Password & Sign In
+            <button type="submit" id="btn-reset-password-submit" class="auth-slide-btn-submit" style="background: #10b981;">
+              SET NEW PASSWORD & SIGN IN
             </button>
 
-            <div style="text-align: center; margin-top: 0.35rem;">
-              <a href="javascript:void(0)" onclick="Auth.switchAuthTab('login')" class="btn-link" style="font-size: 0.84rem; font-weight: 600; color: #64748b; text-decoration: none;">
-                ← Cancel & Return to Sign In
+            <div class="auth-slide-back-row">
+              <a href="javascript:void(0)" onclick="Auth.switchAuthTab('login')" class="auth-slide-link">
+                ← CANCEL & RETURN TO LOG IN
               </a>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
+
       </div>
 
-      <div class="quick-creds" id="quick-creds-container">
-        <div style="font-weight: 600; color: #64748b; margin-bottom: 0.35rem; font-size: 0.78rem;">Quick Demo Sign-in:</div>
-        <div class="quick-cred-btn" onclick="Auth.fillDemoCredentials('admin', 'Admin@123')">
-          <span><strong>Admin:</strong> admin (Admin@123)</span>
-          <span class="quick-cred-role">Role: Admin ➔</span>
-        </div>
-        <div class="quick-cred-btn" onclick="Auth.fillDemoCredentials('akhtar', 'Akhtar@123')">
-          <span><strong>Akhtar:</strong> akhtar (Akhtar@123)</span>
-          <span class="quick-cred-role">Role: Admin ➔</span>
-        </div>
-      </div>
+      <!-- Bottom Footer (Slide Style) -->
+      <footer class="auth-slide-footer">
+        © 2026 Slide Login Form . All rights reserved | Design by KOGM Finance Day Book
+      </footer>
+
     </div>
 
   </div>
@@ -839,14 +826,14 @@
   </div>
 
   <!-- JS MODULES -->
-  <script src="/static/js/api.js?v=7.0"></script>
-  <script src="/static/js/auth.js?v=7.0"></script>
-  <script src="/static/js/signature.js?v=7.0"></script>
-  <script src="/static/js/dashboard.js?v=7.0"></script>
-  <script src="/static/js/datatable.js?v=7.0"></script>
-  <script src="/static/js/upload.js?v=7.0"></script>
-  <script src="/static/js/imports.js?v=7.0"></script>
-  <script src="/static/js/audit.js?v=7.0"></script>
-  <script src="/static/js/app.js?v=7.0"></script>
+  <script src="/static/js/api.js?v=10.0"></script>
+  <script src="/static/js/auth.js?v=10.0"></script>
+  <script src="/static/js/signature.js?v=10.0"></script>
+  <script src="/static/js/dashboard.js?v=10.0"></script>
+  <script src="/static/js/datatable.js?v=10.0"></script>
+  <script src="/static/js/upload.js?v=10.0"></script>
+  <script src="/static/js/imports.js?v=10.0"></script>
+  <script src="/static/js/audit.js?v=10.0"></script>
+  <script src="/static/js/app.js?v=10.0"></script>
 </body>
 </html>

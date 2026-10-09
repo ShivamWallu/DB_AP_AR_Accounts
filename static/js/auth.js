@@ -169,7 +169,6 @@
     const quickCreds = document.getElementById("quick-creds-container");
     const navTabs = document.querySelector(".auth-nav-tabs");
 
-    if (navTabs) navTabs.style.display = "flex";
     if (forgotContainer) forgotContainer.style.display = "none";
     if (resetContainer) resetContainer.style.display = "none";
 
@@ -185,7 +184,7 @@
       if (tabRegister) tabRegister.classList.remove("active");
       if (loginForm) loginForm.style.display = "block";
       if (registerContainer) registerContainer.style.display = "none";
-      if (quickCreds) quickCreds.style.display = "block";
+      if (quickCreds) quickCreds.style.display = "flex";
     }
   },
 
