@@ -50,6 +50,17 @@ const App = {
     }
   },
 
+  async refreshAllData() {
+    sessionStorage.removeItem("cached_dashboard_stats");
+    await this.refreshFilterOptions();
+    if (this.currentView === "dashboard") {
+      Dashboard.load();
+    } else {
+      this.onViewActivated(this.currentView);
+    }
+    this.toast("Refreshed live data", "success");
+  },
+
   bindKeyboardNavigation() {
     window.addEventListener("keydown", (e) => {
       if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;

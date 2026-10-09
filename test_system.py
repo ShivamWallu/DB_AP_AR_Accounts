@@ -277,9 +277,20 @@ def test_full_pipeline():
         from app.auth import get_password_hash
         admin_restore = db.query(User).filter(User.username == "admin").first()
         admin_restore.hashed_password = get_password_hash("Admin@123")
+
+        # Clean up test upload batch
+        if 'batch2' in locals() and batch2 and "id" in batch2:
+            b2_id = batch2["id"]
+            from app.models import ImportBatch, DayBookRecord, APRecord, ARRecord, ImportFile
+            db.query(DayBookRecord).filter(DayBookRecord.batch_id == b2_id).delete(synchronize_session=False)
+            db.query(APRecord).filter(APRecord.batch_id == b2_id).delete(synchronize_session=False)
+            db.query(ARRecord).filter(ARRecord.batch_id == b2_id).delete(synchronize_session=False)
+            db.query(ImportFile).filter(ImportFile.batch_id == b2_id).delete(synchronize_session=False)
+            db.query(ImportBatch).filter(ImportBatch.id == b2_id).delete(synchronize_session=False)
+
         db.commit()
         db.close()
-        print(f"   [PASS] Admin credentials restored cleanly to default test baseline.")
+        print(f"   [PASS] Admin credentials & test batch restored cleanly to baseline.")
 
     print("\n================================================================================")
     print("ALL TESTS PASSED WITH 100% ACCURACY!")

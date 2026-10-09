@@ -1,25 +1,22 @@
 const Dashboard = {
   async load() {
-    // 1. Instant Cache Render (0ms initial paint)
-    try {
-      const cached = sessionStorage.getItem("cached_dashboard_stats");
-      if (cached) {
-        const stats = JSON.parse(cached);
-        this.renderAll(stats);
-      }
-    } catch (_) {}
-
-    // 2. Fetch fresh live statistics
     try {
       const stats = await API.getDashboardStats();
-      sessionStorage.setItem("cached_dashboard_stats", JSON.stringify(stats));
-      this.renderAll(stats);
-    } catch (err) {
-      console.error("Failed to load dashboard:", err);
-      // Only show error if no cached data was rendered
-      if (!sessionStorage.getItem("cached_dashboard_stats")) {
-        App.toast("Failed to load dashboard statistics", "error");
+      if (stats) {
+        sessionStorage.setItem("cached_dashboard_stats", JSON.stringify(stats));
+        this.renderAll(stats);
       }
+    } catch (err) {
+      console.error("Failed to load live dashboard:", err);
+      // Fallback to cache if offline
+      try {
+        const cached = sessionStorage.getItem("cached_dashboard_stats");
+        if (cached) {
+          this.renderAll(JSON.parse(cached));
+        } else {
+          App.toast("Failed to load dashboard statistics", "error");
+        }
+      } catch (_) {}
     }
   },
 
