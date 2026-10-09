@@ -2837,10 +2837,11 @@ class DataTableController {
                       <td class="col-qty" style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 600;">${qtyStr}</td>
                       <td class="col-rate" style="text-align: right; font-variant-numeric: tabular-nums;">${rateStr}</td>
                       <td class="col-tax" style="text-align: right; font-variant-numeric: tabular-nums; color: #059669; font-weight: 600;">${taxStr}</td>
-                      <td class="col-tot" style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #0f172a;">${totStr}</td>
-                      <td class="col-status" style="text-align: center; font-weight: 700; color: #15803d; font-size: 0.68rem;">${statusStr}</td>
-                      <td class="col-created" style="font-size: 0.68rem; color: #475569; font-weight: 500;">${createdBy}</td>
-                      <td class="col-approved" style="font-size: 0.68rem; color: #1e40af; font-weight: 700;">${approvedBy}</td>
+                      <td class="col-status" style="text-align: center;">
+                        <span class="statement-status-pill ${statusStr.toLowerCase().replace(/[^a-z0-9]/g, '-')}">${statusStr}</span>
+                      </td>
+                      <td class="col-created" style="font-size: 0.67rem; color: #475569; font-weight: 500;">${createdBy}</td>
+                      <td class="col-approved" style="font-size: 0.67rem; color: #1e40af; font-weight: 700;">${approvedBy}</td>
                     </tr>
                   `;
       }).join('')}
