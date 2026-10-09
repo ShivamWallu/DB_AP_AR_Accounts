@@ -9,7 +9,6 @@ const Auth = {
   init() {
     this.bindEvents();
     this.initOtpBoxes();
-    this.init3DTilt();
     this.initResetTokenCheck();
     this.initBgCarousel();
     this.checkSession();
@@ -49,31 +48,6 @@ const Auth = {
     window.addEventListener("auth:unauthorized", () => {
       this.showLoginView();
       App.toast("Session expired or unauthorized. Please log in.", "warning");
-    });
-  },
-
-  init3DTilt() {
-    const card = document.getElementById("auth-main-card");
-    if (!card) return;
-
-    card.addEventListener("mousemove", (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const rotateX = ((y - centerY) / centerY) * -6;
-      const rotateY = ((x - centerX) / centerX) * 6;
-      card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-2px)`;
-    });
-
-    card.addEventListener("mouseleave", () => {
-      card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)`;
-      card.style.transition = "transform 0.4s ease";
-    });
-
-    card.addEventListener("mouseenter", () => {
-      card.style.transition = "none";
     });
   },
 
