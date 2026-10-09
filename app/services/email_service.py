@@ -207,7 +207,7 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
         </div>
         <div class="footer">
           <div>&copy; {current_year} Finance Day Book &bull; KOGM Enterprise Financial Suite &bull; Sent to {to_email}</div>
-          <div class="footer-creator">Created by Shivam Wallu</div>
+          <div class="footer-creator">Created by Er.Shivam Wallu</div>
         </div>
       </div>
     </body>
@@ -467,7 +467,7 @@ def build_password_reset_html_email(user_name: str, reset_url: str, to_email: st
         </div>
         <div class="footer">
           <div>&copy; {current_year} Finance Day Book &bull; KOGM Enterprise Financial Suite &bull; Sent to {to_email}</div>
-          <div class="footer-creator">Created by Shivam Wallu</div>
+          <div class="footer-creator">Created by Er.Shivam Wallu</div>
         </div>
       </div>
     </body>

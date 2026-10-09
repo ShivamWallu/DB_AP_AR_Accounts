@@ -1841,6 +1841,11 @@ class DataTableController {
 
     const startIndex = (this.page - 1) * this.pageSize;
     tbody.innerHTML = displayedRows.map((row, idx) => {
+      const prevRow = idx > 0 ? displayedRows[idx - 1] : null;
+      const currentVNo = String(row.voucher_number || row.voucher_no || "").trim();
+      const prevVNo = prevRow ? String(prevRow.voucher_number || prevRow.voucher_no || "").trim() : null;
+      const isDuplicateVNo = (prevVNo !== null && currentVNo !== "" && currentVNo !== "—" && currentVNo !== "-" && currentVNo === prevVNo);
+
       return `
         <tr data-id="${row.id}">
           <td class="dt-sticky-col-idx">${startIndex + idx + 1}</td>
@@ -1946,7 +1951,10 @@ class DataTableController {
           return `<td class="${stickyClass}"><span class="site-badge">${val}</span></td>`;
         }
 
-        if (col.key === "voucher_number") {
+        if (col.key === "voucher_number" || col.key === "voucher_no") {
+          if (isDuplicateVNo) {
+            return `<td class="${stickyClass} cell-duplicate-blank"><span style="opacity: 0; user-select: none; display: inline-block;">${val}</span></td>`;
+          }
           return `<td class="${stickyClass}"><span class="voucher-num-badge">${val}</span></td>`;
         }
 
