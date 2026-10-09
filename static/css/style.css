@@ -2510,7 +2510,7 @@ body.sidebar-collapsed .main-content {
   pointer-events: none;
 }
 
-/* Decorative Financial Stickers Layer (Surrounding Background Only) */
+/* Decorative Financial Sticker Images (Using Existing Finance1 to Finance5) */
 .auth-stickers-layer {
   position: absolute;
   top: 0;
@@ -2522,351 +2522,130 @@ body.sidebar-collapsed .main-content {
   overflow: hidden;
 }
 
-.auth-sticker {
+.auth-sticker-item {
   position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.55rem 0.95rem;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid rgba(255, 255, 255, 0.95);
-  border-radius: 14px;
-  box-shadow: 
-    0 12px 28px -6px rgba(15, 23, 42, 0.30),
-    0 4px 10px rgba(0, 0, 0, 0.12),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
   pointer-events: none;
   user-select: none;
-  transition: transform 0.4s ease;
   will-change: transform;
 }
 
-.auth-sticker-icon {
-  font-size: 1.35rem;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: #f8fafc;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
-  flex-shrink: 0;
+.auth-finance-sticker-img {
+  width: 82px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2.5px solid #ffffff;
+  box-shadow: 
+    0 10px 22px -4px rgba(15, 23, 42, 0.32),
+    0 3px 8px rgba(0, 0, 0, 0.14),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  display: block;
+  transition: transform 0.3s ease;
 }
 
-.auth-sticker-body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.auth-sticker-title {
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: #0f172a;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-}
-
-.auth-sticker-tag {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: #2563eb;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-/* Individual Sticker Positions - Distributed Across Empty Peripheral Zones */
-/* 1. Top Left Corner */
-.sticker-top-left {
-  top: 3.5%;
+/* Individual Sticker Positions - Always Outside Central Login Card */
+.sticker-pos-1 {
+  top: 4%;
   left: 3.5%;
-  transform: rotate(-6deg);
-  animation: stickerFloat1 6s ease-in-out infinite alternate;
+  transform: rotate(-7deg);
+  animation: stickerBob1 6s ease-in-out infinite alternate;
 }
-.sticker-top-left .auth-sticker-icon {
-  background: #eff6ff;
-  color: #2563eb;
-}
+.sticker-pos-1 .auth-finance-sticker-img { width: 78px; height: 52px; }
 
-/* 2. Mid Upper Left */
-.sticker-mid-left {
-  top: 28%;
+.sticker-pos-2 {
+  top: 27%;
   left: 3.5%;
   transform: rotate(5deg);
-  animation: stickerFloat2 7s ease-in-out infinite alternate;
+  animation: stickerBob2 7s ease-in-out infinite alternate;
 }
-.sticker-mid-left .auth-sticker-icon {
-  background: #ecfdf5;
-  color: #059669;
-}
-.sticker-mid-left .auth-sticker-tag {
-  color: #059669;
-}
+.sticker-pos-2 .auth-finance-sticker-img { width: 84px; height: 56px; }
 
-/* 3. Lower Left */
-.sticker-bottom-left {
-  top: 56%;
+.sticker-pos-3 {
+  top: 51%;
+  left: 3.8%;
+  transform: rotate(-6deg);
+  animation: stickerBob3 6.5s ease-in-out infinite alternate;
+}
+.sticker-pos-3 .auth-finance-sticker-img { width: 76px; height: 50px; }
+
+.sticker-pos-4 {
+  bottom: 5.5%;
   left: 4%;
-  transform: rotate(-7deg);
-  animation: stickerFloat3 6.5s ease-in-out infinite alternate;
-}
-.sticker-bottom-left .auth-sticker-icon {
-  background: #fef3c7;
-  color: #d97706;
-}
-.sticker-bottom-left .auth-sticker-tag {
-  color: #d97706;
-}
-
-/* 4. Far Bottom Left */
-.sticker-far-bottom-left {
-  bottom: 8.5%;
-  left: 4.5%;
   transform: rotate(4deg);
-  animation: stickerFloat1 8s ease-in-out infinite alternate-reverse;
+  animation: stickerBob1 8s ease-in-out infinite alternate-reverse;
 }
-.sticker-far-bottom-left .auth-sticker-icon {
-  background: #fdf2f8;
-  color: #db2777;
-}
+.sticker-pos-4 .auth-finance-sticker-img { width: 82px; height: 55px; }
 
-/* 5. Top Right Corner */
-.sticker-top-right {
-  top: 3.5%;
+.sticker-pos-5 {
+  top: 4%;
   right: 3.5%;
-  transform: rotate(7deg);
-  animation: stickerFloat2 6.5s ease-in-out infinite alternate;
+  transform: rotate(6deg);
+  animation: stickerBob2 6.5s ease-in-out infinite alternate;
 }
-.sticker-top-right .auth-sticker-icon {
-  background: #f5f3ff;
-  color: #7c3aed;
-}
-.sticker-top-right .auth-sticker-tag {
-  color: #7c3aed;
-}
+.sticker-pos-5 .auth-finance-sticker-img { width: 80px; height: 54px; }
 
-/* 6. Mid Upper Right */
-.sticker-mid-right {
-  top: 28%;
+.sticker-pos-6 {
+  top: 27%;
   right: 3.5%;
   transform: rotate(-5deg);
-  animation: stickerFloat3 7.5s ease-in-out infinite alternate;
+  animation: stickerBob3 7.5s ease-in-out infinite alternate;
 }
-.sticker-mid-right .auth-sticker-icon {
-  background: #eff6ff;
-  color: #1d4ed8;
-}
+.sticker-pos-6 .auth-finance-sticker-img { width: 84px; height: 56px; }
 
-/* 7. Lower Right */
-.sticker-bottom-right {
-  top: 56%;
-  right: 4%;
+.sticker-pos-7 {
+  top: 51%;
+  right: 3.8%;
   transform: rotate(6deg);
-  animation: stickerFloat1 7s ease-in-out infinite alternate;
+  animation: stickerBob1 7s ease-in-out infinite alternate;
 }
-.sticker-bottom-right .auth-sticker-icon {
-  background: #ecfdf5;
-  color: #10b981;
-}
-.sticker-bottom-right .auth-sticker-tag {
-  color: #10b981;
-}
+.sticker-pos-7 .auth-finance-sticker-img { width: 78px; height: 52px; }
 
-/* 8. Far Bottom Right */
-.sticker-far-bottom-right {
-  bottom: 8.5%;
-  right: 4.5%;
+.sticker-pos-8 {
+  bottom: 5.5%;
+  right: 4%;
   transform: rotate(-6deg);
-  animation: stickerFloat2 8s ease-in-out infinite alternate-reverse;
+  animation: stickerBob2 8s ease-in-out infinite alternate-reverse;
 }
-.sticker-far-bottom-right .auth-sticker-icon {
-  background: #fff7ed;
-  color: #ea580c;
-}
-.sticker-far-bottom-right .auth-sticker-tag {
-  color: #ea580c;
+.sticker-pos-8 .auth-finance-sticker-img { width: 82px; height: 55px; }
+
+@keyframes stickerBob1 {
+  0% { transform: translateY(0) rotate(-7deg); }
+  100% { transform: translateY(-7px) rotate(-5deg); }
 }
 
-/* Floating Micro-Animations */
-@keyframes stickerFloat1 {
-  0% { transform: translateY(0) rotate(var(--rot, -6deg)); }
-  100% { transform: translateY(-8px) rotate(calc(var(--rot, -6deg) + 2deg)); }
+@keyframes stickerBob2 {
+  0% { transform: translateY(0) rotate(5deg); }
+  100% { transform: translateY(-8px) rotate(3deg); }
 }
 
-@keyframes stickerFloat2 {
-  0% { transform: translateY(0) rotate(var(--rot, 5deg)); }
-  100% { transform: translateY(-10px) rotate(calc(var(--rot, 5deg) - 2deg)); }
-}
-
-@keyframes stickerFloat3 {
-  0% { transform: translateY(0) rotate(var(--rot, -7deg)); }
-  100% { transform: translateY(-7px) rotate(calc(var(--rot, -7deg) + 1.5deg)); }
+@keyframes stickerBob3 {
+  0% { transform: translateY(0) rotate(-6deg); }
+  100% { transform: translateY(-6px) rotate(-4deg); }
 }
 
 /* Responsive Sticker Scaling & Visibility (Never overlaps central card) */
 @media (max-width: 1280px) {
-  .auth-sticker {
-    transform: scale(0.88);
+  .auth-finance-sticker-img {
+    transform: scale(0.85);
   }
 }
 
 @media (max-width: 1024px) {
-  .sticker-mid-left,
-  .sticker-mid-right,
-  .sticker-bottom-left,
-  .sticker-bottom-right {
+  .sticker-pos-2,
+  .sticker-pos-3,
+  .sticker-pos-6,
+  .sticker-pos-7 {
     display: none; /* Hide middle flank stickers to guarantee zero card overlap */
   }
-  .sticker-top-left { top: 2%; left: 2%; }
-  .sticker-top-right { top: 2%; right: 2%; }
-  .sticker-far-bottom-left { bottom: 5%; left: 2%; }
-  .sticker-far-bottom-right { bottom: 5%; right: 2%; }
+  .sticker-pos-1 { top: 2%; left: 2%; }
+  .sticker-pos-5 { top: 2%; right: 2%; }
+  .sticker-pos-4 { bottom: 3%; left: 2%; }
+  .sticker-pos-8 { bottom: 3%; right: 2%; }
 }
 
 @media (max-width: 768px) {
   .auth-stickers-layer {
     display: none; /* Keep clean focus on card on mobile */
-  }
-}
-
-/* Floating Scene / Theme Switcher Bar */
-.auth-theme-bar {
-  position: absolute;
-  bottom: 1.4rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.4rem 0.85rem;
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 9999px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 25px rgba(37, 99, 235, 0.25);
-  z-index: 30;
-  transition: all 0.25s ease;
-}
-
-.auth-theme-bar:hover {
-  background: rgba(15, 23, 42, 0.96);
-  border-color: rgba(96, 165, 250, 0.55);
-}
-
-.theme-bar-label {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: #94a3b8;
-  font-size: 0.74rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding-left: 0.3rem;
-}
-
-.theme-pills {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.theme-pill {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.32rem 0.7rem;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #cbd5e1;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.theme-pill-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
-  font-size: 0.68rem;
-  font-weight: 800;
-}
-
-.theme-pill:hover {
-  background: rgba(37, 99, 235, 0.4);
-  border-color: rgba(96, 165, 250, 0.6);
-  color: #ffffff;
-}
-
-.theme-pill.active {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  border-color: #60a5fa;
-  color: #ffffff;
-  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.55);
-}
-
-.theme-pill.active .theme-pill-num {
-  background: #ffffff;
-  color: #1d4ed8;
-}
-
-.theme-autoplay-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.32rem 0.7rem;
-  border-radius: 9999px;
-  background: rgba(16, 185, 129, 0.18);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  color: #a7f3d0;
-  font-size: 0.73rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.theme-autoplay-btn:hover {
-  background: rgba(16, 185, 129, 0.3);
-  border-color: rgba(16, 185, 129, 0.6);
-}
-
-.autoplay-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
-}
-
-.autoplay-dot.paused {
-  background: #94a3b8;
-  box-shadow: none;
-}
-
-@media (max-width: 680px) {
-  .theme-pill-name {
-    display: none;
-  }
-  .theme-bar-label {
-    display: none;
-  }
-  .auth-theme-bar {
-    bottom: 0.85rem;
-    padding: 0.35rem 0.6rem;
-    gap: 0.4rem;
   }
 }
 

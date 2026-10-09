@@ -1,16 +1,11 @@
-const Auth = {
   pendingRegistration: null,
   otpTimerInterval: null,
   resetTimerInterval: null,
-  bgCarouselInterval: null,
-  currentBgIndex: 0,
-  isBgAutoPlay: true,
 
   init() {
     this.bindEvents();
     this.initOtpBoxes();
     this.initResetTokenCheck();
-    this.initBgCarousel();
     this.checkSession();
   },
 
@@ -738,86 +733,5 @@ const Auth = {
     adminOnlyElements.forEach(el => {
       el.style.display = "";
     });
-  },
-
-  /* ---------------- Dynamic FinTech Background Carousel ---------------- */
-  initBgCarousel() {
-    // Check if user previously picked a theme
-    const savedIdx = localStorage.getItem("kogm_auth_bg_theme");
-    if (savedIdx !== null && !isNaN(parseInt(savedIdx))) {
-      this.setBgTheme(parseInt(savedIdx), false);
-    } else {
-      this.setBgTheme(0, false);
-    }
-    this.startBgAutoPlay();
-  },
-
-  setBgTheme(index, stopAuto = true) {
-    const slides = document.querySelectorAll(".auth-bg-slide");
-    const pills = document.querySelectorAll(".theme-pill");
-    if (!slides.length) return;
-
-    if (index < 0 || index >= slides.length) index = 0;
-    this.currentBgIndex = index;
-
-    slides.forEach((s, idx) => {
-      if (idx === index) {
-        s.classList.add("active");
-      } else {
-        s.classList.remove("active");
-      }
-    });
-
-    pills.forEach((p, idx) => {
-      if (idx === index) {
-        p.classList.add("active");
-      } else {
-        p.classList.remove("active");
-      }
-    });
-
-    try {
-      localStorage.setItem("kogm_auth_bg_theme", index);
-    } catch (e) {}
-
-    if (stopAuto) {
-      this.pauseBgAutoPlay();
-      const names = ["Market Pulse", "Digital Analytics", "Capital Intel", "Banking Ledgers", "Enterprise Intelligence"];
-      App.toast(`Atmosphere changed to: ${names[index] || "Finance"}`, "info");
-    }
-  },
-
-  startBgAutoPlay() {
-    if (this.bgCarouselInterval) clearInterval(this.bgCarouselInterval);
-    this.isBgAutoPlay = true;
-    const dot = document.querySelector(".autoplay-dot");
-    if (dot) dot.classList.remove("paused");
-
-    this.bgCarouselInterval = setInterval(() => {
-      const slides = document.querySelectorAll(".auth-bg-slide");
-      if (!slides.length) return;
-      const nextIdx = (this.currentBgIndex + 1) % slides.length;
-      this.setBgTheme(nextIdx, false);
-    }, 7000);
-  },
-
-  pauseBgAutoPlay() {
-    if (this.bgCarouselInterval) {
-      clearInterval(this.bgCarouselInterval);
-      this.bgCarouselInterval = null;
-    }
-    this.isBgAutoPlay = false;
-    const dot = document.querySelector(".autoplay-dot");
-    if (dot) dot.classList.add("paused");
-  },
-
-  toggleBgAutoPlay() {
-    if (this.isBgAutoPlay) {
-      this.pauseBgAutoPlay();
-      App.toast("Theme auto-play paused", "info");
-    } else {
-      this.startBgAutoPlay();
-      App.toast("Theme auto-play enabled (7s cycle)", "info");
-    }
   }
 };

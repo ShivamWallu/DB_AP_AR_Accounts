@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Allura&family=Caveat:wght@600;700&family=Cedarville+Cursive&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Herr+Von+Muellerhoff&family=Inter:wght@400;500;600;700;800;900&family=Italianno&family=JetBrains+Mono:wght@500;600;700&family=Kristi&family=La+Belle+Aurore&family=Marck+Script&family=Meddon&family=Monsieur+La+Doulaise&family=Mr+De+Haviland&family=Mrs+Saint+Delafield&family=Nothing+You+Could+Do&family=Pinyon+Script&family=Reenie+Beanie&family=Rouge+Script&family=Sacramento&family=Satisfy&family=Whisper&family=WindSong:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=3.0">
+  <link rel="stylesheet" href="/static/css/style.css?v=3.5">
 </head>
 <body>
 
@@ -28,78 +28,46 @@
     </div>
     <div class="auth-bg-overlay"></div>
 
-    <!-- Small Decorative Financial Sticker Images (Distributed around peripheral background) -->
+    <!-- Small Decorative Finance Sticker Images (Using Existing Project Images Finance1 to Finance5) -->
     <div class="auth-stickers-layer" id="auth-stickers-layer">
-      <!-- 1. Top Left: GST & Audit Calculator -->
-      <div class="auth-sticker sticker-top-left" style="--rot: -6deg;" title="Audit Calculator">
-        <div class="auth-sticker-icon">🧮</div>
-        <div class="auth-sticker-body">
-          <div class="auth-sticker-title">GST & Audit Calc</div>
-          <div class="auth-sticker-tag">₹ Accurate Ledger</div>
-        </div>
+      <!-- 1. Top Left -->
+      <div class="auth-sticker-item sticker-pos-1" title="Financial Markets">
+        <img src="/static/images/Finance1.jpg" alt="Finance 1" class="auth-finance-sticker-img" />
       </div>
 
-      <!-- 2. Mid Upper Left: AP/AR Flow Analytics -->
-      <div class="auth-sticker sticker-mid-left" style="--rot: 5deg;" title="AP / AR Analytics">
-        <div class="auth-sticker-icon">📈</div>
-        <div class="auth-sticker-body">
-          <div class="auth-sticker-title">AP / AR Flow</div>
-          <div class="auth-sticker-tag">+28.4% Growth ▲</div>
-        </div>
+      <!-- 2. Mid Upper Left -->
+      <div class="auth-sticker-item sticker-pos-2" title="Analytics & Growth">
+        <img src="/static/images/Finance2.jpg" alt="Finance 2" class="auth-finance-sticker-img" />
       </div>
 
-      <!-- 3. Lower Left: Official Reconciled Stamp -->
-      <div class="auth-sticker sticker-bottom-left" style="--rot: -7deg;" title="Audited & Reconciled">
-        <div class="auth-sticker-icon">🏛️</div>
-        <div class="auth-sticker-body">
-          <div class="auth-sticker-title">AUDITED &amp; VERIFIED</div>
-          <div class="auth-sticker-tag">✓ 100% Balanced</div>
-        </div>
+      <!-- 3. Lower Mid Left -->
+      <div class="auth-sticker-item sticker-pos-3" title="Capital Flow">
+        <img src="/static/images/Finance3.jpg" alt="Finance 3" class="auth-finance-sticker-img" />
       </div>
 
-      <!-- 4. Far Bottom Left: Rupee Capital Asset -->
-      <div class="auth-sticker sticker-far-bottom-left" style="--rot: 4deg;" title="Capital Day Book">
-        <div class="auth-sticker-icon">💰</div>
-        <div class="auth-sticker-body">
-          <div class="auth-sticker-title">Day Book Capital</div>
-          <div class="auth-sticker-tag">₹ Multi-Register</div>
-        </div>
+      <!-- 4. Far Bottom Left -->
+      <div class="auth-sticker-item sticker-pos-4" title="Banking & Ledgers">
+        <img src="/static/images/Finance4.jpg" alt="Finance 4" class="auth-finance-sticker-img" />
       </div>
 
-      <!-- 5. Top Right: Tax Invoices & E-Way -->
-      <div class="auth-sticker sticker-top-right" style="--rot: 7deg;" title="E-Way & Invoices">
-        <div class="auth-sticker-icon">📑</div>
-        <div class="auth-sticker-body">
-          <div class="auth-sticker-title">Tax &amp; E-Way Invoices</div>
-          <div class="auth-sticker-tag">VERIFIED ✓</div>
-        </div>
+      <!-- 5. Top Right -->
+      <div class="auth-sticker-item sticker-pos-5" title="Enterprise Suite">
+        <img src="/static/images/Finance5.jpg" alt="Finance 5" class="auth-finance-sticker-img" />
       </div>
 
-      <!-- 6. Mid Upper Right: Dual-Register Ledger Balance -->
-      <div class="auth-sticker sticker-mid-right" style="--rot: -5deg;" title="Dual Ledger Balance">
-        <div class="auth-sticker-icon">⚖️</div>
-        <div class="auth-sticker-body">
-          <div class="auth-sticker-title">Dual-Register Engine</div>
-          <div class="auth-sticker-tag">Debit = Credit</div>
-        </div>
+      <!-- 6. Mid Upper Right -->
+      <div class="auth-sticker-item sticker-pos-6" title="Market Pulse">
+        <img src="/static/images/Finance1.jpg" alt="Finance 1" class="auth-finance-sticker-img" />
       </div>
 
-      <!-- 7. Lower Right: Bank Vault & SSL Security -->
-      <div class="auth-sticker sticker-bottom-right" style="--rot: 6deg;" title="Bank-Grade Security">
-        <div class="auth-sticker-icon">🔐</div>
-        <div class="auth-sticker-body">
-          <div class="auth-sticker-title">Bank-Grade Vault</div>
-          <div class="auth-sticker-tag">256-Bit SSL Encrypted</div>
-        </div>
+      <!-- 7. Lower Mid Right -->
+      <div class="auth-sticker-item sticker-pos-7" title="Digital Intelligence">
+        <img src="/static/images/Finance2.jpg" alt="Finance 2" class="auth-finance-sticker-img" />
       </div>
 
-      <!-- 8. Far Bottom Right: Real-Time ERP KPI -->
-      <div class="auth-sticker sticker-far-bottom-right" style="--rot: -6deg;" title="Reconciliation 360°">
-        <div class="auth-sticker-icon">📊</div>
-        <div class="auth-sticker-body">
-          <div class="auth-sticker-title">Reconciliation 360°</div>
-          <div class="auth-sticker-tag">Live Sync Pulse</div>
-        </div>
+      <!-- 8. Far Bottom Right -->
+      <div class="auth-sticker-item sticker-pos-8" title="Capital & Treasury">
+        <img src="/static/images/Finance3.jpg" alt="Finance 3" class="auth-finance-sticker-img" />
       </div>
     </div>
 
@@ -321,40 +289,6 @@
           <span class="quick-cred-role">Role: Admin ➔</span>
         </div>
       </div>
-    </div>
-
-    <!-- Floating Atmosphere & Theme Selector Bar -->
-    <div class="auth-theme-bar" id="auth-theme-bar" title="Change Background Atmosphere">
-      <span class="theme-bar-label">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        <span>Theme:</span>
-      </span>
-      <div class="theme-pills">
-        <button type="button" class="theme-pill active" onclick="Auth.setBgTheme(0)" title="Market Pulse">
-          <span class="theme-pill-num">1</span>
-          <span class="theme-pill-name">Markets</span>
-        </button>
-        <button type="button" class="theme-pill" onclick="Auth.setBgTheme(1)" title="Digital Growth">
-          <span class="theme-pill-num">2</span>
-          <span class="theme-pill-name">Analytics</span>
-        </button>
-        <button type="button" class="theme-pill" onclick="Auth.setBgTheme(2)" title="Capital Intel">
-          <span class="theme-pill-num">3</span>
-          <span class="theme-pill-name">Capital</span>
-        </button>
-        <button type="button" class="theme-pill" onclick="Auth.setBgTheme(3)" title="Banking Ledgers">
-          <span class="theme-pill-num">4</span>
-          <span class="theme-pill-name">Banking</span>
-        </button>
-        <button type="button" class="theme-pill" onclick="Auth.setBgTheme(4)" title="Enterprise Intelligence">
-          <span class="theme-pill-num">5</span>
-          <span class="theme-pill-name">Enterprise</span>
-        </button>
-      </div>
-      <button type="button" class="theme-autoplay-btn" id="theme-autoplay-toggle" onclick="Auth.toggleBgAutoPlay()" title="Toggle Auto Crossfade (Cycle every 7s)">
-        <span class="autoplay-dot active"></span>
-        <span class="autoplay-text">Auto</span>
-      </button>
     </div>
 
   </div>
@@ -905,14 +839,14 @@
   </div>
 
   <!-- JS MODULES -->
-  <script src="/static/js/api.js?v=3.0"></script>
-  <script src="/static/js/auth.js?v=3.0"></script>
-  <script src="/static/js/signature.js?v=3.0"></script>
-  <script src="/static/js/dashboard.js?v=3.0"></script>
-  <script src="/static/js/datatable.js?v=3.0"></script>
-  <script src="/static/js/upload.js?v=3.0"></script>
-  <script src="/static/js/imports.js?v=3.0"></script>
-  <script src="/static/js/audit.js?v=3.0"></script>
-  <script src="/static/js/app.js?v=3.0"></script>
+  <script src="/static/js/api.js?v=3.5"></script>
+  <script src="/static/js/auth.js?v=3.5"></script>
+  <script src="/static/js/signature.js?v=3.5"></script>
+  <script src="/static/js/dashboard.js?v=3.5"></script>
+  <script src="/static/js/datatable.js?v=3.5"></script>
+  <script src="/static/js/upload.js?v=3.5"></script>
+  <script src="/static/js/imports.js?v=3.5"></script>
+  <script src="/static/js/audit.js?v=3.5"></script>
+  <script src="/static/js/app.js?v=3.5"></script>
 </body>
 </html>
