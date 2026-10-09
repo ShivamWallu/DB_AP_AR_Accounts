@@ -2505,9 +2505,232 @@ body.sidebar-collapsed .main-content {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.16) 0%, rgba(15, 23, 42, 0.42) 100%);
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.14) 0%, rgba(15, 23, 42, 0.38) 100%);
   z-index: 2;
   pointer-events: none;
+}
+
+/* Decorative Financial Stickers Layer (Surrounding Background Only) */
+.auth-stickers-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.auth-sticker {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.95rem;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  border-radius: 14px;
+  box-shadow: 
+    0 12px 28px -6px rgba(15, 23, 42, 0.30),
+    0 4px 10px rgba(0, 0, 0, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  pointer-events: none;
+  user-select: none;
+  transition: transform 0.4s ease;
+  will-change: transform;
+}
+
+.auth-sticker-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #f8fafc;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+  flex-shrink: 0;
+}
+
+.auth-sticker-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.auth-sticker-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.auth-sticker-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #2563eb;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Individual Sticker Positions - Distributed Across Empty Peripheral Zones */
+/* 1. Top Left Corner */
+.sticker-top-left {
+  top: 3.5%;
+  left: 3.5%;
+  transform: rotate(-6deg);
+  animation: stickerFloat1 6s ease-in-out infinite alternate;
+}
+.sticker-top-left .auth-sticker-icon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+/* 2. Mid Upper Left */
+.sticker-mid-left {
+  top: 28%;
+  left: 3.5%;
+  transform: rotate(5deg);
+  animation: stickerFloat2 7s ease-in-out infinite alternate;
+}
+.sticker-mid-left .auth-sticker-icon {
+  background: #ecfdf5;
+  color: #059669;
+}
+.sticker-mid-left .auth-sticker-tag {
+  color: #059669;
+}
+
+/* 3. Lower Left */
+.sticker-bottom-left {
+  top: 56%;
+  left: 4%;
+  transform: rotate(-7deg);
+  animation: stickerFloat3 6.5s ease-in-out infinite alternate;
+}
+.sticker-bottom-left .auth-sticker-icon {
+  background: #fef3c7;
+  color: #d97706;
+}
+.sticker-bottom-left .auth-sticker-tag {
+  color: #d97706;
+}
+
+/* 4. Far Bottom Left */
+.sticker-far-bottom-left {
+  bottom: 8.5%;
+  left: 4.5%;
+  transform: rotate(4deg);
+  animation: stickerFloat1 8s ease-in-out infinite alternate-reverse;
+}
+.sticker-far-bottom-left .auth-sticker-icon {
+  background: #fdf2f8;
+  color: #db2777;
+}
+
+/* 5. Top Right Corner */
+.sticker-top-right {
+  top: 3.5%;
+  right: 3.5%;
+  transform: rotate(7deg);
+  animation: stickerFloat2 6.5s ease-in-out infinite alternate;
+}
+.sticker-top-right .auth-sticker-icon {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+.sticker-top-right .auth-sticker-tag {
+  color: #7c3aed;
+}
+
+/* 6. Mid Upper Right */
+.sticker-mid-right {
+  top: 28%;
+  right: 3.5%;
+  transform: rotate(-5deg);
+  animation: stickerFloat3 7.5s ease-in-out infinite alternate;
+}
+.sticker-mid-right .auth-sticker-icon {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* 7. Lower Right */
+.sticker-bottom-right {
+  top: 56%;
+  right: 4%;
+  transform: rotate(6deg);
+  animation: stickerFloat1 7s ease-in-out infinite alternate;
+}
+.sticker-bottom-right .auth-sticker-icon {
+  background: #ecfdf5;
+  color: #10b981;
+}
+.sticker-bottom-right .auth-sticker-tag {
+  color: #10b981;
+}
+
+/* 8. Far Bottom Right */
+.sticker-far-bottom-right {
+  bottom: 8.5%;
+  right: 4.5%;
+  transform: rotate(-6deg);
+  animation: stickerFloat2 8s ease-in-out infinite alternate-reverse;
+}
+.sticker-far-bottom-right .auth-sticker-icon {
+  background: #fff7ed;
+  color: #ea580c;
+}
+.sticker-far-bottom-right .auth-sticker-tag {
+  color: #ea580c;
+}
+
+/* Floating Micro-Animations */
+@keyframes stickerFloat1 {
+  0% { transform: translateY(0) rotate(var(--rot, -6deg)); }
+  100% { transform: translateY(-8px) rotate(calc(var(--rot, -6deg) + 2deg)); }
+}
+
+@keyframes stickerFloat2 {
+  0% { transform: translateY(0) rotate(var(--rot, 5deg)); }
+  100% { transform: translateY(-10px) rotate(calc(var(--rot, 5deg) - 2deg)); }
+}
+
+@keyframes stickerFloat3 {
+  0% { transform: translateY(0) rotate(var(--rot, -7deg)); }
+  100% { transform: translateY(-7px) rotate(calc(var(--rot, -7deg) + 1.5deg)); }
+}
+
+/* Responsive Sticker Scaling & Visibility (Never overlaps central card) */
+@media (max-width: 1280px) {
+  .auth-sticker {
+    transform: scale(0.88);
+  }
+}
+
+@media (max-width: 1024px) {
+  .sticker-mid-left,
+  .sticker-mid-right,
+  .sticker-bottom-left,
+  .sticker-bottom-right {
+    display: none; /* Hide middle flank stickers to guarantee zero card overlap */
+  }
+  .sticker-top-left { top: 2%; left: 2%; }
+  .sticker-top-right { top: 2%; right: 2%; }
+  .sticker-far-bottom-left { bottom: 5%; left: 2%; }
+  .sticker-far-bottom-right { bottom: 5%; right: 2%; }
+}
+
+@media (max-width: 768px) {
+  .auth-stickers-layer {
+    display: none; /* Keep clean focus on card on mobile */
+  }
 }
 
 /* Floating Scene / Theme Switcher Bar */
