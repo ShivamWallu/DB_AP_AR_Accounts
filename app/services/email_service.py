@@ -185,13 +185,13 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
       <div class="email-wrapper">
         <div class="header">
           {logo_html}
-          <h1>Enterprise Financial ERP Suite</h1>
-          <p>Multi-Register Accounting &bull; Day Book &bull; AP &bull; AR Ledger Audit</p>
+          <h1>Finance Day Book</h1>
+          <p>KOGM Enterprise Financial ERP &bull; Day Book &bull; AP &bull; AR Audit Suite</p>
         </div>
         <div class="body">
           <div class="greeting">Hello {user_name},</div>
           <div class="message">
-            You are registering for an account on the <strong>KOGM 360° Financial ERP Suite</strong>. To verify your email address and activate your <strong>Admin Access</strong>, please use the 6-digit verification code below:
+            You are registering for an account on <strong>Finance Day Book</strong> (KOGM Financial ERP Suite). To verify your email address and activate your <strong>Admin Access</strong>, please use the 6-digit verification code below:
           </div>
           
           <div class="otp-card">
@@ -206,7 +206,7 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
           </div>
         </div>
         <div class="footer">
-          <div>&copy; {current_year} KOGM 360° Enterprise Financial Suite &bull; Sent to {to_email}</div>
+          <div>&copy; {current_year} Finance Day Book &bull; KOGM Enterprise Financial Suite &bull; Sent to {to_email}</div>
           <div class="footer-creator">Created by Shivam Wallu</div>
         </div>
       </div>
@@ -443,13 +443,13 @@ def build_password_reset_html_email(user_name: str, reset_url: str, to_email: st
       <div class="email-wrapper">
         <div class="header">
           {logo_html}
-          <h1>Password Reset Request</h1>
-          <p>KOGM 360° Financial ERP Security Center</p>
+          <h1>Finance Day Book</h1>
+          <p>Password Reset &bull; KOGM Financial Security Center</p>
         </div>
         <div class="body">
           <div class="greeting">Hello {user_name},</div>
           <div class="message">
-            We received a request to reset your password for your <strong>KOGM 360° Financial ERP</strong> account. Click the secure link below to set a new password:
+            We received a request to reset your password for your <strong>Finance Day Book</strong> account. Click the secure link below to set a new password:
           </div>
           
           <div class="cta-container">
@@ -466,7 +466,7 @@ def build_password_reset_html_email(user_name: str, reset_url: str, to_email: st
           </div>
         </div>
         <div class="footer">
-          <div>&copy; {current_year} KOGM 360° Enterprise Financial Suite &bull; Sent to {to_email}</div>
+          <div>&copy; {current_year} Finance Day Book &bull; KOGM Enterprise Financial Suite &bull; Sent to {to_email}</div>
           <div class="footer-creator">Created by Shivam Wallu</div>
         </div>
       </div>
@@ -476,7 +476,7 @@ def build_password_reset_html_email(user_name: str, reset_url: str, to_email: st
     return html
 
 def send_password_reset_email(to_email: str, reset_url: str, user_name: str = "User") -> bool:
-    subject = "Reset Your Password - KOGM 360° Financial ERP Suite"
+    subject = "Reset Your Password - Finance Day Book (KOGM ERP)"
     html_content = build_password_reset_html_email(user_name=user_name, reset_url=reset_url, to_email=to_email, expires_minutes=10)
     
     # 1. Try Direct SMTP
