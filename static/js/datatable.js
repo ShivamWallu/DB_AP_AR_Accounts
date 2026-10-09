@@ -2379,15 +2379,7 @@ class DataTableController {
       const signerOrg = (sigData && sigData.profile && sigData.profile.organization) ? sigData.profile.organization : "KOGM Financial ERP";
       const sigHash = (sigData && sigData.profile && sigData.profile.hash) ? sigData.profile.hash : "SIG-KOGM-CERTIFIED";
       const sigImgSrc = (sigData && sigData.dataUrl) ? sigData.dataUrl : "";
-
-      // Dataset title
-      const titleMap = {
-        master: "Day Book Master 360° Unified Ledger Statement",
-        daybook: "Day Book Primary Financial Audit Register",
-        ap: "Accounts Payable (AP) Supplier Invoices & Tax Statement",
-        ar: "Accounts Receivable (AR) Customer Sales & GST Statement"
-      };
-      const reportTitle = titleMap[this.datasetType] || "Official Financial Ledger Statement";
+      const isSigBlank = (sigData && (sigData.mode === "blank" || sigData.isBlank || !sigImgSrc));
 
       // Current filter summary
       const siteSummary = (this.selectedSites && this.selectedSites.length > 0)
@@ -2400,6 +2392,15 @@ class DataTableController {
         this.registerType ? `Register: ${this.registerType}` : "",
         this.approvedBy ? `Approver: ${this.approvedBy}` : ""
       ].filter(Boolean).join(" • ");
+
+      // Extract unique voucher dates for header display
+      const uniqueDates = Array.from(new Set(printRecords.map(r => r.voucher_date).filter(Boolean)));
+      let dateSummary = "All Available Dates";
+      if (uniqueDates.length === 1) {
+        dateSummary = uniqueDates[0];
+      } else if (uniqueDates.length > 1) {
+        dateSummary = `${uniqueDates[uniqueDates.length - 1]} to ${uniqueDates[0]} (${uniqueDates.length} Dates)`;
+      }
 
       let totalAmount = 0;
       let totalTax = 0;
@@ -2415,6 +2416,8 @@ class DataTableController {
       const formattedTotalTax = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(totalTax);
       const formattedTotalQty = Number(totalQty).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
+      let prevVNo = null;
+
       const html = `
         <div class="print-statement-sheet">
           <!-- Ultra-Compact Streamlined Header Block -->
@@ -2423,12 +2426,12 @@ class DataTableController {
               <img src="/static/images/KOGM_LOgo.jpg" alt="KOGM Logo" style="height: 42px; max-width: 140px; border-radius: 6px; object-fit: contain; background: #ffffff; padding: 2px 6px; border: 1.2px solid #cbd5e1;" />
               <div>
                 <div style="display: flex; align-items: center; gap: 0.45rem; line-height: 1.1;">
-                  <span class="statement-brand-title">KOGM Financial ERP</span>
+                  <span class="statement-brand-title">Finance Day Book</span>
                   <span style="background: #1e3a8a; color: #ffffff; font-size: 0.62rem; font-weight: 700; padding: 0.12rem 0.45rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em;">Official Statement</span>
                 </div>
-                <div class="statement-subtitle" style="font-size: 0.78rem; font-weight: 700; color: #1e293b; margin-top: 0.1rem;">${reportTitle}</div>
-                <div style="font-size: 0.68rem; color: #475569; margin-top: 0.1rem;">
-                  <strong>Scope:</strong> ${filterSummary}
+                <div style="font-size: 0.68rem; color: #475569; margin-top: 0.18rem; display: flex; gap: 0.85rem; flex-wrap: wrap;">
+                  <span><strong>Scope:</strong> ${filterSummary}</span>
+                  <span><strong>Statement Date:</strong> ${dateSummary}</span>
                 </div>
               </div>
             </div>
@@ -2474,11 +2477,9 @@ class DataTableController {
                   <th class="col-num" style="width: 32px; text-align: center;">#</th>
                   <th class="col-site">Site</th>
                   <th class="col-vno">Voucher Number</th>
-                  <th class="col-date">Voucher Date</th>
+                  <th class="col-party" style="min-width: 140px;">Party Name</th>
                   <th class="col-vtype">Voucher Type</th>
                   <th class="col-desc">Item / Expense Description</th>
-                  <th class="col-reg">Register</th>
-                  <th class="col-inv">Invoice / Ref No.</th>
                   <th class="col-qty" style="text-align: right;">Quantity</th>
                   <th class="col-rate" style="text-align: right;">Rate (₹)</th>
                   <th class="col-tax" style="text-align: right;">Tax Amount (₹)</th>
@@ -2489,12 +2490,14 @@ class DataTableController {
               <tbody>
                 ${printRecords.map((r, idx) => {
         const site = r.transaction_site || r.accounting_site_code || "—";
-        const vNo = r.voucher_number || r.voucher_no || "—";
-        const vDate = r.voucher_date || "—";
+        const rawVNo = r.voucher_number || r.voucher_no || "—";
+        const isDuplicateVNo = (prevVNo !== null && rawVNo !== "—" && rawVNo === prevVNo);
+        prevVNo = rawVNo;
+
+        const displayVNo = isDuplicateVNo ? "" : rawVNo;
+        const partyName = r.party_description || r.party_name || r.party_code || "—";
         const vType = r.voucher_type || "—";
         const itemDesc = r.unified_item_description || r.item_service_description || r.item_service_expense_account_desc || r.account_description || "—";
-        const reg = r.source_tag || (this.datasetType.toUpperCase());
-        const inv = r.unified_invoice_no || r.invoice_number || "—";
 
         const qtyVal = r.unified_quantity || r.booked_item_quantity || r.item_quantity;
         const qtyStr = (qtyVal !== null && qtyVal !== undefined && qtyVal !== "") ? Number(qtyVal).toLocaleString('en-IN') : "—";
@@ -2514,12 +2517,10 @@ class DataTableController {
                     <tr>
                       <td class="col-num" style="text-align: center; font-weight: 600; color: #94a3b8;">${idx + 1}</td>
                       <td class="col-site" style="font-weight: 700; color: #0f172a;">${site}</td>
-                      <td class="col-vno" style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${vNo}</td>
-                      <td class="col-date">${vDate}</td>
+                      <td class="col-vno" style="font-family: 'JetBrains Mono', monospace; font-weight: 600; ${isDuplicateVNo ? 'color: transparent;' : ''}">${displayVNo}</td>
+                      <td class="col-party" style="font-weight: 600; color: #0f172a;">${partyName}</td>
                       <td class="col-vtype">${vType}</td>
                       <td class="col-desc" style="font-weight: 600; color: #1e293b;">${itemDesc}</td>
-                      <td class="col-reg"><span class="reg-badge">${reg}</span></td>
-                      <td class="col-inv" style="font-family: 'JetBrains Mono', monospace;">${inv}</td>
                       <td class="col-qty" style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 600;">${qtyStr}</td>
                       <td class="col-rate" style="text-align: right; font-variant-numeric: tabular-nums;">${rateStr}</td>
                       <td class="col-tax" style="text-align: right; font-variant-numeric: tabular-nums; color: #059669; font-weight: 600;">${taxStr}</td>
@@ -2544,12 +2545,20 @@ class DataTableController {
             </div>
 
             <div class="statement-signatory-box">
-              ${sigImgSrc ? `<img src="${sigImgSrc}" class="statement-sig-img" alt="Digital Signature" style="height: 56px; max-height: 68px; max-width: 220px; object-fit: contain; display: inline-block; margin-bottom: 0.15rem;" />` : `<div style="font-family: 'Dancing Script', cursive; font-size: 1.6rem; color: #1e40af; margin-bottom: 0.1rem;">${signerName}</div>`}
+              ${isSigBlank ? `
+                <div style="height: 52px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 2px;">
+                  <span style="font-size: 0.70rem; color: #94a3b8; font-style: italic;">(Stamp & Physical Signature)</span>
+                </div>
+              ` : (sigImgSrc ? `
+                <img src="${sigImgSrc}" class="statement-sig-img" alt="Digital Signature" style="height: 56px; max-height: 68px; max-width: 220px; object-fit: contain; display: inline-block; margin-bottom: 0.15rem;" />
+              ` : `
+                <div style="font-family: 'Dancing Script', cursive; font-size: 1.6rem; color: #1e40af; margin-bottom: 0.1rem;">${signerName}</div>
+              `)}
               <div class="statement-sig-line" style="border-top: 1.2px solid #0f172a; margin-top: 0.15rem; padding-top: 0.2rem; line-height: 1.15;">
                 <div class="statement-sig-name" style="font-weight: 800; font-size: 0.78rem; color: #0f172a;">${signerName}</div>
                 <div class="statement-sig-role" style="font-size: 0.68rem; color: #334155; font-weight: 600;">${signerRole}</div>
                 <div class="statement-sig-org" style="font-size: 0.62rem; color: #64748b;">${signerOrg}</div>
-                <div class="statement-sig-hash" style="font-size: 0.60rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; margin-top: 0.1rem;">Digitally Signed on ${new Date().toLocaleDateString('en-IN')}</div>
+                ${!isSigBlank ? `<div class="statement-sig-hash" style="font-size: 0.60rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; margin-top: 0.1rem;">Digitally Signed on ${new Date().toLocaleDateString('en-IN')}</div>` : ''}
               </div>
             </div>
           </div>

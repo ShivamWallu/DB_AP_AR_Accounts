@@ -345,6 +345,23 @@ class DigitalSignatureStudio {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 <span>Upload Signature Image</span>
               </button>
+              <button type="button" class="btn-sig-tab" data-mode="blank" onclick="SignatureStudio.setMode('blank')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+                <span>Blank / Physical Signature</span>
+              </button>
+            </div>
+
+            <!-- MODE 4: BLANK SIGNATURE CONTAINER -->
+            <div id="sig-mode-blank" class="sig-mode-section" style="display: none; padding: 2.2rem 1.5rem; text-align: center; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 8px;">
+              <div style="font-size: 2.2rem; margin-bottom: 0.4rem;">✍️ 📄</div>
+              <h4 style="color: #0f172a; font-size: 1.05rem; font-weight: 700; margin: 0 0 0.4rem 0;">Blank Signature Area (Physical Signing & Stamping)</h4>
+              <p style="color: #64748b; font-size: 0.82rem; max-width: 520px; margin: 0 auto 1.25rem auto;">
+                Statements and reports will be generated with an official blank signature line, leaving clean space for manual ink signing and official company rubber stamp.
+              </p>
+              <div style="display: inline-block; padding: 1rem 2.5rem; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <div style="font-size: 0.74rem; color: #94a3b8; font-style: italic; margin-bottom: 30px;">[ Space for Physical Stamp & Ink Signature ]</div>
+                <div style="border-top: 1.2px solid #0f172a; width: 220px; margin: 0 auto; padding-top: 4px; font-weight: 700; font-size: 0.8rem; color: #0f172a;">Authorized Signatory</div>
+              </div>
             </div>
 
             <!-- MODE 1: TYPE CALLIGRAPHY (DEFAULT & RICH) -->
@@ -597,6 +614,8 @@ class DigitalSignatureStudio {
     document.getElementById("sig-mode-draw").style.display = mode === "draw" ? "block" : "none";
     document.getElementById("sig-mode-type").style.display = mode === "type" ? "block" : "none";
     document.getElementById("sig-mode-upload").style.display = mode === "upload" ? "block" : "none";
+    const blankEl = document.getElementById("sig-mode-blank");
+    if (blankEl) blankEl.style.display = mode === "blank" ? "block" : "none";
 
     if (mode === "draw") {
       this.setupCanvas();
@@ -816,11 +835,14 @@ class DigitalSignatureStudio {
       finalDataUrl = this.createTypographicSignatureImage(name, font, this.penColor, this.selectedFlourish);
     } else if (this.currentMode === "upload") {
       finalDataUrl = this.uploadedDataUrl || this.createTypographicSignatureImage(name, "Mr De Haviland", "#1e40af", "swoop");
+    } else if (this.currentMode === "blank") {
+      finalDataUrl = "";
     }
 
     this.activeSignature = {
       dataUrl: finalDataUrl,
       mode: this.currentMode,
+      isBlank: (this.currentMode === "blank"),
       font: this.selectedFont,
       flourish: this.selectedFlourish,
       penColor: this.penColor,
@@ -842,22 +864,35 @@ class DigitalSignatureStudio {
     this.close();
 
     if (window.App && App.toast) {
-      App.toast("✓ Digital Signature saved & applied successfully!", "success");
+      App.toast(this.currentMode === "blank" ? "✓ Set to Blank Physical Signature successfully!" : "✓ Digital Signature saved & applied successfully!", "success");
     }
   }
 
   updateLiveStatementSignatory(dataUrl, name, role, org, hash, timestamp) {
     const sigBox = document.querySelector("#statement-report-modal .statement-signatory-box");
     if (sigBox) {
-      sigBox.innerHTML = `
-        <img src="${dataUrl}" class="statement-sig-img" alt="Digital Signature" style="height: 56px; max-height: 68px; max-width: 220px; object-fit: contain; display: inline-block; margin-bottom: 0.15rem;" />
-        <div class="statement-sig-line" style="border-top: 1.2px solid #0f172a; margin-top: 0.15rem; padding-top: 0.2rem; line-height: 1.15;">
-          <div class="statement-sig-name" style="font-weight: 800; font-size: 0.78rem; color: #0f172a;">${name}</div>
-          <div class="statement-sig-role" style="font-size: 0.68rem; color: #334155; font-weight: 600;">${role}</div>
-          <div class="statement-sig-org" style="font-size: 0.62rem; color: #64748b;">${org}</div>
-          <div class="statement-sig-hash" style="font-size: 0.60rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; margin-top: 0.1rem;">Digitally Signed on ${new Date(timestamp).toLocaleDateString('en-IN')}</div>
-        </div>
-      `;
+      if (this.currentMode === "blank" || !dataUrl) {
+        sigBox.innerHTML = `
+          <div style="height: 48px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 2px;">
+            <span style="font-size: 0.70rem; color: #94a3b8; font-style: italic;">(Stamp & Physical Signature)</span>
+          </div>
+          <div class="statement-sig-line" style="border-top: 1.2px solid #0f172a; margin-top: 0.15rem; padding-top: 0.2rem; line-height: 1.15;">
+            <div class="statement-sig-name" style="font-weight: 800; font-size: 0.78rem; color: #0f172a;">${name}</div>
+            <div class="statement-sig-role" style="font-size: 0.68rem; color: #334155; font-weight: 600;">${role}</div>
+            <div class="statement-sig-org" style="font-size: 0.62rem; color: #64748b;">${org}</div>
+          </div>
+        `;
+      } else {
+        sigBox.innerHTML = `
+          <img src="${dataUrl}" class="statement-sig-img" alt="Digital Signature" style="height: 56px; max-height: 68px; max-width: 220px; object-fit: contain; display: inline-block; margin-bottom: 0.15rem;" />
+          <div class="statement-sig-line" style="border-top: 1.2px solid #0f172a; margin-top: 0.15rem; padding-top: 0.2rem; line-height: 1.15;">
+            <div class="statement-sig-name" style="font-weight: 800; font-size: 0.78rem; color: #0f172a;">${name}</div>
+            <div class="statement-sig-role" style="font-size: 0.68rem; color: #334155; font-weight: 600;">${role}</div>
+            <div class="statement-sig-org" style="font-size: 0.62rem; color: #64748b;">${org}</div>
+            <div class="statement-sig-hash" style="font-size: 0.60rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; margin-top: 0.1rem;">Digitally Signed on ${new Date(timestamp).toLocaleDateString('en-IN')}</div>
+          </div>
+        `;
+      }
     }
   }
 }

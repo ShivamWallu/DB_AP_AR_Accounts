@@ -261,29 +261,30 @@ def build_export_response(
         )
         total_exported = len(records)
         headers = [
-            "Site", "Voucher No.", "Voucher Date", "Voucher Type", "Linked Register",
-            "Invoice / Ref No.", "Item / Expense Description", "Quantity", "Rate (INR)",
-            "Total Amount (INR)", "Tax Amount (GST)", "Party Code", "Party Description",
-            "Account Description", "Status", "Narration", "Created By", "Approved By",
-            "Verified Status"
+            "Site", "Voucher No.", "Party Name", "Voucher Date", "Voucher Type",
+            "Item / Expense Description", "Quantity", "Rate (INR)",
+            "Total Amount (INR)", "Tax Amount (GST)", "Status",
+            "Narration", "Created By", "Approved By", "Verified Status"
         ]
         writer.writerow(headers)
+        prev_v_no = None
         for r in records:
+            raw_v_no = clean_val(r.get("voucher_number"))
+            display_v_no = "" if (prev_v_no is not None and raw_v_no and raw_v_no == prev_v_no) else raw_v_no
+            prev_v_no = raw_v_no
+            party_name = clean_val(r.get("party_description") or r.get("party_code"))
+
             writer.writerow([
                 clean_val(r.get("transaction_site")),
-                clean_val(r.get("voucher_number")),
+                display_v_no,
+                party_name,
                 clean_val(r.get("voucher_date")),
                 clean_val(r.get("voucher_type")),
-                clean_val(r.get("source_tag")),
-                clean_val(r.get("unified_invoice_no")),
                 clean_val(r.get("unified_item_description")),
                 clean_val(r.get("unified_quantity")),
                 clean_num(r.get("unified_rate")),
                 clean_num(r.get("combined_amount")),
                 clean_num(r.get("unified_tax_amount")),
-                clean_val(r.get("party_code")),
-                clean_val(r.get("party_description")),
-                clean_val(r.get("account_description")),
                 clean_val(r.get("voucher_status")),
                 clean_val(r.get("narration")),
                 clean_val(r.get("created_by")),
