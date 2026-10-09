@@ -517,49 +517,54 @@ body.sidebar-collapsed .sidebar-credit-pill {
   font-weight: 500;
 }
 
-/* Filter Bar - Compact Layout for High Table Visibility */
+/* Filter Bar - Compact & High-Precision Executive Layout */
 .filter-bar {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.55rem;
+  align-items: flex-end;
+  gap: 0.45rem;
   max-width: 100%;
   box-sizing: border-box;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.18rem;
   flex: 1;
-  min-width: 145px;
+  min-width: 125px;
 }
 
 .filter-label {
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.68rem;
+  font-weight: 750;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .form-control,
 .form-select {
   background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
   color: var(--text-primary);
-  padding: 0.35rem 0.65rem;
-  font-size: 0.82rem;
+  padding: 0.32rem 0.55rem;
+  font-size: 0.80rem;
+  font-weight: 600;
   font-family: inherit;
   transition: var(--transition);
   width: 100%;
   height: 32px;
+  box-sizing: border-box;
 }
 
 .form-control:focus,
@@ -1124,12 +1129,13 @@ body.sidebar-collapsed .sidebar-credit-pill {
   display: inline-flex;
   align-items: center;
   background: #f1f5f9;
-  padding: 3px;
-  border-radius: 8px;
+  padding: 2px;
+  border-radius: 6px;
   border: 1px solid #cbd5e1;
   gap: 2px;
   box-sizing: border-box;
   width: 100%;
+  height: 32px;
 }
 
 .verify-radio-pill {
@@ -1137,8 +1143,9 @@ body.sidebar-collapsed .sidebar-credit-pill {
   align-items: center;
   justify-content: center;
   gap: 0.32rem;
-  padding: 0.32rem 0.55rem;
-  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  height: 100%;
+  border-radius: 4px;
   font-size: 0.77rem;
   font-weight: 600;
   color: #475569;
@@ -4323,22 +4330,23 @@ body.sidebar-collapsed .main-content {
 
 .multi-select-btn {
   background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
   color: var(--text-primary);
-  padding: 0.52rem 0.75rem;
-  font-size: 0.84rem;
+  padding: 0.32rem 0.55rem;
+  font-size: 0.80rem;
   font-family: inherit;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  height: 32px;
   cursor: pointer;
   transition: var(--transition);
   box-sizing: border-box;
   text-align: left;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .multi-select-btn:hover {
@@ -4358,13 +4366,13 @@ body.sidebar-collapsed .main-content {
   border-color: #3b82f6 !important;
   color: #1e40af !important;
   font-weight: 700 !important;
-  box-shadow: 0 0 0 2.5px rgba(59, 130, 246, 0.18) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18) !important;
 }
 
 .multi-select-btn-content {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.35rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -4373,7 +4381,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .multi-select-icon {
-  font-size: 0.85rem;
+  font-size: 0.80rem;
   flex-shrink: 0;
 }
 
@@ -4381,6 +4389,7 @@ body.sidebar-collapsed .main-content {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: -0.01em;
 }
 
 .multi-select-badge {

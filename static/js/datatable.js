@@ -506,22 +506,22 @@ class DataTableController {
 
     container.innerHTML = `
       <div class="filter-bar">
-        <div class="filter-group" style="flex: 2; min-width: 190px;">
+        <div class="filter-group filter-group-search" style="flex: 2; min-width: 180px;">
           <label class="filter-label">Global Search</label>
           <input type="text" class="form-control dt-search" placeholder="Search Voucher, Party, Invoice, Narration..." />
         </div>
         ${this.datasetType === 'master' ? `
-        <div class="filter-group filter-group-register">
+        <div class="filter-group filter-group-register" style="flex: 1.2; min-width: 145px;">
           <label class="filter-label">Linked Register</label>
           <select class="form-select dt-register-filter">
-            <option value="">🌐 All Registers (DayBook+AP+AR)</option>
-            <option value="ap">📥 AP Reconciled Only</option>
-            <option value="ar">📤 AR Reconciled Only</option>
-            <option value="daybook_only">📖 Day Book Standalone Only</option>
+            <option value="">🌐 All Registers</option>
+            <option value="ap">📥 AP Reconciled</option>
+            <option value="ar">📤 AR Reconciled</option>
+            <option value="daybook_only">📖 Day Book Only</option>
           </select>
         </div>` : ''}
-        <div class="filter-group filter-group-site" style="min-width: 165px;">
-          <label class="filter-label">Site (Multi-Select)</label>
+        <div class="filter-group filter-group-site" style="flex: 1.1; min-width: 130px;">
+          <label class="filter-label">Sites</label>
           <div class="multi-select-dropdown dt-site-multiselect">
             <button type="button" class="multi-select-btn dt-site-trigger" aria-expanded="false" title="Click to filter by one or multiple sites">
               <span class="multi-select-btn-content">
@@ -547,8 +547,8 @@ class DataTableController {
             </div>
           </div>
         </div>
-        <div class="filter-group filter-group-vtype" style="min-width: 175px;">
-          <label class="filter-label">Voucher Type (Multi-Select)</label>
+        <div class="filter-group filter-group-vtype" style="flex: 1.3; min-width: 155px;">
+          <label class="filter-label">Voucher Types</label>
           <div class="multi-select-dropdown dt-vtype-multiselect">
             <button type="button" class="multi-select-btn dt-vtype-trigger" aria-expanded="false" title="Click to filter by one or multiple voucher types">
               <span class="multi-select-btn-content">
@@ -575,14 +575,14 @@ class DataTableController {
           </div>
         </div>
         ${this.datasetType === 'ap' || this.datasetType === 'ar' ? `
-        <div class="filter-group">
+        <div class="filter-group filter-group-vsubtype" style="flex: 1.1; min-width: 130px;">
           <label class="filter-label">Voucher Sub-Type</label>
           <select class="form-select dt-vsubtype-filter">
             <option value="">All Sub-Types</option>
           </select>
         </div>` : ''}
-        <div class="filter-group filter-group-approver" style="min-width: 175px;">
-          <label class="filter-label">Approved By (Multi-Select)</label>
+        <div class="filter-group filter-group-approver" style="flex: 1.2; min-width: 145px;">
+          <label class="filter-label">Approved By</label>
           <div class="multi-select-dropdown dt-approver-multiselect">
             <button type="button" class="multi-select-btn dt-approver-trigger" aria-expanded="false" title="Click to filter by one or multiple approvers">
               <span class="multi-select-btn-content">
@@ -608,7 +608,7 @@ class DataTableController {
             </div>
           </div>
         </div>
-        <div class="filter-group filter-group-verify">
+        <div class="filter-group filter-group-verify" style="flex: 0 0 auto;">
           <label class="filter-label">Verification</label>
           <div class="verify-radio-group">
             <button type="button" class="verify-radio-pill active" data-value="all" title="Show All Records">
@@ -625,8 +625,8 @@ class DataTableController {
             </button>
           </div>
         </div>
-        <div class="filter-group filter-group-batch">
-          <label class="filter-label">Upload Batch</label>
+        <div class="filter-group filter-group-batch" style="flex: 1; min-width: 125px; max-width: 160px;">
+          <label class="filter-label">Batch</label>
           <select class="form-select dt-batch-filter">
             <option value="">All Batches</option>
           </select>
