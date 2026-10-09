@@ -2492,102 +2492,134 @@ body.sidebar-collapsed .main-content {
 }
 
 .auth-finance-sticker-img {
-  width: 225px;
-  height: 150px;
+  width: 240px;
+  height: 155px;
   object-fit: cover;
   border-radius: 0px !important; /* Sharp square corners */
-  border: 4.5px solid #ffffff;
-  box-shadow: 0 14px 30px -4px rgba(15, 23, 42, 0.18), 0 3px 10px rgba(0, 0, 0, 0.08);
+  border: 5px solid #ffffff;
+  box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.2), 0 4px 12px rgba(0, 0, 0, 0.08);
   display: block;
 }
 
-/* 8 Balanced Sticker Positions (Evenly Filling All Peripheral Voids) */
-/* 1. Top-Left Far */
+/* 10 Balanced Sticker Positions (Evenly Populating All Peripheral Areas) */
+/* 1. Top-Left Outer */
 .sticker-pos-1 {
-  top: 3.5%;
-  left: 3%;
+  top: 3%;
+  left: 2.5%;
   transform: rotate(-7deg);
 }
 
-/* 2. Top-Left Mid */
+/* 2. Top-Left Inner */
 .sticker-pos-2 {
   top: 17%;
   left: 16%;
-  transform: rotate(-10deg);
+  transform: rotate(8deg);
 }
 
 /* 3. Mid-Left Outer */
 .sticker-pos-3 {
-  top: 48%;
-  left: 3%;
-  transform: rotate(8deg);
-}
-
-/* 4. Bottom-Left Mid (Fills bottom-left gap) */
-.sticker-pos-4 {
-  bottom: 4.5%;
-  left: 15%;
+  top: 41%;
+  left: 2%;
   transform: rotate(-6deg);
 }
 
-/* 5. Top-Right Far */
-.sticker-pos-5 {
-  top: 3.5%;
-  right: 3.5%;
-  transform: rotate(6deg);
-}
-
-/* 6. Top-Right Mid */
-.sticker-pos-6 {
-  top: 17%;
-  right: 17%;
-  transform: rotate(10deg);
-}
-
-/* 7. Mid-Right Inner (Fills right-side gap) */
-.sticker-pos-7 {
-  top: 48%;
-  right: 16.5%;
-  transform: rotate(-8deg);
-}
-
-/* 8. Bottom-Right Far */
-.sticker-pos-8 {
-  bottom: 4.5%;
-  right: 3.5%;
+/* 4. Lower-Left Inner (Fills Bottom-Left Void) */
+.sticker-pos-4 {
+  top: 60%;
+  left: 15.5%;
   transform: rotate(7deg);
 }
 
+/* 5. Bottom-Left Outer */
+.sticker-pos-5 {
+  bottom: 3%;
+  left: 2.5%;
+  transform: rotate(-8deg);
+}
+
+/* 6. Top-Right Outer */
+.sticker-pos-6 {
+  top: 3%;
+  right: 2.5%;
+  transform: rotate(7deg);
+}
+
+/* 7. Top-Right Inner */
+.sticker-pos-7 {
+  top: 17%;
+  right: 16%;
+  transform: rotate(-8deg);
+}
+
+/* 8. Mid-Right Inner (Fills Mid-Right Void) */
+.sticker-pos-8 {
+  top: 42%;
+  right: 16%;
+  transform: rotate(6deg);
+}
+
+/* 9. Lower-Right Outer */
+.sticker-pos-9 {
+  top: 60%;
+  right: 2%;
+  transform: rotate(-7deg);
+}
+
+/* 10. Bottom-Right Outer */
+.sticker-pos-10 {
+  bottom: 3%;
+  right: 2.5%;
+  transform: rotate(8deg);
+}
+
 /* Responsive Scaling & Zero-Overlap Protection */
-@media (max-width: 1550px) {
+@media (max-width: 1600px) {
   .auth-finance-sticker-img {
-    width: 190px;
-    height: 128px;
+    width: 210px;
+    height: 138px;
+  }
+  .sticker-pos-2,
+  .sticker-pos-4 {
+    left: 13.5%;
+  }
+  .sticker-pos-7,
+  .sticker-pos-8 {
+    right: 13.5%;
   }
 }
 
-@media (max-width: 1300px) {
+@media (max-width: 1350px) {
   .auth-finance-sticker-img {
-    width: 165px;
-    height: 110px;
+    width: 175px;
+    height: 115px;
+  }
+  .sticker-pos-2,
+  .sticker-pos-4 {
+    left: 11%;
+  }
+  .sticker-pos-7,
+  .sticker-pos-8 {
+    right: 11%;
   }
 }
 
 @media (max-width: 1100px) {
   .sticker-pos-2,
   .sticker-pos-4,
-  .sticker-pos-6,
-  .sticker-pos-7 {
-    display: none; /* Keep outer 4 corners on compact laptop screens to guarantee zero card overlap */
+  .sticker-pos-7,
+  .sticker-pos-8 {
+    display: none; /* Keep outer stickers on compact screens to guarantee zero central overlap */
   }
   .auth-finance-sticker-img {
     width: 145px;
     height: 98px;
   }
   .sticker-pos-1 { top: 2.5%; left: 2%; }
-  .sticker-pos-5 { top: 2.5%; right: 2%; }
-  .sticker-pos-3 { bottom: 2.5%; left: 2%; }
-  .sticker-pos-8 { bottom: 2.5%; right: 2%; }
+  .sticker-pos-6 { top: 2.5%; right: 2%; }
+  .sticker-pos-5 { bottom: 2.5%; left: 2%; }
+  .sticker-pos-10 { bottom: 2.5%; right: 2%; }
+  .sticker-pos-3 { top: 46%; left: 2%; }
+  .sticker-pos-9 { top: 46%; right: 2%; }
 }
 
 @media (max-width: 850px) {
