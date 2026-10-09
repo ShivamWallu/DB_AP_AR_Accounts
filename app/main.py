@@ -21,7 +21,7 @@ init_db()
 _db_init = SessionLocal()
 try:
     init_default_users(_db_init)
-    cleanup_old_batches(_db_init, retention_days=14)
+    cleanup_old_batches(_db_init, max_retained_batches=14)
     # Backfill voucher_date_range for existing batches if needed
     existing_batches = _db_init.query(ImportBatch).all()
     for eb in existing_batches:
@@ -45,8 +45,8 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         init_default_users(db)
-        # Enforce 14-day retention lifecycle on startup
-        cleanup_old_batches(db, retention_days=14)
+        # Enforce max 14 batches retention on startup
+        cleanup_old_batches(db, max_retained_batches=14)
         
         # Check if database has any existing batches, if not, auto-import data_files
         existing_batch = db.query(ImportBatch).first()

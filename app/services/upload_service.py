@@ -303,9 +303,9 @@ def process_import_batch(
         db.commit()
         db.refresh(batch)
 
-        # Auto Retention Cleanup: Automatically purge batches older than 14 days permanently
+        # Auto Retention Cleanup: Keep strictly max 14 batches; automatically delete oldest batches when 15+ exist
         try:
-            cleanup_old_batches(db, retention_days=14)
+            cleanup_old_batches(db, max_retained_batches=14)
         except Exception as cleanup_err:
             print(f"Auto-retention cleanup note: {cleanup_err}")
 
@@ -341,17 +341,17 @@ def process_import_batch(
         )
         raise e
 
-def cleanup_old_batches(db: Session, retention_days: int = 14) -> int:
+def cleanup_old_batches(db: Session, max_retained_batches: int = 14) -> int:
     """
-    Auto-retention policy (14-Day Rolling Lifecycle):
-    1. Removes empty, duplicate (new_records == 0 or total_rows == 0), or failed batches to avoid clutter.
-    2. Identifies batches uploaded more than `retention_days` (14 days) ago.
-    3. Permanently purges older batches beyond 14 days and all associated records
-       (DayBookRecord, APRecord, ARRecord, ImportFile) and their stored disk files to keep system lean.
+    Max 14 Batches Retention Policy:
+    1. Removes empty, duplicate (new_records == 0 or total_rows == 0), or failed batches.
+    2. Retains strictly up to `max_retained_batches` (14 batches maximum).
+    3. As soon as a 15th batch arrives (count > 14), the oldest batches beyond the 14 latest
+       are permanently purged along with all child records (DayBookRecord, APRecord, ARRecord, ImportFile)
+       and their stored disk files.
     Returns the count of purged batches.
     """
     purged_count = 0
-    cutoff_time = datetime.utcnow() - timedelta(days=retention_days)
 
     # 1. Clean up duplicate / empty / failed batches with 0 new records
     empty_batches = db.query(ImportBatch).filter(
@@ -363,20 +363,6 @@ def cleanup_old_batches(db: Session, retention_days: int = 14) -> int:
     ).all()
 
     for b in empty_batches:
-        db.query(DayBookRecord).filter(DayBookRecord.batch_id == b.id).delete(synchronize_session=False)
-        db.query(APRecord).filter(APRecord.batch_id == b.id).delete(synchronize_session=False)
-        db.query(ARRecord).filter(ARRecord.batch_id == b.id).delete(synchronize_session=False)
-        db.query(ImportFile).filter(ImportFile.batch_id == b.id).delete(synchronize_session=False)
-        db.delete(b)
-        purged_count += 1
-
-    # 2. Delete batches strictly older than 14 days
-    expired_batches = db.query(ImportBatch).filter(
-        ImportBatch.upload_timestamp < cutoff_time
-    ).all()
-
-    for b in expired_batches:
-        # Also clean up stored files on disk if they exist
         for f in db.query(ImportFile).filter(ImportFile.batch_id == b.id).all():
             try:
                 if f.stored_path and os.path.exists(f.stored_path):
@@ -389,6 +375,29 @@ def cleanup_old_batches(db: Session, retention_days: int = 14) -> int:
         db.query(ImportFile).filter(ImportFile.batch_id == b.id).delete(synchronize_session=False)
         db.delete(b)
         purged_count += 1
+
+    # 2. Get valid completed batches with real data, ordered from newest to oldest
+    valid_batches = db.query(ImportBatch).filter(
+        ImportBatch.status == "Completed",
+        ImportBatch.new_records > 0
+    ).order_by(desc(ImportBatch.id)).all()
+
+    # If count > 14 (e.g. 15th batch uploaded), permanently delete the oldest batches
+    if len(valid_batches) > max_retained_batches:
+        excess_batches = valid_batches[max_retained_batches:]
+        for b in excess_batches:
+            for f in db.query(ImportFile).filter(ImportFile.batch_id == b.id).all():
+                try:
+                    if f.stored_path and os.path.exists(f.stored_path):
+                        os.remove(f.stored_path)
+                except Exception:
+                    pass
+            db.query(DayBookRecord).filter(DayBookRecord.batch_id == b.id).delete(synchronize_session=False)
+            db.query(APRecord).filter(APRecord.batch_id == b.id).delete(synchronize_session=False)
+            db.query(ARRecord).filter(ARRecord.batch_id == b.id).delete(synchronize_session=False)
+            db.query(ImportFile).filter(ImportFile.batch_id == b.id).delete(synchronize_session=False)
+            db.delete(b)
+            purged_count += 1
 
     if purged_count > 0:
         db.commit()
