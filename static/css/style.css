@@ -2454,70 +2454,32 @@ body.sidebar-collapsed .main-content {
   max-width: calc(100vw - 72px);
 }
 
-/* Auth Login Modal / Screen with Executive Clean FinTech Background */
+/* Auth Login Screen with Clean White & Executive Light Background */
 .auth-wrapper {
   min-height: 100vh;
   width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #0b1329;
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(#e2e8f0 1.2px, transparent 1.2px),
+    radial-gradient(#e2e8f0 1.2px, #f8fafc 1.2px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
   padding: 1.5rem;
   position: relative;
   overflow: hidden;
 }
 
-/* Dynamic Multi-Layer Background Carousel (Vibrant, Crisp & Clearly Visible) */
-.auth-bg-carousel {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.auth-bg-slide {
-  position: absolute;
-  top: -2%;
-  left: -2%;
-  width: 104%;
-  height: 104%;
-  background-position: center center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  opacity: 0;
-  transform: scale(1.0);
-  transition: opacity 1.2s ease-in-out;
-  filter: brightness(1.02) contrast(1.05) saturate(1.08);
-}
-
-.auth-bg-slide.active {
-  opacity: 1;
-}
-
-/* Light, elegant ambient overlay allowing background image to be fully vibrant */
-.auth-bg-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.14) 0%, rgba(15, 23, 42, 0.38) 100%);
-  z-index: 2;
-  pointer-events: none;
-}
-
-/* Decorative Financial Sticker Images (Using Existing Finance1 to Finance5) */
+/* Standard Large Finance Showcase Images (Using Existing Finance1 to Finance5) */
 .auth-stickers-layer {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 10;
+  z-index: 5;
   pointer-events: none;
   overflow: hidden;
 }
@@ -2529,88 +2491,74 @@ body.sidebar-collapsed .main-content {
 }
 
 .auth-finance-sticker-img {
-  width: 82px;
-  height: 56px;
+  width: 190px;
+  height: 125px;
   object-fit: cover;
-  border-radius: 10px;
-  border: 2px solid #ffffff;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  border-radius: 14px;
+  border: 3.5px solid #ffffff;
+  box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.14), 0 3px 8px rgba(0, 0, 0, 0.06);
   display: block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Individual Sticker Positions - Clean Flat Layout Outside Central Login Card */
+/* Left Flank Positions (3 Large Cards) */
 .sticker-pos-1 {
-  top: 4%;
-  left: 3.5%;
+  top: 5%;
+  left: 3.5vw;
 }
-.sticker-pos-1 .auth-finance-sticker-img { width: 78px; height: 52px; }
 
 .sticker-pos-2 {
-  top: 27%;
-  left: 3.5%;
+  top: 38%;
+  left: 3.5vw;
 }
-.sticker-pos-2 .auth-finance-sticker-img { width: 84px; height: 56px; }
 
 .sticker-pos-3 {
-  top: 51%;
-  left: 3.8%;
+  bottom: 5%;
+  left: 3.5vw;
 }
-.sticker-pos-3 .auth-finance-sticker-img { width: 76px; height: 50px; }
 
+/* Right Flank Positions (3 Large Cards) */
 .sticker-pos-4 {
-  bottom: 5.5%;
-  left: 4%;
+  top: 5%;
+  right: 3.5vw;
 }
-.sticker-pos-4 .auth-finance-sticker-img { width: 82px; height: 55px; }
 
 .sticker-pos-5 {
-  top: 4%;
-  right: 3.5%;
+  top: 38%;
+  right: 3.5vw;
 }
-.sticker-pos-5 .auth-finance-sticker-img { width: 80px; height: 54px; }
 
 .sticker-pos-6 {
-  top: 27%;
-  right: 3.5%;
+  bottom: 5%;
+  right: 3.5vw;
 }
-.sticker-pos-6 .auth-finance-sticker-img { width: 84px; height: 56px; }
 
-.sticker-pos-7 {
-  top: 51%;
-  right: 3.8%;
-}
-.sticker-pos-7 .auth-finance-sticker-img { width: 78px; height: 52px; }
-
-.sticker-pos-8 {
-  bottom: 5.5%;
-  right: 4%;
-}
-.sticker-pos-8 .auth-finance-sticker-img { width: 82px; height: 55px; }
-
-/* Responsive Sticker Scaling & Visibility (Never overlaps central card) */
-@media (max-width: 1280px) {
+/* Responsive Scaling & Clean Zero-Overlap Rules */
+@media (max-width: 1400px) {
   .auth-finance-sticker-img {
-    width: 70px !important;
-    height: 48px !important;
+    width: 160px;
+    height: 108px;
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1150px) {
   .sticker-pos-2,
-  .sticker-pos-3,
-  .sticker-pos-6,
-  .sticker-pos-7 {
-    display: none; /* Hide middle flank stickers to guarantee zero card overlap */
+  .sticker-pos-5 {
+    display: none; /* Hide middle cards on narrower screens to guarantee 0% card overlap */
   }
-  .sticker-pos-1 { top: 2%; left: 2%; }
-  .sticker-pos-5 { top: 2%; right: 2%; }
-  .sticker-pos-4 { bottom: 3%; left: 2%; }
-  .sticker-pos-8 { bottom: 3%; right: 2%; }
+  .auth-finance-sticker-img {
+    width: 140px;
+    height: 95px;
+  }
+  .sticker-pos-1 { top: 3%; left: 2.5vw; }
+  .sticker-pos-4 { top: 3%; right: 2.5vw; }
+  .sticker-pos-3 { bottom: 3%; left: 2.5vw; }
+  .sticker-pos-6 { bottom: 3%; right: 2.5vw; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 850px) {
   .auth-stickers-layer {
-    display: none; /* Keep clean focus on card on mobile */
+    display: none; /* Clean focus on central card on mobile */
   }
 }
 
