@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 import secrets
 from fastapi import APIRouter, Depends, HTTPException, status, Request
@@ -17,6 +18,41 @@ from app.auth import (
 from app.services.audit_service import log_activity
 from app.services.email_service import send_otp_email, send_password_reset_email
 from app.config import OTP_EXPIRE_MINUTES
+
+def validate_password_strength(password: str) -> None:
+    """
+    Enforce enterprise password security:
+    - Minimum 8 characters
+    - At least 1 uppercase letter (A-Z)
+    - At least 1 lowercase letter (a-z)
+    - At least 1 digit (0-9)
+    - At least 1 special character (!@#$%^&*()_+-=[]{}|;:,.<>?)
+    """
+    if not password or len(password) < 8:
+        raise HTTPException(
+            status_code=400,
+            detail="Password must be at least 8 characters long."
+        )
+    if not re.search(r"[A-Z]", password):
+        raise HTTPException(
+            status_code=400,
+            detail="Password must contain at least one uppercase letter (A-Z)."
+        )
+    if not re.search(r"[a-z]", password):
+        raise HTTPException(
+            status_code=400,
+            detail="Password must contain at least one lowercase letter (a-z)."
+        )
+    if not re.search(r"\d", password):
+        raise HTTPException(
+            status_code=400,
+            detail="Password must contain at least one number (0-9)."
+        )
+    if not re.search(r"[!@#$%^&*()_+\-=\[\]{}|;:,.<>?/~\`]", password):
+        raise HTTPException(
+            status_code=400,
+            detail="Password must contain at least one special character (!@#$%^&*...)."
+        )
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -188,8 +224,8 @@ def register_with_otp(data: RegisterRequest, req: Request, db: Session = Depends
 
     if len(username) < 3:
         raise HTTPException(status_code=400, detail="Username must be at least 3 characters long.")
-    if len(data.password) < 6:
-        raise HTTPException(status_code=400, detail="Password must be at least 6 characters long.")
+    
+    validate_password_strength(data.password)
 
     # Check for existing email or username
     existing_u = db.query(User).filter(User.username == username).first()
@@ -471,8 +507,7 @@ def reset_password(data: ResetPasswordRequest, req: Request, db: Session = Depen
     if not token:
         raise HTTPException(status_code=400, detail="Missing password reset token.")
 
-    if not new_password or len(new_password) < 6:
-        raise HTTPException(status_code=400, detail="New password must be at least 6 characters long.")
+    validate_password_strength(new_password)
 
     token_rec = db.query(PasswordResetToken).filter(
         PasswordResetToken.token == token,

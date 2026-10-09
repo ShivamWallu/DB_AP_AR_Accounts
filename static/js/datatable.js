@@ -1528,10 +1528,10 @@ class DataTableController {
       batchSelect.innerHTML = filterData.batches.map((b, idx) => {
         const isLatest = idx === 0;
         const shortCode = b.batch_code ? b.batch_code.replace(/^BATCH-\d{8}-/, 'B-') : `B-${b.id}`;
-        const shortDate = b.date ? b.date.replace(/-\d{4}$/, '') : '';
+        const vDateRange = b.voucher_date_range || b.date || '';
         const label = isLatest
-          ? `⚡ ${shortCode} (Latest)`
-          : `📁 ${shortCode} (${shortDate})`;
+          ? `⚡ ${shortCode} (${vDateRange}) (Latest)`
+          : `📁 ${shortCode} (${vDateRange})`;
         return `<option value="${b.id}">${label}</option>`;
       }).join("") + `<option value="">🌐 All Batches</option>`;
       batchSelect.value = this.batchId;

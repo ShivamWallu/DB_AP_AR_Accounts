@@ -337,6 +337,25 @@ const Auth = {
     this.resetTimerInterval = setInterval(updateTimer, 1000);
   },
 
+  checkPasswordStrength(password) {
+    if (!password || password.length < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+    if (!/[A-Z]/.test(password)) {
+      return "Password must contain at least one uppercase letter (A-Z).";
+    }
+    if (!/[a-z]/.test(password)) {
+      return "Password must contain at least one lowercase letter (a-z).";
+    }
+    if (!/\d/.test(password)) {
+      return "Password must contain at least one number (0-9).";
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?/~`]/.test(password)) {
+      return "Password must contain at least one special character (!@#$%^&*...).";
+    }
+    return null;
+  },
+
   async handleResetPassword(e) {
     if (e) e.preventDefault();
     const tokenInput = document.getElementById("reset-token-hidden");
@@ -353,8 +372,9 @@ const Auth = {
       return;
     }
 
-    if (!p1 || p1.length < 6) {
-      App.toast("New password must be at least 6 characters long", "warning");
+    const pwdError = this.checkPasswordStrength(p1);
+    if (pwdError) {
+      App.toast(`⚠️ ${pwdError}`, "warning");
       return;
     }
 
@@ -412,13 +432,19 @@ const Auth = {
       return;
     }
 
+    if (username.length < 3) {
+      App.toast("Username must be at least 3 characters long", "warning");
+      return;
+    }
+
     if (!email.includes("@") || !email.includes(".")) {
       App.toast("Please enter a valid email address", "warning");
       return;
     }
 
-    if (password.length < 6) {
-      App.toast("Password must be at least 6 characters", "warning");
+    const pwdError = this.checkPasswordStrength(password);
+    if (pwdError) {
+      App.toast(`⚠️ ${pwdError}`, "warning");
       return;
     }
 

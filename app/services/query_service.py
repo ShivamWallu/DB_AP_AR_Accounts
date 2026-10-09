@@ -34,17 +34,34 @@ def get_filter_options(db: Session) -> Dict[str, Any]:
         ImportBatch.status == "Completed",
         ImportBatch.total_rows > 0
     ).order_by(desc(ImportBatch.id)).all()
-    batch_list = [
-        {
+    batch_list = []
+    for b in batches:
+        v_range = getattr(b, 'voucher_date_range', None)
+        if not v_range or v_range == b.upload_date_str:
+            # Dynamically extract distinct voucher dates from records for this batch
+            raw_vdates = [
+                r[0] for r in db.query(DayBookRecord.voucher_date).distinct()
+                .filter(DayBookRecord.batch_id == b.id, DayBookRecord.voucher_date.isnot(None)).all()
+                if r[0] and str(r[0]).strip() and str(r[0]).strip() not in ("None", "-", "—", "null", "undefined")
+            ]
+            if raw_vdates:
+                if len(raw_vdates) == 1:
+                    v_range = raw_vdates[0]
+                elif len(raw_vdates) == 2:
+                    v_range = f"{raw_vdates[0]}, {raw_vdates[1]}"
+                else:
+                    v_range = f"{raw_vdates[0]} ~ {raw_vdates[-1]}"
+            else:
+                v_range = b.upload_date_str
+
+        batch_list.append({
             "id": b.id,
             "batch_code": b.batch_code,
             "date": b.upload_date_str,
             "time": b.upload_time_str,
-            "voucher_date_range": getattr(b, 'voucher_date_range', None) or b.upload_date_str,
+            "voucher_date_range": v_range,
             "status": b.status
-        }
-        for b in batches
-    ]
+        })
 
     return {
         "sites": all_sites,
