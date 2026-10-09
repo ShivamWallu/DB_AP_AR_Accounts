@@ -69,10 +69,7 @@ const Imports = {
               <!-- Bottom Row: Inline Metrics & Ingested File Badges -->
               <div class="batch-compact-footer">
                 <div class="batch-compact-stats">
-                  <span class="batch-stat-item">Total Rows: <strong>${b.total_rows.toLocaleString()}</strong></span>
-                  <span class="batch-stat-item stat-new">New Records: <strong>+${b.new_records.toLocaleString()}</strong></span>
-                  <span class="batch-stat-item stat-dup">Duplicates: <strong>${b.duplicate_records.toLocaleString()}</strong></span>
-                  <span class="batch-stat-item stat-rej">Rejected: <strong>${b.rejected_records.toLocaleString()}</strong></span>
+                  <span class="batch-stat-item">Total Dataset Records: <strong>${b.total_rows.toLocaleString()}</strong></span>
                 </div>
                 <div class="batch-compact-files">
                   <span class="batch-file-chip ${b.daybook_filename ? 'chip-ok' : 'chip-err'}" title="${b.daybook_filename || 'DayBook'}">
@@ -124,7 +121,7 @@ const Imports = {
               <div><strong>Uploaded By:</strong> <span style="font-weight: 600; color: var(--text-primary);">${batch.created_by_user || 'admin'}</span></div>
               <div><strong>Upload Timestamp:</strong> <span>${formattedTimestamp}</span></div>
               <div><strong>Batch Status:</strong> <span class="badge ${batch.status === 'Completed' ? 'badge-success' : 'badge-danger'}">${batch.status}</span></div>
-              <div><strong>Total Records:</strong> <span style="font-weight: 700; color: var(--text-primary);">${batch.total_rows.toLocaleString()} (+${batch.new_records.toLocaleString()} new)</span></div>
+              <div><strong>Total Records:</strong> <span style="font-weight: 700; color: var(--text-primary);">${batch.total_rows.toLocaleString()}</span></div>
             </div>
             ${batch.error_summary ? `<div style="margin-top: 0.5rem; color: var(--danger); font-size: 0.80rem;"><strong>Error:</strong> ${batch.error_summary}</div>` : ''}
           </div>
