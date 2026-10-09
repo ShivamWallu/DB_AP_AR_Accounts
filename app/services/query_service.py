@@ -1,6 +1,6 @@
 from typing import Optional, List, Dict, Any, Tuple
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, desc, asc, func
+from sqlalchemy import or_, and_, desc, asc, func
 from app.models import DayBookRecord, APRecord, ARRecord, ImportBatch, VoucherVerification
 
 def get_filter_options(db: Session) -> Dict[str, Any]:
@@ -68,17 +68,71 @@ def expand_voucher_type_synonyms(vt: str) -> List[str]:
         synonyms.update(["Expense Voucher", "Service Expense Voucher"])
     return list(synonyms)
 
+def parse_multi_filter(val: Optional[Any], default_all_names: Tuple[str, ...] = ("all", "all sites", "all voucher types", "all approvers", "")) -> List[str]:
+    """Parse single or multi-select comma-delimited filter values into clean string list"""
+    if not val:
+        return []
+    if isinstance(val, list):
+        return [str(s).strip() for s in val if s and str(s).strip() and str(s).strip().lower() not in default_all_names]
+    raw = str(val).strip()
+    if raw.lower() in default_all_names:
+        return []
+    parts = [s.strip() for s in raw.split(",") if s.strip() and s.strip().lower() not in default_all_names]
+    return parts
+
 def parse_site_filter(site: Optional[Any]) -> List[str]:
     """Parse single or multi-select comma-delimited sites into clean list"""
-    if not site:
+    return parse_multi_filter(site, ("all", "all sites", "all_sites", ""))
+
+def expand_voucher_types_multi(vtypes_raw: Optional[Any]) -> List[str]:
+    """Expand synonyms across multiple selected voucher types"""
+    selected = parse_multi_filter(vtypes_raw, ("all", "all voucher types", "all_voucher_types", ""))
+    if not selected:
         return []
-    if isinstance(site, list):
-        return [s.strip() for s in site if s and str(s).strip() and str(s).strip().lower() not in ("all", "all sites", "all_sites", "")]
-    raw = str(site).strip()
-    if raw.lower() in ("all", "all sites", "all_sites", ""):
-        return []
-    parts = [s.strip() for s in raw.split(",") if s.strip() and s.strip().lower() not in ("all", "all sites", "all_sites", "")]
-    return parts
+    all_expanded = set()
+    for vt in selected:
+        for syn in expand_voucher_type_synonyms(vt):
+            all_expanded.add(syn)
+    return list(all_expanded)
+
+def build_approvers_conditions(model_class, approved_by_raw: Optional[Any]):
+    """Build SQLAlchemy filter condition for multi-selected approvers"""
+    approvers_list = parse_multi_filter(approved_by_raw, ("all", "all approvers", "all_approvers", ""))
+    if not approvers_list:
+        return None
+
+    conditions = []
+    has_approved_special = "approved" in approvers_list
+    has_pending_special = "pending" in approvers_list or "unapproved" in approvers_list
+    specific_names = [a for a in approvers_list if a not in ("approved", "pending", "unapproved")]
+
+    if has_approved_special:
+        conditions.append(
+            and_(
+                model_class.approved_by.isnot(None),
+                model_class.approved_by != "",
+                model_class.approved_by != "—",
+                model_class.approved_by != "-"
+            )
+        )
+    if has_pending_special:
+        conditions.append(
+            or_(
+                model_class.approved_by.is_(None),
+                model_class.approved_by == "",
+                model_class.approved_by == "—",
+                model_class.approved_by == "-"
+            )
+        )
+    if specific_names:
+        if len(specific_names) == 1:
+            conditions.append(model_class.approved_by == specific_names[0])
+        else:
+            conditions.append(model_class.approved_by.in_(specific_names))
+
+    if conditions:
+        return or_(*conditions) if len(conditions) > 1 else conditions[0]
+    return None
 
 def query_daybook(
     db: Session,
@@ -105,29 +159,16 @@ def query_daybook(
         else:
             q = q.filter(DayBookRecord.transaction_site.in_(sites_list))
 
-    if voucher_type and voucher_type.strip():
-        syns = expand_voucher_type_synonyms(voucher_type)
-        q = q.filter(DayBookRecord.voucher_type.in_(syns))
-    if approved_by and approved_by.strip():
-        appr = approved_by.strip()
-        if appr == "approved":
-            q = q.filter(
-                DayBookRecord.approved_by.isnot(None),
-                DayBookRecord.approved_by != "",
-                DayBookRecord.approved_by != "—",
-                DayBookRecord.approved_by != "-"
-            )
-        elif appr in ("pending", "unapproved"):
-            q = q.filter(
-                or_(
-                    DayBookRecord.approved_by.is_(None),
-                    DayBookRecord.approved_by == "",
-                    DayBookRecord.approved_by == "—",
-                    DayBookRecord.approved_by == "-"
-                )
-            )
+    syns = expand_voucher_types_multi(voucher_type)
+    if syns:
+        if len(syns) == 1:
+            q = q.filter(DayBookRecord.voucher_type == syns[0])
         else:
-            q = q.filter(DayBookRecord.approved_by == appr)
+            q = q.filter(DayBookRecord.voucher_type.in_(syns))
+
+    appr_cond = build_approvers_conditions(DayBookRecord, approved_by)
+    if appr_cond is not None:
+        q = q.filter(appr_cond)
     if batch_id:
         q = q.filter(DayBookRecord.batch_id == batch_id)
     if date_from and date_from.strip():
@@ -211,33 +252,18 @@ def query_ap(
         else:
             q = q.filter(APRecord.accounting_site_code.in_(sites_list))
 
-    if voucher_type and voucher_type.strip():
-        syns = expand_voucher_type_synonyms(voucher_type)
+    syns = expand_voucher_types_multi(voucher_type)
+    if syns:
         q = q.filter(or_(APRecord.voucher_type.in_(syns), APRecord.voucher_sub_type.in_(syns)))
+
     if voucher_subtype and voucher_subtype.strip():
         q = q.filter(APRecord.voucher_sub_type == voucher_subtype.strip())
-    if approved_by and approved_by.strip():
-        appr = approved_by.strip()
-        db_appr_q = db.query(DayBookRecord.voucher_number).filter(DayBookRecord.voucher_number.isnot(None))
-        if appr == "approved":
-            db_appr_q = db_appr_q.filter(
-                DayBookRecord.approved_by.isnot(None),
-                DayBookRecord.approved_by != "",
-                DayBookRecord.approved_by != "—",
-                DayBookRecord.approved_by != "-"
-            )
-        elif appr in ("pending", "unapproved"):
-            db_appr_q = db_appr_q.filter(
-                or_(
-                    DayBookRecord.approved_by.is_(None),
-                    DayBookRecord.approved_by == "",
-                    DayBookRecord.approved_by == "—",
-                    DayBookRecord.approved_by == "-"
-                )
-            )
-        else:
-            db_appr_q = db_appr_q.filter(DayBookRecord.approved_by == appr)
+
+    appr_cond = build_approvers_conditions(DayBookRecord, approved_by)
+    if appr_cond is not None:
+        db_appr_q = db.query(DayBookRecord.voucher_number).filter(DayBookRecord.voucher_number.isnot(None), appr_cond)
         q = q.filter(APRecord.voucher_number.in_(db_appr_q.scalar_subquery()))
+
     if batch_id:
         q = q.filter(APRecord.batch_id == batch_id)
 
@@ -325,6 +351,7 @@ def query_ap(
             "due_date": r.due_date,
             "item_service_description": r.item_service_description,
             "item_service_expense_account_desc": r.item_service_expense_account_desc,
+            "expense_account": r.item_service_expense_account_desc,
             "booked_item_quantity": r.booked_item_quantity,
             "item_service_rate": r.item_service_rate,
             "item_service_detail_amount": r.item_service_detail_amount,
@@ -364,33 +391,18 @@ def query_ar(
         else:
             q = q.filter(ARRecord.accounting_site_code.in_(sites_list))
 
-    if voucher_type and voucher_type.strip():
-        syns = expand_voucher_type_synonyms(voucher_type)
+    syns = expand_voucher_types_multi(voucher_type)
+    if syns:
         q = q.filter(or_(ARRecord.voucher_type.in_(syns), ARRecord.voucher_sub_type.in_(syns)))
+
     if voucher_subtype and voucher_subtype.strip():
         q = q.filter(ARRecord.voucher_sub_type == voucher_subtype.strip())
-    if approved_by and approved_by.strip():
-        appr = approved_by.strip()
-        db_appr_q = db.query(DayBookRecord.voucher_number).filter(DayBookRecord.voucher_number.isnot(None))
-        if appr == "approved":
-            db_appr_q = db_appr_q.filter(
-                DayBookRecord.approved_by.isnot(None),
-                DayBookRecord.approved_by != "",
-                DayBookRecord.approved_by != "—",
-                DayBookRecord.approved_by != "-"
-            )
-        elif appr in ("pending", "unapproved"):
-            db_appr_q = db_appr_q.filter(
-                or_(
-                    DayBookRecord.approved_by.is_(None),
-                    DayBookRecord.approved_by == "",
-                    DayBookRecord.approved_by == "—",
-                    DayBookRecord.approved_by == "-"
-                )
-            )
-        else:
-            db_appr_q = db_appr_q.filter(DayBookRecord.approved_by == appr)
+
+    appr_cond = build_approvers_conditions(DayBookRecord, approved_by)
+    if appr_cond is not None:
+        db_appr_q = db.query(DayBookRecord.voucher_number).filter(DayBookRecord.voucher_number.isnot(None), appr_cond)
         q = q.filter(ARRecord.voucher_number.in_(db_appr_q.scalar_subquery()))
+
     if batch_id:
         q = q.filter(ARRecord.batch_id == batch_id)
 
@@ -523,7 +535,7 @@ def query_master_360(
     Expands multi-item vouchers into detailed individual item lines (retaining parent voucher metadata,
     approval status, verification, and site info) so that all multi-line items from AP and AR are 100% visible.
     """
-    syns = expand_voucher_type_synonyms(voucher_type) if (voucher_type and voucher_type.strip()) else []
+    syns = expand_voucher_types_multi(voucher_type)
     sites_list = parse_site_filter(site)
 
     # 1. Base Query on DayBookRecord
@@ -564,26 +576,9 @@ def query_master_360(
                 DayBookRecord.voucher_number.in_(vt_subq_ar)
             )
         )
-    if approved_by and approved_by.strip():
-        appr = approved_by.strip()
-        if appr == "approved":
-            q_db = q_db.filter(
-                DayBookRecord.approved_by.isnot(None),
-                DayBookRecord.approved_by != "",
-                DayBookRecord.approved_by != "—",
-                DayBookRecord.approved_by != "-"
-            )
-        elif appr in ("pending", "unapproved"):
-            q_db = q_db.filter(
-                or_(
-                    DayBookRecord.approved_by.is_(None),
-                    DayBookRecord.approved_by == "",
-                    DayBookRecord.approved_by == "—",
-                    DayBookRecord.approved_by == "-"
-                )
-            )
-        else:
-            q_db = q_db.filter(DayBookRecord.approved_by == appr)
+    appr_cond = build_approvers_conditions(DayBookRecord, approved_by)
+    if appr_cond is not None:
+        q_db = q_db.filter(appr_cond)
 
     # Order DayBook query
     if sort_order.lower() == "desc":
@@ -647,6 +642,7 @@ def query_master_360(
             for ar in ar_list:
                 matched_ar_ids.add(ar.id)
                 ar_tax = (ar.total_cgst or 0.0) + (ar.total_sgst or 0.0) + (ar.total_igst or 0.0)
+                exp_acc = ar.voucher_sub_type or dbr.account_description or dbr.voucher_type
                 master_list.append({
                     "id": f"{dbr.id}_ar_{ar.id}",
                     "batch_id": dbr.batch_id,
@@ -657,7 +653,8 @@ def query_master_360(
                     "voucher_status": dbr.voucher_status or "Verified",
                     "party_code": dbr.party_code,
                     "party_description": dbr.party_description or dbr.party_code or "",
-                    "account_description": ar.voucher_sub_type or dbr.account_description or dbr.voucher_type,
+                    "account_description": exp_acc,
+                    "expense_account": exp_acc,
                     "narration": ar.narration_remarks or dbr.narration or f"Voucher transaction: {dbr.voucher_type}",
                     "created_by": dbr.created_by or "",
                     "approved_by": dbr.approved_by or "",
@@ -691,6 +688,7 @@ def query_master_360(
             # Expand each AP item line
             for ap in ap_list:
                 matched_ap_ids.add(ap.id)
+                exp_acc = ap.item_service_expense_account_desc or dbr.account_description or dbr.voucher_type
                 master_list.append({
                     "id": f"{dbr.id}_ap_{ap.id}",
                     "batch_id": dbr.batch_id,
@@ -701,7 +699,8 @@ def query_master_360(
                     "voucher_status": dbr.voucher_status or "Verified",
                     "party_code": ap.party_gst_tin or dbr.party_code,
                     "party_description": dbr.party_description or dbr.party_code or "",
-                    "account_description": ap.item_service_expense_account_desc or dbr.account_description or dbr.voucher_type,
+                    "account_description": exp_acc,
+                    "expense_account": exp_acc,
                     "narration": ap.header_narration or ap.detail_narration or dbr.narration or f"Voucher transaction: {dbr.voucher_type}",
                     "created_by": dbr.created_by or "",
                     "approved_by": dbr.approved_by or "",
@@ -734,6 +733,7 @@ def query_master_360(
         elif has_ap and has_ar:
             for ap in ap_list:
                 matched_ap_ids.add(ap.id)
+                exp_acc = ap.item_service_expense_account_desc or dbr.account_description
                 master_list.append({
                     "id": f"{dbr.id}_ap_{ap.id}",
                     "batch_id": dbr.batch_id,
@@ -744,7 +744,8 @@ def query_master_360(
                     "voucher_status": dbr.voucher_status or "Verified",
                     "party_code": ap.party_gst_tin or dbr.party_code,
                     "party_description": dbr.party_description or dbr.party_code or "",
-                    "account_description": ap.item_service_expense_account_desc or dbr.account_description,
+                    "account_description": exp_acc,
+                    "expense_account": exp_acc,
                     "narration": ap.header_narration or ap.detail_narration or dbr.narration,
                     "created_by": dbr.created_by or "",
                     "approved_by": dbr.approved_by or "",
@@ -777,6 +778,7 @@ def query_master_360(
             for ar in ar_list:
                 matched_ar_ids.add(ar.id)
                 ar_tax = (ar.total_cgst or 0.0) + (ar.total_sgst or 0.0) + (ar.total_igst or 0.0)
+                exp_acc = ar.voucher_sub_type or dbr.account_description
                 master_list.append({
                     "id": f"{dbr.id}_ar_{ar.id}",
                     "batch_id": dbr.batch_id,
@@ -787,7 +789,8 @@ def query_master_360(
                     "voucher_status": dbr.voucher_status or "Verified",
                     "party_code": dbr.party_code,
                     "party_description": dbr.party_description or dbr.party_code or "",
-                    "account_description": ar.voucher_sub_type or dbr.account_description,
+                    "account_description": exp_acc,
+                    "expense_account": exp_acc,
                     "narration": ar.narration_remarks or dbr.narration,
                     "created_by": dbr.created_by or "",
                     "approved_by": dbr.approved_by or "",
@@ -819,6 +822,7 @@ def query_master_360(
                 })
         else:
             # Pure Day Book entry (no AP/AR)
+            exp_acc = dbr.account_description or dbr.voucher_type
             master_list.append({
                 "id": dbr.id,
                 "batch_id": dbr.batch_id,
@@ -829,7 +833,8 @@ def query_master_360(
                 "voucher_status": dbr.voucher_status or "Verified",
                 "party_code": dbr.party_code,
                 "party_description": dbr.party_description or dbr.party_code or "",
-                "account_description": dbr.account_description or dbr.voucher_type,
+                "account_description": exp_acc,
+                "expense_account": exp_acc,
                 "narration": dbr.narration or f"Voucher transaction: {dbr.voucher_type} - {dbr.party_description or dbr.party_code or dbr.transaction_site}",
                 "created_by": dbr.created_by or "",
                 "approved_by": dbr.approved_by or "",
@@ -868,6 +873,7 @@ def query_master_360(
                     continue
                 if syns and (ap.voucher_type not in syns and ap.voucher_sub_type not in syns):
                     continue
+                exp_acc = ap.item_service_expense_account_desc or ap.item_service_description
                 master_list.append({
                     "id": f"ap_{ap.id}",
                     "batch_id": ap.batch_id,
@@ -878,7 +884,8 @@ def query_master_360(
                     "voucher_status": "Reconciled (AP)",
                     "party_code": ap.party_gst_tin or "",
                     "party_description": ap.item_service_expense_account_desc or "Supplier / Vendor",
-                    "account_description": ap.item_service_expense_account_desc or ap.item_service_description,
+                    "account_description": exp_acc,
+                    "expense_account": exp_acc,
                     "narration": ap.header_narration or ap.detail_narration or f"AP Entry: {ap.item_service_description}",
                     "created_by": "",
                     "approved_by": "",
@@ -918,6 +925,7 @@ def query_master_360(
                 if syns and (ar.voucher_type not in syns and ar.voucher_sub_type not in syns):
                     continue
                 ar_tax = (ar.total_cgst or 0.0) + (ar.total_sgst or 0.0) + (ar.total_igst or 0.0)
+                exp_acc = ar.voucher_sub_type or ar.item_service_description
                 master_list.append({
                     "id": f"ar_{ar.id}",
                     "batch_id": ar.batch_id,
@@ -928,7 +936,8 @@ def query_master_360(
                     "voucher_status": "Reconciled (AR)",
                     "party_code": "",
                     "party_description": ar.voucher_sub_type or "Customer Account",
-                    "account_description": ar.voucher_sub_type or ar.item_service_description,
+                    "account_description": exp_acc,
+                    "expense_account": exp_acc,
                     "narration": ar.narration_remarks or f"AR Entry: {ar.item_service_description}",
                     "created_by": "",
                     "approved_by": "",

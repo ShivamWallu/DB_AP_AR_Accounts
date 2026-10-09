@@ -436,11 +436,15 @@ class DataTableController {
     this.selectedSites = []; // Array of active site codes for Multi-Select
     this.availableSites = []; // All unique site codes from server
     this.voucherType = "";
+    this.selectedVTypes = []; // Array of active voucher types for Multi-Select
+    this.availableVTypes = []; // All unique voucher types from server
     this.voucherSubtype = "";
     this.registerType = "";
     this.batchId = "";
     this.verifyStatus = "all"; // 'all', 'verified', 'pending'
     this.approvedBy = "";
+    this.selectedApprovers = []; // Array of active approvers for Multi-Select
+    this.availableApprovers = []; // All unique approvers from server
     this.sortBy = "id";
     this.sortOrder = "desc";
     this.data = [];
@@ -543,11 +547,32 @@ class DataTableController {
             </div>
           </div>
         </div>
-        <div class="filter-group">
-          <label class="filter-label">Voucher Type</label>
-          <select class="form-select dt-vtype-filter">
-            <option value="">All Voucher Types</option>
-          </select>
+        <div class="filter-group filter-group-vtype" style="min-width: 175px;">
+          <label class="filter-label">Voucher Type (Multi-Select)</label>
+          <div class="multi-select-dropdown dt-vtype-multiselect">
+            <button type="button" class="multi-select-btn dt-vtype-trigger" aria-expanded="false" title="Click to filter by one or multiple voucher types">
+              <span class="multi-select-btn-content">
+                <span class="multi-select-icon">📋</span>
+                <span class="multi-select-label dt-vtype-label">All Voucher Types</span>
+              </span>
+              <span class="multi-select-badge dt-vtype-count-badge" style="display: none;">0</span>
+              <svg class="multi-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="multi-select-menu dt-vtype-menu">
+              <div class="multi-select-search-box">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" class="multi-select-search-input dt-vtype-search" placeholder="Search voucher type..." />
+              </div>
+              <div class="multi-select-actions">
+                <button type="button" class="multi-action-btn dt-vtype-select-all">✓ Select All</button>
+                <span class="multi-action-divider">•</span>
+                <button type="button" class="multi-action-btn dt-vtype-clear-all">✕ Clear</button>
+              </div>
+              <div class="multi-select-options dt-vtype-options-list">
+                <div style="padding: 0.5rem; text-align: center; color: var(--text-muted); font-size: 0.76rem;">Loading voucher types...</div>
+              </div>
+            </div>
+          </div>
         </div>
         ${this.datasetType === 'ap' || this.datasetType === 'ar' ? `
         <div class="filter-group">
@@ -556,13 +581,32 @@ class DataTableController {
             <option value="">All Sub-Types</option>
           </select>
         </div>` : ''}
-        <div class="filter-group">
-          <label class="filter-label">Approved By</label>
-          <select class="form-select dt-approved-by-filter">
-            <option value="">All Approvers</option>
-            <option value="approved">✓ Approved Only</option>
-            <option value="pending">⏳ Pending Approval</option>
-          </select>
+        <div class="filter-group filter-group-approver" style="min-width: 175px;">
+          <label class="filter-label">Approved By (Multi-Select)</label>
+          <div class="multi-select-dropdown dt-approver-multiselect">
+            <button type="button" class="multi-select-btn dt-approver-trigger" aria-expanded="false" title="Click to filter by one or multiple approvers">
+              <span class="multi-select-btn-content">
+                <span class="multi-select-icon">👤</span>
+                <span class="multi-select-label dt-approver-label">All Approvers</span>
+              </span>
+              <span class="multi-select-badge dt-approver-count-badge" style="display: none;">0</span>
+              <svg class="multi-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="multi-select-menu dt-approver-menu">
+              <div class="multi-select-search-box">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" class="multi-select-search-input dt-approver-search" placeholder="Search approver..." />
+              </div>
+              <div class="multi-select-actions">
+                <button type="button" class="multi-action-btn dt-approver-select-all">✓ Select All</button>
+                <span class="multi-action-divider">•</span>
+                <button type="button" class="multi-action-btn dt-approver-clear-all">✕ Clear</button>
+              </div>
+              <div class="multi-select-options dt-approver-options-list">
+                <div style="padding: 0.5rem; text-align: center; color: var(--text-muted); font-size: 0.76rem;">Loading approvers...</div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="filter-group filter-group-verify">
           <label class="filter-label">Verification</label>
@@ -822,13 +866,77 @@ class DataTableController {
       });
     }
 
-    // Voucher Type filter
-    const vtypeSelect = container.querySelector(".dt-vtype-filter");
-    vtypeSelect.addEventListener("change", (e) => {
-      this.voucherType = e.target.value;
-      this.page = 1;
-      this.loadData();
-    });
+    // Voucher Type Multi-Select Filter Controls
+    const vtypeMultiSelect = container.querySelector(".dt-vtype-multiselect");
+    const vtypeTriggerBtn = container.querySelector(".dt-vtype-trigger");
+    const vtypeSearchInputEl = container.querySelector(".dt-vtype-search");
+    const vtypeSelectAllBtn = container.querySelector(".dt-vtype-select-all");
+    const vtypeClearAllBtn = container.querySelector(".dt-vtype-clear-all");
+    const vtypeOptionsList = container.querySelector(".dt-vtype-options-list");
+
+    if (vtypeTriggerBtn && vtypeMultiSelect) {
+      vtypeTriggerBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        document.querySelectorAll(".multi-select-dropdown.open").forEach(ms => {
+          if (ms !== vtypeMultiSelect) ms.classList.remove("open");
+        });
+        vtypeMultiSelect.classList.toggle("open");
+        if (vtypeMultiSelect.classList.contains("open") && vtypeSearchInputEl) {
+          setTimeout(() => vtypeSearchInputEl.focus(), 60);
+        }
+      });
+
+      vtypeMultiSelect.addEventListener("click", (e) => e.stopPropagation());
+    }
+
+    if (vtypeSearchInputEl && vtypeOptionsList) {
+      vtypeSearchInputEl.addEventListener("input", (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        vtypeOptionsList.querySelectorAll(".multi-select-option").forEach(opt => {
+          const vtypeName = (opt.dataset.vtype || "").toLowerCase();
+          opt.style.display = vtypeName.includes(term) ? "flex" : "none";
+        });
+      });
+    }
+
+    if (vtypeSelectAllBtn) {
+      vtypeSelectAllBtn.addEventListener("click", () => {
+        if (vtypeOptionsList && this.availableVTypes) {
+          vtypeOptionsList.querySelectorAll(".dt-vtype-cb").forEach(cb => cb.checked = true);
+          this.selectedVTypes = [...this.availableVTypes];
+          this.voucherType = this.selectedVTypes.join(",");
+          this.updateVTypeTriggerVisuals();
+          this.page = 1;
+          this.loadData();
+        }
+      });
+    }
+
+    if (vtypeClearAllBtn) {
+      vtypeClearAllBtn.addEventListener("click", () => {
+        if (vtypeOptionsList) {
+          vtypeOptionsList.querySelectorAll(".dt-vtype-cb").forEach(cb => cb.checked = false);
+          this.selectedVTypes = [];
+          this.voucherType = "";
+          this.updateVTypeTriggerVisuals();
+          this.page = 1;
+          this.loadData();
+        }
+      });
+    }
+
+    if (vtypeOptionsList) {
+      vtypeOptionsList.addEventListener("change", (e) => {
+        if (e.target && e.target.classList.contains("dt-vtype-cb")) {
+          const checked = Array.from(vtypeOptionsList.querySelectorAll(".dt-vtype-cb:checked")).map(cb => cb.value);
+          this.selectedVTypes = checked;
+          this.voucherType = checked.join(",");
+          this.updateVTypeTriggerVisuals();
+          this.page = 1;
+          this.loadData();
+        }
+      });
+    }
 
     // Voucher Sub-Type filter
     const vsubtypeSelect = container.querySelector(".dt-vsubtype-filter");
@@ -840,13 +948,75 @@ class DataTableController {
       });
     }
 
-    // Approved By filter
-    const approvedBySelect = container.querySelector(".dt-approved-by-filter");
-    if (approvedBySelect) {
-      approvedBySelect.addEventListener("change", (e) => {
-        this.approvedBy = e.target.value;
-        this.page = 1;
-        this.loadData();
+    // Approved By Multi-Select Filter Controls
+    const approverMultiSelect = container.querySelector(".dt-approver-multiselect");
+    const approverTriggerBtn = container.querySelector(".dt-approver-trigger");
+    const approverSearchInputEl = container.querySelector(".dt-approver-search");
+    const approverSelectAllBtn = container.querySelector(".dt-approver-select-all");
+    const approverClearAllBtn = container.querySelector(".dt-approver-clear-all");
+    const approverOptionsList = container.querySelector(".dt-approver-options-list");
+
+    if (approverTriggerBtn && approverMultiSelect) {
+      approverTriggerBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        document.querySelectorAll(".multi-select-dropdown.open").forEach(ms => {
+          if (ms !== approverMultiSelect) ms.classList.remove("open");
+        });
+        approverMultiSelect.classList.toggle("open");
+        if (approverMultiSelect.classList.contains("open") && approverSearchInputEl) {
+          setTimeout(() => approverSearchInputEl.focus(), 60);
+        }
+      });
+
+      approverMultiSelect.addEventListener("click", (e) => e.stopPropagation());
+    }
+
+    if (approverSearchInputEl && approverOptionsList) {
+      approverSearchInputEl.addEventListener("input", (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        approverOptionsList.querySelectorAll(".multi-select-option").forEach(opt => {
+          const approverName = (opt.dataset.approver || "").toLowerCase();
+          opt.style.display = approverName.includes(term) ? "flex" : "none";
+        });
+      });
+    }
+
+    if (approverSelectAllBtn) {
+      approverSelectAllBtn.addEventListener("click", () => {
+        if (approverOptionsList && this.availableApprovers) {
+          approverOptionsList.querySelectorAll(".dt-approver-cb").forEach(cb => cb.checked = true);
+          this.selectedApprovers = [...this.availableApprovers];
+          this.approvedBy = this.selectedApprovers.join(",");
+          this.updateApproverTriggerVisuals();
+          this.page = 1;
+          this.loadData();
+        }
+      });
+    }
+
+    if (approverClearAllBtn) {
+      approverClearAllBtn.addEventListener("click", () => {
+        if (approverOptionsList) {
+          approverOptionsList.querySelectorAll(".dt-approver-cb").forEach(cb => cb.checked = false);
+          this.selectedApprovers = [];
+          this.approvedBy = "";
+          this.updateApproverTriggerVisuals();
+          this.page = 1;
+          this.loadData();
+        }
+      });
+    }
+
+    if (approverOptionsList) {
+      approverOptionsList.addEventListener("change", (e) => {
+        if (e.target && e.target.classList.contains("dt-approver-cb")) {
+          const checked = Array.from(approverOptionsList.querySelectorAll(".dt-approver-cb:checked")).map(cb => cb.value);
+          this.selectedApprovers = checked;
+          this.approvedBy = checked.join(",");
+          this.updateApproverTriggerVisuals();
+          this.page = 1;
+          this.loadData();
+        }
       });
     }
 
@@ -888,8 +1058,10 @@ class DataTableController {
       this.site = "";
       this.selectedSites = [];
       this.voucherType = "";
+      this.selectedVTypes = [];
       this.voucherSubtype = "";
       this.approvedBy = "";
+      this.selectedApprovers = [];
       this.verifyStatus = "all";
       this.registerType = "";
 
@@ -903,9 +1075,18 @@ class DataTableController {
         optionsList.querySelectorAll(".dt-site-cb").forEach(cb => cb.checked = false);
       }
       this.updateSiteTriggerVisuals();
-      vtypeSelect.value = "";
+
+      if (vtypeOptionsList) {
+        vtypeOptionsList.querySelectorAll(".dt-vtype-cb").forEach(cb => cb.checked = false);
+      }
+      this.updateVTypeTriggerVisuals();
+
+      if (approverOptionsList) {
+        approverOptionsList.querySelectorAll(".dt-approver-cb").forEach(cb => cb.checked = false);
+      }
+      this.updateApproverTriggerVisuals();
+
       if (vsubtypeSelect) vsubtypeSelect.value = "";
-      if (approvedBySelect) approvedBySelect.value = "";
       if (registerSelect) registerSelect.value = "";
       verifyPills.forEach(p => {
         if (p.dataset.value === "all") p.classList.add("active");
@@ -1176,15 +1357,98 @@ class DataTableController {
     }
   }
 
+  updateVTypeTriggerVisuals() {
+    const container = document.getElementById(this.containerId);
+    if (!container) return;
+    const trigger = container.querySelector(".dt-vtype-trigger");
+    const labelEl = container.querySelector(".dt-vtype-label");
+    const badgeEl = container.querySelector(".dt-vtype-count-badge");
+    const groupEl = container.querySelector(".filter-group-vtype");
+
+    if (!trigger || !labelEl) return;
+
+    const count = this.selectedVTypes.length;
+    if (count === 0) {
+      labelEl.innerText = "All Voucher Types";
+      if (badgeEl) badgeEl.style.display = "none";
+      trigger.classList.remove("filter-active");
+      if (groupEl) groupEl.classList.remove("has-active-filter");
+    } else if (count === 1) {
+      labelEl.innerText = this.selectedVTypes[0];
+      if (badgeEl) badgeEl.style.display = "none";
+      trigger.classList.add("filter-active");
+      if (groupEl) groupEl.classList.add("has-active-filter");
+    } else if (count === 2) {
+      labelEl.innerText = `${this.selectedVTypes[0]}, ${this.selectedVTypes[1]}`;
+      if (badgeEl) {
+        badgeEl.style.display = "inline-flex";
+        badgeEl.innerText = "2";
+      }
+      trigger.classList.add("filter-active");
+      if (groupEl) groupEl.classList.add("has-active-filter");
+    } else {
+      labelEl.innerText = `${count} Types Selected`;
+      if (badgeEl) {
+        badgeEl.style.display = "inline-flex";
+        badgeEl.innerText = String(count);
+      }
+      trigger.classList.add("filter-active");
+      if (groupEl) groupEl.classList.add("has-active-filter");
+    }
+  }
+
+  updateApproverTriggerVisuals() {
+    const container = document.getElementById(this.containerId);
+    if (!container) return;
+    const trigger = container.querySelector(".dt-approver-trigger");
+    const labelEl = container.querySelector(".dt-approver-label");
+    const badgeEl = container.querySelector(".dt-approver-count-badge");
+    const groupEl = container.querySelector(".filter-group-approver");
+
+    if (!trigger || !labelEl) return;
+
+    const count = this.selectedApprovers.length;
+    if (count === 0) {
+      labelEl.innerText = "All Approvers";
+      if (badgeEl) badgeEl.style.display = "none";
+      trigger.classList.remove("filter-active");
+      if (groupEl) groupEl.classList.remove("has-active-filter");
+    } else if (count === 1) {
+      const val = this.selectedApprovers[0];
+      const disp = val === "approved" ? "✓ Approved Only" : (val === "pending" ? "⏳ Pending Approval" : val);
+      labelEl.innerText = disp;
+      if (badgeEl) badgeEl.style.display = "none";
+      trigger.classList.add("filter-active");
+      if (groupEl) groupEl.classList.add("has-active-filter");
+    } else if (count === 2) {
+      const getDisp = v => v === "approved" ? "Approved" : (v === "pending" ? "Pending" : v);
+      labelEl.innerText = `${getDisp(this.selectedApprovers[0])}, ${getDisp(this.selectedApprovers[1])}`;
+      if (badgeEl) {
+        badgeEl.style.display = "inline-flex";
+        badgeEl.innerText = "2";
+      }
+      trigger.classList.add("filter-active");
+      if (groupEl) groupEl.classList.add("has-active-filter");
+    } else {
+      labelEl.innerText = `${count} Approvers Selected`;
+      if (badgeEl) {
+        badgeEl.style.display = "inline-flex";
+        badgeEl.innerText = String(count);
+      }
+      trigger.classList.add("filter-active");
+      if (groupEl) groupEl.classList.add("has-active-filter");
+    }
+  }
+
   populateFilterOptions(filterData) {
     const container = document.getElementById(this.containerId);
     if (!container) return;
 
     // Populate Sites (Multi-Select Checkboxes)
-    const optionsContainer = container.querySelector(".dt-site-options-list");
-    if (optionsContainer && filterData.sites) {
+    const siteOptionsContainer = container.querySelector(".dt-site-options-list");
+    if (siteOptionsContainer && filterData.sites) {
       this.availableSites = filterData.sites;
-      optionsContainer.innerHTML = filterData.sites.map(s => {
+      siteOptionsContainer.innerHTML = filterData.sites.map(s => {
         const isChecked = this.selectedSites.includes(s);
         return `
           <label class="multi-select-option" data-site="${s}">
@@ -1196,31 +1460,60 @@ class DataTableController {
       this.updateSiteTriggerVisuals();
     }
 
-    // Populate Voucher Types
-    const vtypeSelect = container.querySelector(".dt-vtype-filter");
-    if (vtypeSelect) {
-      vtypeSelect.innerHTML = `<option value="">All Voucher Types</option>` +
-        filterData.voucher_types.map(vt => `<option value="${vt}">${vt}</option>`).join("");
-      vtypeSelect.value = this.voucherType;
+    // Populate Voucher Types (Multi-Select Checkboxes)
+    const vtypeOptionsContainer = container.querySelector(".dt-vtype-options-list");
+    if (vtypeOptionsContainer && filterData.voucher_types) {
+      this.availableVTypes = filterData.voucher_types;
+      vtypeOptionsContainer.innerHTML = filterData.voucher_types.map(vt => {
+        const isChecked = this.selectedVTypes.includes(vt);
+        return `
+          <label class="multi-select-option" data-vtype="${vt}">
+            <input type="checkbox" value="${vt}" class="dt-vtype-cb" ${isChecked ? 'checked' : ''} />
+            <span class="option-site-name">${vt}</span>
+          </label>
+        `;
+      }).join("");
+      this.updateVTypeTriggerVisuals();
     }
 
     // Populate Voucher Subtypes
     const vsubtypeSelect = container.querySelector(".dt-vsubtype-filter");
-    if (vsubtypeSelect) {
+    if (vsubtypeSelect && filterData.voucher_subtypes) {
       vsubtypeSelect.innerHTML = `<option value="">All Sub-Types</option>` +
         filterData.voucher_subtypes.map(vst => `<option value="${vst}">${vst}</option>`).join("");
       vsubtypeSelect.value = this.voucherSubtype;
     }
 
-    // Populate Approvers
-    const approvedBySelect = container.querySelector(".dt-approved-by-filter");
-    if (approvedBySelect && filterData.approvers) {
-      approvedBySelect.innerHTML = `
-        <option value="">All Approvers</option>
-        <option value="approved">✓ Approved Only</option>
-        <option value="pending">⏳ Pending Approval</option>
-      ` + filterData.approvers.map(a => `<option value="${a}">${a}</option>`).join("");
-      approvedBySelect.value = this.approvedBy;
+    // Populate Approvers (Multi-Select Checkboxes with Special Options)
+    const approverOptionsContainer = container.querySelector(".dt-approver-options-list");
+    if (approverOptionsContainer && filterData.approvers) {
+      this.availableApprovers = filterData.approvers;
+      const specials = [
+        { value: "approved", label: "✓ Approved Only" },
+        { value: "pending", label: "⏳ Pending Approval" }
+      ];
+      const specialsHtml = specials.map(opt => {
+        const isChecked = this.selectedApprovers.includes(opt.value);
+        return `
+          <label class="multi-select-option special-option" data-approver="${opt.value}" style="font-weight: 700; color: #1e40af; background: #f8fafc;">
+            <input type="checkbox" value="${opt.value}" class="dt-approver-cb" ${isChecked ? 'checked' : ''} />
+            <span class="option-site-name">${opt.label}</span>
+          </label>
+        `;
+      }).join("");
+
+      const approversHtml = filterData.approvers.map(a => {
+        const isChecked = this.selectedApprovers.includes(a);
+        return `
+          <label class="multi-select-option" data-approver="${a}">
+            <input type="checkbox" value="${a}" class="dt-approver-cb" ${isChecked ? 'checked' : ''} />
+            <span class="option-site-name">${a}</span>
+          </label>
+        `;
+      }).join("");
+
+      approverOptionsContainer.innerHTML = specialsHtml + (specialsHtml && approversHtml ? '<div style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>' : '') + approversHtml;
+      this.updateApproverTriggerVisuals();
     }
 
     // Populate Batches (Compact & Clean Labels)
@@ -1234,7 +1527,6 @@ class DataTableController {
       }
       batchSelect.innerHTML = filterData.batches.map((b, idx) => {
         const isLatest = idx === 0;
-        // e.g. BATCH-20261007-001 -> B-001
         const shortCode = b.batch_code ? b.batch_code.replace(/^BATCH-\d{8}-/, 'B-') : `B-${b.id}`;
         const shortDate = b.date ? b.date.replace(/-\d{4}$/, '') : '';
         const label = isLatest
@@ -1275,9 +1567,9 @@ class DataTableController {
       page_size: this.pageSize,
       search: this.search,
       site: (this.selectedSites && this.selectedSites.length > 0) ? this.selectedSites.join(",") : (this.site || undefined),
-      voucher_type: this.voucherType,
+      voucher_type: (this.selectedVTypes && this.selectedVTypes.length > 0) ? this.selectedVTypes.join(",") : (this.voucherType || undefined),
       voucher_subtype: this.voucherSubtype,
-      approved_by: this.approvedBy,
+      approved_by: (this.selectedApprovers && this.selectedApprovers.length > 0) ? this.selectedApprovers.join(",") : (this.approvedBy || undefined),
       register_type: this.registerType,
       batch_id: this.batchId,
       verify_status: (this.verifyStatus && this.verifyStatus !== "all") ? this.verifyStatus : undefined,
@@ -1321,10 +1613,7 @@ class DataTableController {
     if (!container) return;
 
     const searchInput = container.querySelector(".dt-search");
-    const siteSelect = container.querySelector(".dt-site-filter");
-    const vtypeSelect = container.querySelector(".dt-vtype-filter");
     const vsubtypeSelect = container.querySelector(".dt-vsubtype-filter");
-    const approvedBySelect = container.querySelector(".dt-approved-by-filter");
     const registerSelect = container.querySelector(".dt-register-filter");
     const clearBtn = container.querySelector(".dt-btn-clear");
     const activeFiltersBar = container.querySelector(".dt-active-filters-bar");
@@ -1367,16 +1656,14 @@ class DataTableController {
       activeList.push({ key: "site", label: "Sites", value: this.site });
     }
 
-    // Voucher Type
-    if (this.voucherType && this.voucherType.trim()) {
-      if (vtypeSelect) {
-        vtypeSelect.classList.add("filter-active");
-        vtypeSelect.closest(".filter-group")?.classList.add("has-active-filter");
-      }
+    // Voucher Type (Multi-Select)
+    if (this.selectedVTypes && this.selectedVTypes.length > 0) {
+      const displayVal = this.selectedVTypes.length <= 2
+        ? this.selectedVTypes.join(", ")
+        : `${this.selectedVTypes.slice(0, 2).join(", ")} (+${this.selectedVTypes.length - 2} more)`;
+      activeList.push({ key: "voucherType", label: "Voucher Types", value: displayVal });
+    } else if (this.voucherType && this.voucherType.trim()) {
       activeList.push({ key: "voucherType", label: "Voucher Type", value: this.voucherType });
-    } else if (vtypeSelect) {
-      vtypeSelect.classList.remove("filter-active");
-      vtypeSelect.closest(".filter-group")?.classList.remove("has-active-filter");
     }
 
     // Voucher Sub-Type
@@ -1391,17 +1678,16 @@ class DataTableController {
       vsubtypeSelect.closest(".filter-group")?.classList.remove("has-active-filter");
     }
 
-    // Approved By
-    if (this.approvedBy && this.approvedBy.trim()) {
-      if (approvedBySelect) {
-        approvedBySelect.classList.add("filter-active");
-        approvedBySelect.closest(".filter-group")?.classList.add("has-active-filter");
-      }
+    // Approved By (Multi-Select)
+    if (this.selectedApprovers && this.selectedApprovers.length > 0) {
+      const formatApp = (v) => v === "approved" ? "Approved" : (v === "pending" ? "Pending" : v);
+      const displayVal = this.selectedApprovers.length <= 2
+        ? this.selectedApprovers.map(formatApp).join(", ")
+        : `${this.selectedApprovers.slice(0, 2).map(formatApp).join(", ")} (+${this.selectedApprovers.length - 2} more)`;
+      activeList.push({ key: "approvedBy", label: "Approvers", value: displayVal });
+    } else if (this.approvedBy && this.approvedBy.trim()) {
       const appLabel = this.approvedBy === "approved" ? "Approved Only" : (this.approvedBy === "pending" ? "Pending Approval" : this.approvedBy);
       activeList.push({ key: "approvedBy", label: "Approver", value: appLabel });
-    } else if (approvedBySelect) {
-      approvedBySelect.classList.remove("filter-active");
-      approvedBySelect.closest(".filter-group")?.classList.remove("has-active-filter");
     }
 
     // Verification Status
@@ -1487,16 +1773,24 @@ class DataTableController {
       this.updateSiteTriggerVisuals();
     } else if (key === "voucherType") {
       this.voucherType = "";
-      const el = container.querySelector(".dt-vtype-filter");
-      if (el) el.value = "";
+      this.selectedVTypes = [];
+      const optionsContainer = container.querySelector(".dt-vtype-options-list");
+      if (optionsContainer) {
+        optionsContainer.querySelectorAll(".dt-vtype-cb").forEach(cb => cb.checked = false);
+      }
+      this.updateVTypeTriggerVisuals();
     } else if (key === "voucherSubtype") {
       this.voucherSubtype = "";
       const el = container.querySelector(".dt-vsubtype-filter");
       if (el) el.value = "";
     } else if (key === "approvedBy") {
       this.approvedBy = "";
-      const el = container.querySelector(".dt-approved-by-filter");
-      if (el) el.value = "";
+      this.selectedApprovers = [];
+      const optionsContainer = container.querySelector(".dt-approver-options-list");
+      if (optionsContainer) {
+        optionsContainer.querySelectorAll(".dt-approver-cb").forEach(cb => cb.checked = false);
+      }
+      this.updateApproverTriggerVisuals();
     } else if (key === "registerType") {
       this.registerType = "";
       const el = container.querySelector(".dt-register-filter");
@@ -2394,12 +2688,14 @@ class DataTableController {
       ].filter(Boolean).join(" • ");
 
       // Extract unique voucher dates for header display
-      const uniqueDates = Array.from(new Set(printRecords.map(r => r.voucher_date).filter(Boolean)));
+      const uniqueDates = Array.from(new Set(printRecords.map(r => r.voucher_date).filter(d => d && d !== "—" && d !== "-" && d !== "None")));
       let dateSummary = "All Available Dates";
       if (uniqueDates.length === 1) {
         dateSummary = uniqueDates[0];
-      } else if (uniqueDates.length > 1) {
-        dateSummary = `${uniqueDates[uniqueDates.length - 1]} to ${uniqueDates[0]} (${uniqueDates.length} Dates)`;
+      } else if (uniqueDates.length > 1 && uniqueDates.length <= 3) {
+        dateSummary = uniqueDates.join(", ");
+      } else if (uniqueDates.length > 3) {
+        dateSummary = `${uniqueDates[0]} to ${uniqueDates[uniqueDates.length - 1]} (${uniqueDates.length} Dates: ${uniqueDates.slice(0, 3).join(", ")}...)`;
       }
 
       let totalAmount = 0;
@@ -2474,12 +2770,13 @@ class DataTableController {
             <table class="statement-table">
               <thead>
                 <tr>
-                  <th class="col-num" style="width: 32px; text-align: center;">#</th>
+                  <th class="col-num" style="width: 2.5%; text-align: center;">#</th>
                   <th class="col-site">Site</th>
                   <th class="col-vno">Voucher Number</th>
-                  <th class="col-party" style="min-width: 140px;">Party Name</th>
+                  <th class="col-party" style="min-width: 130px;">Party Name</th>
                   <th class="col-vtype">Voucher Type</th>
                   <th class="col-desc">Item / Expense Description</th>
+                  <th class="col-exp">Expense Account</th>
                   <th class="col-qty" style="text-align: right;">Quantity</th>
                   <th class="col-rate" style="text-align: right;">Rate (₹)</th>
                   <th class="col-tax" style="text-align: right;">Tax Amount (₹)</th>
@@ -2497,7 +2794,8 @@ class DataTableController {
         const displayVNo = isDuplicateVNo ? "" : rawVNo;
         const partyName = r.party_description || r.party_name || r.party_code || "—";
         const vType = r.voucher_type || "—";
-        const itemDesc = r.unified_item_description || r.item_service_description || r.item_service_expense_account_desc || r.account_description || "—";
+        const itemDesc = r.unified_item_description || r.item_service_description || "—";
+        const expAccount = r.expense_account || r.account_description || r.item_service_expense_account_desc || "—";
 
         const qtyVal = r.unified_quantity || r.booked_item_quantity || r.item_quantity;
         const qtyStr = (qtyVal !== null && qtyVal !== undefined && qtyVal !== "") ? Number(qtyVal).toLocaleString('en-IN') : "—";
@@ -2521,6 +2819,7 @@ class DataTableController {
                       <td class="col-party" style="font-weight: 600; color: #0f172a;">${partyName}</td>
                       <td class="col-vtype">${vType}</td>
                       <td class="col-desc" style="font-weight: 600; color: #1e293b;">${itemDesc}</td>
+                      <td class="col-exp" style="font-weight: 600; color: #1e293b;">${expAccount}</td>
                       <td class="col-qty" style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 600;">${qtyStr}</td>
                       <td class="col-rate" style="text-align: right; font-variant-numeric: tabular-nums;">${rateStr}</td>
                       <td class="col-tax" style="text-align: right; font-variant-numeric: tabular-nums; color: #059669; font-weight: 600;">${taxStr}</td>

@@ -3551,7 +3551,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-site {
-  width: 5.0% !important;
+  width: 4.5% !important;
   white-space: nowrap;
   font-weight: 700;
   color: #0f172a;
@@ -3559,8 +3559,8 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-vno {
-  width: 13.0% !important;
-  min-width: 125px;
+  width: 10.5% !important;
+  min-width: 105px;
   white-space: normal !important;
   word-break: break-all !important;
   overflow-wrap: anywhere !important;
@@ -3571,8 +3571,8 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-party {
-  width: 14.5% !important;
-  min-width: 135px;
+  width: 12.5% !important;
+  min-width: 115px;
   white-space: normal !important;
   word-break: break-word !important;
   font-weight: 600;
@@ -3582,7 +3582,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-vtype {
-  width: 10.0% !important;
+  width: 8.5% !important;
   white-space: normal !important;
   word-break: break-word !important;
   font-size: 0.68rem;
@@ -3590,7 +3590,18 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-desc {
-  width: 16.0% !important;
+  width: 12.0% !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.68rem;
+  line-height: 1.25;
+}
+
+.statement-table .col-exp {
+  width: 12.0% !important;
   white-space: normal !important;
   word-break: break-word !important;
   overflow-wrap: break-word !important;
@@ -3601,7 +3612,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-qty {
-  width: 6.0% !important;
+  width: 5.5% !important;
   white-space: nowrap;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -3611,7 +3622,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-rate {
-  width: 6.5% !important;
+  width: 6.0% !important;
   white-space: nowrap;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -3644,7 +3655,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-status {
-  width: 6.0% !important;
+  width: 5.5% !important;
   white-space: nowrap;
   text-align: center;
   font-size: 0.65rem;

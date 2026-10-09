@@ -211,6 +211,7 @@ const App = {
         { key: "combined_amount", label: "Total Amount (₹)", type: "currency" },
         { key: "unified_tax_amount", label: "Tax Amount (GST)", type: "currency" },
         { key: "unified_item_description", label: "Item / Expense Description" },
+        { key: "expense_account", label: "Expense Account" },
         { key: "party_code", label: "Party Code" },
         { key: "party_description", label: "Party Description" },
         { key: "account_description", label: "Account Description" },

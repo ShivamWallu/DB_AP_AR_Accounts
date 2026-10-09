@@ -262,7 +262,7 @@ def build_export_response(
         total_exported = len(records)
         headers = [
             "Site", "Voucher No.", "Party Name", "Voucher Date", "Voucher Type",
-            "Item / Expense Description", "Quantity", "Rate (INR)",
+            "Item / Expense Description", "Expense Account", "Quantity", "Rate (INR)",
             "Total Amount (INR)", "Tax Amount (GST)", "Status",
             "Narration", "Created By", "Approved By", "Verified Status"
         ]
@@ -281,6 +281,7 @@ def build_export_response(
                 clean_val(r.get("voucher_date")),
                 clean_val(r.get("voucher_type")),
                 clean_val(r.get("unified_item_description")),
+                clean_val(r.get("expense_account") or r.get("account_description")),
                 clean_val(r.get("unified_quantity")),
                 clean_num(r.get("unified_rate")),
                 clean_num(r.get("combined_amount")),
