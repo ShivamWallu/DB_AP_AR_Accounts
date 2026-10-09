@@ -3670,10 +3670,29 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-status {
-  width: 5.5% !important;
+  width: 5.0% !important;
   white-space: nowrap;
   text-align: center;
   font-size: 0.65rem;
+}
+
+.statement-table .col-created {
+  width: 7.0% !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.70rem;
+  color: #475569;
+}
+
+.statement-table .col-approved {
+  width: 7.5% !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.70rem;
+  color: #1e40af;
+  font-weight: 600;
 }
 
 .statement-table tbody tr:hover td {
@@ -4049,10 +4068,27 @@ body.sidebar-collapsed .main-content {
   }
 
   .statement-table .col-status {
-    width: 6.0% !important;
+    width: 5.0% !important;
     text-align: center !important;
     white-space: nowrap !important;
     font-size: 5.4pt !important;
+  }
+
+  .statement-table .col-created {
+    width: 7.0% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 5.6pt !important;
+  }
+
+  .statement-table .col-approved {
+    width: 7.5% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 5.6pt !important;
+    font-weight: 700 !important;
   }
 
   .statement-table tr:nth-child(even) td {

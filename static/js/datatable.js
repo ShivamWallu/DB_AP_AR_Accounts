@@ -2696,14 +2696,16 @@ class DataTableController {
       ].filter(Boolean).join(" • ");
 
       // Extract unique voucher dates for header display
-      const uniqueDates = Array.from(new Set(printRecords.map(r => r.voucher_date).filter(d => d && d !== "—" && d !== "-" && d !== "None")));
+      const uniqueDates = Array.from(new Set(
+        printRecords.map(r => r.voucher_date).filter(d => d && d !== "—" && d !== "-" && d !== "None" && d !== "null" && d !== "undefined")
+      ));
       let dateSummary = "All Available Dates";
       if (uniqueDates.length === 1) {
         dateSummary = uniqueDates[0];
       } else if (uniqueDates.length > 1 && uniqueDates.length <= 3) {
         dateSummary = uniqueDates.join(", ");
       } else if (uniqueDates.length > 3) {
-        dateSummary = `${uniqueDates[0]} to ${uniqueDates[uniqueDates.length - 1]} (${uniqueDates.length} Dates: ${uniqueDates.slice(0, 3).join(", ")}...)`;
+        dateSummary = `${uniqueDates[0]} ~ ${uniqueDates[uniqueDates.length - 1]} (${uniqueDates.length} Dates)`;
       }
 
       let totalAmount = 0;
@@ -2735,7 +2737,7 @@ class DataTableController {
                 </div>
                 <div style="font-size: 0.68rem; color: #475569; margin-top: 0.18rem; display: flex; gap: 0.85rem; flex-wrap: wrap;">
                   <span><strong>Scope:</strong> ${filterSummary}</span>
-                  <span><strong>Voucher Date:</strong> ${dateSummary}</span>
+                  <span><strong>Voucher Date(s):</strong> <span style="color: #1e3a8a; font-weight: 700;">${dateSummary}</span></span>
                 </div>
               </div>
             </div>
@@ -2781,7 +2783,7 @@ class DataTableController {
                   <th class="col-num" style="width: 2.5%; text-align: center;">#</th>
                   <th class="col-site">Site</th>
                   <th class="col-vno">Voucher Number</th>
-                  <th class="col-party" style="min-width: 130px;">Party Name</th>
+                  <th class="col-party" style="min-width: 120px;">Party Name</th>
                   <th class="col-vtype">Voucher Type</th>
                   <th class="col-desc">Item / Expense Description</th>
                   <th class="col-exp">Expense Account</th>
@@ -2790,6 +2792,8 @@ class DataTableController {
                   <th class="col-tax" style="text-align: right;">Tax Amount (₹)</th>
                   <th class="col-tot" style="text-align: right;">Total Amount (₹)</th>
                   <th class="col-status" style="text-align: center;">Status</th>
+                  <th class="col-created" style="min-width: 90px;">Created By</th>
+                  <th class="col-approved" style="min-width: 95px;">Approved By</th>
                 </tr>
               </thead>
               <tbody>
@@ -2818,6 +2822,8 @@ class DataTableController {
         const totStr = (totVal !== null && totVal !== undefined && totVal !== "") ? ("₹" + Number(totVal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) : "—";
 
         const statusStr = r.voucher_status || (r.is_verified ? "Verified" : "Exported to GL");
+        const createdBy = r.created_by || "—";
+        const approvedBy = r.approved_by || "—";
 
         return `
                     <tr>
@@ -2833,6 +2839,8 @@ class DataTableController {
                       <td class="col-tax" style="text-align: right; font-variant-numeric: tabular-nums; color: #059669; font-weight: 600;">${taxStr}</td>
                       <td class="col-tot" style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #0f172a;">${totStr}</td>
                       <td class="col-status" style="text-align: center; font-weight: 700; color: #15803d; font-size: 0.68rem;">${statusStr}</td>
+                      <td class="col-created" style="font-size: 0.68rem; color: #475569; font-weight: 500;">${createdBy}</td>
+                      <td class="col-approved" style="font-size: 0.68rem; color: #1e40af; font-weight: 700;">${approvedBy}</td>
                     </tr>
                   `;
       }).join('')}
