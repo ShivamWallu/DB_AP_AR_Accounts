@@ -2526,107 +2526,72 @@ body.sidebar-collapsed .main-content {
   position: absolute;
   pointer-events: none;
   user-select: none;
-  will-change: transform;
 }
 
 .auth-finance-sticker-img {
   width: 82px;
   height: 56px;
   object-fit: cover;
-  border-radius: 12px;
-  border: 2.5px solid #ffffff;
-  box-shadow: 
-    0 10px 22px -4px rgba(15, 23, 42, 0.32),
-    0 3px 8px rgba(0, 0, 0, 0.14),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
   display: block;
-  transition: transform 0.3s ease;
 }
 
-/* Individual Sticker Positions - Always Outside Central Login Card */
+/* Individual Sticker Positions - Clean Flat Layout Outside Central Login Card */
 .sticker-pos-1 {
   top: 4%;
   left: 3.5%;
-  transform: rotate(-7deg);
-  animation: stickerBob1 6s ease-in-out infinite alternate;
 }
 .sticker-pos-1 .auth-finance-sticker-img { width: 78px; height: 52px; }
 
 .sticker-pos-2 {
   top: 27%;
   left: 3.5%;
-  transform: rotate(5deg);
-  animation: stickerBob2 7s ease-in-out infinite alternate;
 }
 .sticker-pos-2 .auth-finance-sticker-img { width: 84px; height: 56px; }
 
 .sticker-pos-3 {
   top: 51%;
   left: 3.8%;
-  transform: rotate(-6deg);
-  animation: stickerBob3 6.5s ease-in-out infinite alternate;
 }
 .sticker-pos-3 .auth-finance-sticker-img { width: 76px; height: 50px; }
 
 .sticker-pos-4 {
   bottom: 5.5%;
   left: 4%;
-  transform: rotate(4deg);
-  animation: stickerBob1 8s ease-in-out infinite alternate-reverse;
 }
 .sticker-pos-4 .auth-finance-sticker-img { width: 82px; height: 55px; }
 
 .sticker-pos-5 {
   top: 4%;
   right: 3.5%;
-  transform: rotate(6deg);
-  animation: stickerBob2 6.5s ease-in-out infinite alternate;
 }
 .sticker-pos-5 .auth-finance-sticker-img { width: 80px; height: 54px; }
 
 .sticker-pos-6 {
   top: 27%;
   right: 3.5%;
-  transform: rotate(-5deg);
-  animation: stickerBob3 7.5s ease-in-out infinite alternate;
 }
 .sticker-pos-6 .auth-finance-sticker-img { width: 84px; height: 56px; }
 
 .sticker-pos-7 {
   top: 51%;
   right: 3.8%;
-  transform: rotate(6deg);
-  animation: stickerBob1 7s ease-in-out infinite alternate;
 }
 .sticker-pos-7 .auth-finance-sticker-img { width: 78px; height: 52px; }
 
 .sticker-pos-8 {
   bottom: 5.5%;
   right: 4%;
-  transform: rotate(-6deg);
-  animation: stickerBob2 8s ease-in-out infinite alternate-reverse;
 }
 .sticker-pos-8 .auth-finance-sticker-img { width: 82px; height: 55px; }
-
-@keyframes stickerBob1 {
-  0% { transform: translateY(0) rotate(-7deg); }
-  100% { transform: translateY(-7px) rotate(-5deg); }
-}
-
-@keyframes stickerBob2 {
-  0% { transform: translateY(0) rotate(5deg); }
-  100% { transform: translateY(-8px) rotate(3deg); }
-}
-
-@keyframes stickerBob3 {
-  0% { transform: translateY(0) rotate(-6deg); }
-  100% { transform: translateY(-6px) rotate(-4deg); }
-}
 
 /* Responsive Sticker Scaling & Visibility (Never overlaps central card) */
 @media (max-width: 1280px) {
   .auth-finance-sticker-img {
-    transform: scale(0.85);
+    width: 70px !important;
+    height: 48px !important;
   }
 }
 
@@ -2649,14 +2614,15 @@ body.sidebar-collapsed .main-content {
   }
 }
 
-/* Stable Solid Auth Card - Zero 3D Tilt */
+/* Stable Solid Flat Auth Card - Zero 3D Tilt or Perspective */
 .auth-card {
   width: 100%;
   max-width: 480px;
   background: #ffffff;
-  border-radius: 20px;
+  border-radius: 18px;
   padding: 2.4rem 2.2rem;
-  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+  border: 1px solid #e2e8f0;
   position: relative;
   z-index: 20;
   transform: none !important;
@@ -2672,13 +2638,14 @@ body.sidebar-collapsed .main-content {
   width: 190px;
   height: 90px;
   background: #ffffff;
-  border-radius: 18px;
+  border-radius: 14px;
   margin: 0 auto 1.25rem auto;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 10px 20px;
-  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.15), 0 0 0 2px rgba(37, 99, 235, 0.18);
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .auth-brand-icon-wrapper:hover {
