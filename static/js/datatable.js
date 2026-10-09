@@ -2823,7 +2823,10 @@ class DataTableController {
 
         const statusStr = r.voucher_status || (r.is_verified ? "Verified" : "Exported to GL");
         const createdBy = r.created_by || "—";
-        const approvedBy = r.approved_by || "—";
+        const hasApprover = r.approved_by && r.approved_by.trim() && r.approved_by !== "—" && r.approved_by !== "-" && r.approved_by !== "None" && r.approved_by !== "null";
+        const approvedDisplay = hasApprover
+          ? `<span style="color: #1e40af; font-weight: 700;">${r.approved_by}</span>`
+          : `<span style="color: #d97706; font-weight: 600; font-size: 0.62rem;">⏳ Pending</span>`;
 
         return `
                     <tr>
@@ -2841,7 +2844,7 @@ class DataTableController {
                         <span class="statement-status-pill ${statusStr.toLowerCase().replace(/[^a-z0-9]/g, '-')}">${statusStr}</span>
                       </td>
                       <td class="col-created" style="font-size: 0.67rem; color: #475569; font-weight: 500;">${createdBy}</td>
-                      <td class="col-approved" style="font-size: 0.67rem; color: #1e40af; font-weight: 700;">${approvedBy}</td>
+                      <td class="col-approved" style="font-size: 0.67rem;">${approvedDisplay}</td>
                     </tr>
                   `;
       }).join('')}
