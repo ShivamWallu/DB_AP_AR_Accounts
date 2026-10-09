@@ -3519,21 +3519,21 @@ body.sidebar-collapsed .main-content {
 .statement-table {
   width: 100% !important;
   border-collapse: collapse;
-  font-size: 0.70rem;
+  font-size: 0.76rem;
   table-layout: fixed !important;
 }
 
 .statement-table th {
   background: #f1f5f9;
-  color: #1e293b;
+  color: #0f172a;
   font-weight: 800;
   text-align: left;
-  padding: 0.35rem 0.3rem;
-  border-bottom: 1.5px solid #cbd5e1;
+  padding: 0.45rem 0.35rem;
+  border-bottom: 1.8px solid #cbd5e1;
   border-right: 1px solid #e2e8f0;
   text-transform: uppercase;
-  font-size: 0.62rem;
-  letter-spacing: 0.01em;
+  font-size: 0.70rem;
+  letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3545,12 +3545,12 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table td {
-  padding: 0.28rem 0.32rem;
+  padding: 0.36rem 0.38rem;
   border-bottom: 1px solid #edf2f7;
   border-right: 1px solid #edf2f7;
   color: #334155;
   vertical-align: middle;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -3561,17 +3561,20 @@ body.sidebar-collapsed .main-content {
 
 /* Statement Table Column Rules (100% Balanced Distribution - ZERO OVERLAPPING) */
 .statement-table .col-num {
-  width: 2.0% !important;
+  width: 2.5% !important;
   text-align: center;
   white-space: nowrap;
+  font-size: 0.74rem;
+  color: #94a3b8;
+  font-weight: 600;
 }
 
 .statement-table .col-site {
   width: 4.5% !important;
   white-space: nowrap;
-  font-weight: 700;
+  font-weight: 750;
   color: #0f172a;
-  font-size: 0.68rem;
+  font-size: 0.76rem;
 }
 
 .statement-table .col-vno {
@@ -3580,27 +3583,28 @@ body.sidebar-collapsed .main-content {
   word-break: break-all !important;
   overflow-wrap: anywhere !important;
   font-family: 'JetBrains Mono', monospace;
-  font-weight: 600;
-  font-size: 0.65rem;
-  line-height: 1.2;
+  font-weight: 650;
+  font-size: 0.74rem;
+  line-height: 1.25;
 }
 
 .statement-table .col-party {
   width: 11.5% !important;
   white-space: normal !important;
   word-break: break-word !important;
-  font-weight: 600;
+  font-weight: 650;
   color: #0f172a;
-  font-size: 0.67rem;
-  line-height: 1.2;
+  font-size: 0.76rem;
+  line-height: 1.25;
 }
 
 .statement-table .col-vtype {
   width: 7.5% !important;
   white-space: normal !important;
   word-break: break-word !important;
-  font-size: 0.67rem;
-  line-height: 1.2;
+  font-size: 0.74rem;
+  color: #334155;
+  line-height: 1.25;
 }
 
 .statement-table .col-desc {
@@ -3610,8 +3614,8 @@ body.sidebar-collapsed .main-content {
   overflow-wrap: break-word !important;
   font-weight: 600;
   color: #1e293b;
-  font-size: 0.67rem;
-  line-height: 1.2;
+  font-size: 0.75rem;
+  line-height: 1.25;
 }
 
 .statement-table .col-exp {
@@ -3621,18 +3625,19 @@ body.sidebar-collapsed .main-content {
   overflow-wrap: break-word !important;
   font-weight: 600;
   color: #1e293b;
-  font-size: 0.67rem;
-  line-height: 1.2;
+  font-size: 0.75rem;
+  line-height: 1.25;
 }
 
 .statement-table .col-qty {
-  width: 4.0% !important;
+  width: 4.5% !important;
   white-space: nowrap;
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-family: 'JetBrains Mono', 'Inter', monospace;
-  font-weight: 700;
-  font-size: 0.72rem;
+  font-weight: 750;
+  font-size: 0.80rem;
+  color: #0f172a;
 }
 
 .statement-table .col-rate {
@@ -3641,8 +3646,8 @@ body.sidebar-collapsed .main-content {
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-family: 'JetBrains Mono', 'Inter', monospace;
-  font-weight: 700;
-  font-size: 0.72rem;
+  font-weight: 750;
+  font-size: 0.80rem;
   color: #1e293b;
 }
 
@@ -3653,8 +3658,8 @@ body.sidebar-collapsed .main-content {
   font-variant-numeric: tabular-nums;
   font-family: 'JetBrains Mono', 'Inter', monospace;
   color: #059669;
-  font-weight: 750;
-  font-size: 0.72rem;
+  font-weight: 800;
+  font-size: 0.80rem;
 }
 
 .statement-table .col-tot {
@@ -3663,44 +3668,45 @@ body.sidebar-collapsed .main-content {
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-family: 'JetBrains Mono', 'Inter', monospace;
-  font-weight: 800;
+  font-weight: 850;
   color: #0f172a;
-  font-size: 0.76rem;
+  font-size: 0.84rem;
 }
 
 .statement-table .col-status {
-  width: 7.5% !important;
+  width: 7.0% !important;
   text-align: center;
-  font-size: 0.62rem;
-  line-height: 1.15;
+  font-size: 0.70rem;
+  line-height: 1.2;
   white-space: normal;
   word-break: break-word;
 }
 
 .statement-table .col-created {
   width: 7.0% !important;
-  font-size: 0.67rem;
-  line-height: 1.15;
+  font-size: 0.74rem;
+  line-height: 1.2;
   color: #475569;
+  font-weight: 550;
   white-space: normal;
   word-break: break-word;
 }
 
 .statement-table .col-approved {
-  width: 7.5% !important;
-  font-size: 0.67rem;
-  line-height: 1.15;
+  width: 7.0% !important;
+  font-size: 0.74rem;
+  line-height: 1.2;
   color: #1e40af;
-  font-weight: 600;
+  font-weight: 700;
   white-space: normal;
   word-break: break-word;
 }
 
 .statement-status-pill {
   display: inline-block;
-  padding: 0.1rem 0.3rem;
+  padding: 0.14rem 0.38rem;
   border-radius: 4px;
-  font-size: 0.60rem;
+  font-size: 0.68rem;
   font-weight: 700;
   line-height: 1.15;
   text-align: center;
@@ -3818,7 +3824,7 @@ body.sidebar-collapsed .main-content {
 @media print {
   @page {
     size: A4 landscape;
-    margin: 6mm 8mm 8mm 8mm;
+    margin: 5mm 6mm 6mm 6mm;
   }
 
   /* Reset layout constraints */
@@ -3841,7 +3847,7 @@ body.sidebar-collapsed .main-content {
     background: #ffffff !important;
     color: #0f172a !important;
     overflow: visible !important;
-    font-size: 9.5pt !important;
+    font-size: 10pt !important;
   }
 
   /* Hide app background, sidebars, navbars, and modal chrome */
@@ -3929,13 +3935,13 @@ body.sidebar-collapsed .main-content {
   }
 
   .statement-brand-title {
-    font-size: 11pt !important;
+    font-size: 12pt !important;
     font-weight: 800 !important;
     color: #0f172a !important;
   }
 
   .statement-subtitle {
-    font-size: 7.5pt !important;
+    font-size: 8pt !important;
     color: #334155 !important;
   }
 
@@ -3945,7 +3951,7 @@ body.sidebar-collapsed .main-content {
     justify-content: space-between !important;
     gap: 6px !important;
     margin-bottom: 6px !important;
-    padding: 3px 8px !important;
+    padding: 4px 10px !important;
     background: #f8fafc !important;
     border: 1px solid #cbd5e1 !important;
     border-radius: 4px !important;
@@ -3958,17 +3964,17 @@ body.sidebar-collapsed .main-content {
   .statement-kpi-box {
     display: inline-flex !important;
     align-items: center !important;
-    gap: 3px !important;
+    gap: 4px !important;
   }
 
   .statement-kpi-box .kpi-label {
-    font-size: 6.2pt !important;
+    font-size: 7.0pt !important;
     color: #64748b !important;
     text-transform: uppercase !important;
   }
 
   .statement-kpi-box .kpi-val {
-    font-size: 7.8pt !important;
+    font-size: 8.4pt !important;
     font-weight: 800 !important;
     color: #0f172a !important;
   }
@@ -3984,7 +3990,7 @@ body.sidebar-collapsed .main-content {
   .statement-table {
     width: 100% !important;
     border-collapse: collapse !important;
-    font-size: 6.0pt !important;
+    font-size: 7.0pt !important;
     page-break-inside: auto !important;
     table-layout: fixed !important;
   }
@@ -4002,9 +4008,9 @@ body.sidebar-collapsed .main-content {
     background: #f1f5f9 !important;
     color: #0f172a !important;
     border: 0.8px solid #cbd5e1 !important;
-    padding: 2.5px 2.5px !important;
+    padding: 3.5px 3px !important;
     font-weight: 800 !important;
-    font-size: 5.6pt !important;
+    font-size: 6.8pt !important;
     text-transform: uppercase !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -4016,27 +4022,28 @@ body.sidebar-collapsed .main-content {
 
   .statement-table td {
     border: 0.8px solid #e2e8f0 !important;
-    padding: 2px 2.5px !important;
+    padding: 3px 3px !important;
     color: #1e293b !important;
     background: #ffffff !important;
-    font-size: 5.8pt !important;
+    font-size: 7.0pt !important;
     vertical-align: middle !important;
     box-sizing: border-box !important;
   }
 
   /* Specific Print Column Widths (100% Total Balanced Distribution) */
-  /* Specific Print Column Widths (100% Total Balanced Distribution) */
   .statement-table .col-num {
-    width: 2.0% !important;
+    width: 2.5% !important;
     text-align: center !important;
     white-space: nowrap !important;
+    font-size: 6.8pt !important;
+    color: #64748b !important;
   }
 
   .statement-table .col-site {
     width: 4.5% !important;
     white-space: nowrap !important;
-    font-weight: 700 !important;
-    font-size: 5.6pt !important;
+    font-weight: 750 !important;
+    font-size: 7.0pt !important;
   }
 
   .statement-table .col-vno {
@@ -4044,25 +4051,26 @@ body.sidebar-collapsed .main-content {
     white-space: normal !important;
     word-break: break-all !important;
     overflow-wrap: anywhere !important;
-    font-size: 5.2pt !important;
+    font-size: 6.8pt !important;
     font-family: 'JetBrains Mono', monospace !important;
-    line-height: 1.15 !important;
+    line-height: 1.2 !important;
   }
 
   .statement-table .col-party {
     width: 11.5% !important;
     white-space: normal !important;
     word-break: break-word !important;
-    font-size: 5.4pt !important;
-    line-height: 1.15 !important;
+    font-size: 6.8pt !important;
+    font-weight: 650 !important;
+    line-height: 1.2 !important;
   }
 
   .statement-table .col-vtype {
     width: 7.5% !important;
     white-space: normal !important;
     word-break: break-word !important;
-    font-size: 5.4pt !important;
-    line-height: 1.15 !important;
+    font-size: 6.8pt !important;
+    line-height: 1.2 !important;
   }
 
   .statement-table .col-desc {
@@ -4071,8 +4079,8 @@ body.sidebar-collapsed .main-content {
     word-break: break-word !important;
     overflow-wrap: break-word !important;
     font-weight: 600 !important;
-    font-size: 5.4pt !important;
-    line-height: 1.15 !important;
+    font-size: 6.8pt !important;
+    line-height: 1.2 !important;
   }
 
   .statement-table .col-exp {
@@ -4081,63 +4089,73 @@ body.sidebar-collapsed .main-content {
     word-break: break-word !important;
     overflow-wrap: break-word !important;
     font-weight: 600 !important;
-    font-size: 5.4pt !important;
-    line-height: 1.15 !important;
+    font-size: 6.8pt !important;
+    line-height: 1.2 !important;
   }
 
   .statement-table .col-qty {
-    width: 4.0% !important;
+    width: 4.5% !important;
     text-align: right !important;
     white-space: nowrap !important;
-    font-size: 5.4pt !important;
+    font-size: 7.2pt !important;
+    font-variant-numeric: tabular-nums !important;
+    font-weight: 750 !important;
   }
 
   .statement-table .col-rate {
     width: 5.0% !important;
     text-align: right !important;
     white-space: nowrap !important;
-    font-size: 5.4pt !important;
+    font-size: 7.2pt !important;
+    font-variant-numeric: tabular-nums !important;
+    font-weight: 750 !important;
   }
 
   .statement-table .col-tax {
     width: 6.0% !important;
     text-align: right !important;
     white-space: nowrap !important;
-    font-size: 5.4pt !important;
+    font-size: 7.2pt !important;
+    font-variant-numeric: tabular-nums !important;
+    color: #047857 !important;
+    font-weight: 800 !important;
   }
 
   .statement-table .col-tot {
     width: 9.5% !important;
     text-align: right !important;
     white-space: nowrap !important;
-    font-weight: 700 !important;
-    font-size: 5.6pt !important;
+    font-weight: 850 !important;
+    font-size: 7.4pt !important;
+    font-variant-numeric: tabular-nums !important;
+    color: #0f172a !important;
   }
 
   .statement-table .col-status {
-    width: 7.5% !important;
+    width: 7.0% !important;
     text-align: center !important;
     white-space: normal !important;
     word-break: break-word !important;
-    font-size: 5.2pt !important;
-    line-height: 1.15 !important;
+    font-size: 6.4pt !important;
+    line-height: 1.2 !important;
   }
 
   .statement-table .col-created {
     width: 7.0% !important;
     white-space: normal !important;
     word-break: break-word !important;
-    font-size: 5.2pt !important;
-    line-height: 1.15 !important;
+    font-size: 6.6pt !important;
+    line-height: 1.2 !important;
   }
 
   .statement-table .col-approved {
-    width: 7.5% !important;
+    width: 7.0% !important;
     white-space: normal !important;
     word-break: break-word !important;
-    font-size: 5.2pt !important;
+    font-size: 6.6pt !important;
     font-weight: 700 !important;
-    line-height: 1.15 !important;
+    color: #1e40af !important;
+    line-height: 1.2 !important;
   }
 
   .statement-table tr:nth-child(even) td {

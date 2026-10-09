@@ -985,6 +985,18 @@ def query_master_360(
                     "upload_timestamp": ar.upload_timestamp
                 })
 
+    # Normalize Quantity and Rate (Accounting rule: If Quantity is absent or 0, Rate must be empty)
+    for r in master_list:
+        raw_q = r.get("unified_quantity")
+        try:
+            num_q = float(raw_q) if raw_q is not None and str(raw_q).strip() != "" else 0.0
+        except (ValueError, TypeError):
+            num_q = 0.0
+
+        if num_q <= 0:
+            r["unified_quantity"] = None
+            r["unified_rate"] = None
+
     # 4. Search Filter (if search query passed)
     if search and search.strip():
         term = search.strip().lower()

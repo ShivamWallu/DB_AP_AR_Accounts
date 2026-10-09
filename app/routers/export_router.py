@@ -274,6 +274,15 @@ def build_export_response(
             prev_v_no = raw_v_no
             party_name = clean_val(r.get("party_description") or r.get("party_code"))
 
+            raw_qty = r.get("unified_quantity")
+            try:
+                num_qty = float(raw_qty) if raw_qty is not None and str(raw_qty).strip() != "" else 0.0
+            except (ValueError, TypeError):
+                num_qty = 0.0
+
+            export_qty = clean_val(raw_qty) if num_qty > 0 else ""
+            export_rate = clean_num(r.get("unified_rate")) if num_qty > 0 else ""
+
             writer.writerow([
                 clean_val(r.get("transaction_site")),
                 display_v_no,
@@ -282,8 +291,8 @@ def build_export_response(
                 clean_val(r.get("voucher_type")),
                 clean_val(r.get("unified_item_description")),
                 clean_val(r.get("expense_account") or r.get("account_description")),
-                clean_val(r.get("unified_quantity")),
-                clean_num(r.get("unified_rate")),
+                export_qty,
+                export_rate,
                 clean_num(r.get("combined_amount")),
                 clean_num(r.get("unified_tax_amount")),
                 clean_val(r.get("voucher_status")),

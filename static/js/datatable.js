@@ -1919,13 +1919,16 @@ class DataTableController {
 
         if (col.key === "unified_quantity" || col.key === "booked_item_quantity" || col.key === "item_quantity") {
           const numVal = Number(val);
-          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : numVal.toLocaleString("en-IN");
+          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal) || numVal <= 0) ? '<span style="color: var(--text-muted);">—</span>' : numVal.toLocaleString("en-IN");
           return `<td class="${stickyClass} cell-quantity">${formatted}</td>`;
         }
 
         if (col.key === "unified_rate" || col.key === "item_service_rate") {
+          const rawQty = row.unified_quantity || row.booked_item_quantity || row.item_quantity;
+          const numQty = Number(rawQty);
+          const hasValidQty = (rawQty !== null && rawQty !== undefined && rawQty !== "" && !isNaN(numQty) && numQty > 0);
           const numVal = Number(val);
-          const formatted = (val === null || val === undefined || val === "" || isNaN(numVal)) ? '<span style="color: var(--text-muted);">—</span>' : ("₹" + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          const formatted = (!hasValidQty || val === null || val === undefined || val === "" || isNaN(numVal) || numVal <= 0) ? '<span style="color: var(--text-muted);">—</span>' : ("₹" + numVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
           return `<td class="${stickyClass} cell-rate">${formatted}</td>`;
         }
 
@@ -2809,11 +2812,15 @@ class DataTableController {
         const itemDesc = r.unified_item_description || r.item_service_description || "—";
         const expAccount = r.expense_account || r.account_description || r.item_service_expense_account_desc || "—";
 
-        const qtyVal = r.unified_quantity || r.booked_item_quantity || r.item_quantity;
-        const qtyStr = (qtyVal !== null && qtyVal !== undefined && qtyVal !== "") ? Number(qtyVal).toLocaleString('en-IN') : "—";
+        const rawQty = r.unified_quantity || r.booked_item_quantity || r.item_quantity;
+        const numQty = (rawQty !== null && rawQty !== undefined && rawQty !== "") ? Number(rawQty) : NaN;
+        const hasValidQty = !isNaN(numQty) && numQty > 0;
 
-        const rateVal = r.unified_rate || r.item_service_rate;
-        const rateStr = (rateVal !== null && rateVal !== undefined && rateVal !== "") ? ("₹" + Number(rateVal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) : "—";
+        const qtyStr = hasValidQty ? numQty.toLocaleString('en-IN') : "—";
+
+        const rawRate = (r.unified_rate !== null && r.unified_rate !== undefined && r.unified_rate !== "") ? r.unified_rate : r.item_service_rate;
+        const numRate = (rawRate !== null && rawRate !== undefined && rawRate !== "") ? Number(rawRate) : NaN;
+        const rateStr = (hasValidQty && !isNaN(numRate) && numRate > 0) ? ("₹" + numRate.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) : "—";
 
         const taxVal = r.unified_tax_amount || r.total_tax_amount || r.item_service_taxes;
         const taxStr = (taxVal !== null && taxVal !== undefined && taxVal !== "") ? ("₹" + Number(taxVal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) : "—";
