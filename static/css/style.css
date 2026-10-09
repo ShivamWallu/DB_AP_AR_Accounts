@@ -2498,18 +2498,20 @@ body.sidebar-collapsed .main-content {
   height: 100%;
   object-fit: cover;
   display: block;
+  image-rendering: -webkit-optimize-contrast;
+  filter: contrast(1.04) saturate(1.06);
 }
 
-/* 2. Sleek Dark Dim Overlay (Vivid Background Visibility) */
+/* 2. Sleek Crystal-Clear Background Overlay */
 .auth-bg-overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(10, 15, 29, 0.38);
-  backdrop-filter: brightness(0.88);
-  -webkit-backdrop-filter: brightness(0.88);
+  background: rgba(10, 15, 29, 0.28);
+  backdrop-filter: brightness(0.95);
+  -webkit-backdrop-filter: brightness(0.95);
   z-index: 2;
   pointer-events: none;
 }
@@ -2519,24 +2521,24 @@ body.sidebar-collapsed .main-content {
   position: relative;
   z-index: 10;
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: auto;
 }
 
-/* 4. Top Slide Main Title (Light & Elegant Glassmorphic Pill) */
+/* 4. Top Slide Main Title (Single-Line Light & Elegant Glassmorphic Pill) */
 .auth-slide-main-title {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 2.05rem;
-  font-weight: 600;
-  letter-spacing: 5px;
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: 4px;
   color: #ffffff;
   text-transform: uppercase;
-  margin: 0 0 1.65rem 0;
+  margin: 0 0 1.5rem 0;
   text-align: center;
-  padding: 0.45rem 1.8rem;
+  padding: 0.5rem 2.2rem;
   background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -2545,54 +2547,56 @@ body.sidebar-collapsed .main-content {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
   display: inline-block;
+  white-space: nowrap;
+  max-width: 95vw;
 }
 
 /* 5. Central Translucent Dark Card */
 .auth-slide-card {
   width: 100%;
-  background: rgba(10, 15, 29, 0.72) !important;
+  background: rgba(10, 15, 29, 0.76) !important;
   backdrop-filter: blur(14px) !important;
   -webkit-backdrop-filter: blur(14px) !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  border-radius: 3px !important;
-  padding: 2.3rem 2.1rem !important;
+  border-radius: 4px !important;
+  padding: 2.2rem 2.1rem !important;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6) !important;
   position: relative;
   box-sizing: border-box;
 }
 
-/* 6. Circular Top Concentric Emblem (Large KOGM Logo) */
+/* 6. Prominent KOGM Logo Badge (Large, Crisp & Perfectly Formatted) */
 .auth-circle-emblem {
-  width: 92px;
-  height: 92px;
-  border-radius: 50%;
-  border: 2.5px solid rgba(255, 255, 255, 0.9);
-  margin: 0 auto 1.4rem auto;
+  width: 155px;
+  height: 76px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  margin: 0 auto 1.5rem auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.25);
-  padding: 4px;
+  background: #ffffff;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+  padding: 6px 14px;
   box-sizing: border-box;
 }
 
 .auth-circle-inner {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  background: #ffffff;
+  border-radius: 0;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 4px;
+  padding: 0;
   box-sizing: border-box;
 }
 
 .auth-emblem-logo {
-  max-width: 96%;
-  max-height: 96%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
 }
@@ -2703,10 +2707,10 @@ body.sidebar-collapsed .main-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1.35rem;
-  margin-bottom: 1.25rem;
-  padding-bottom: 1.2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  margin-top: 1.3rem;
+  margin-bottom: 0.2rem;
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .auth-slide-link {
@@ -2717,63 +2721,12 @@ body.sidebar-collapsed .main-content {
   letter-spacing: 0.5px;
   text-decoration: none;
   transition: color 0.18s ease;
+  cursor: pointer;
 }
 
 .auth-slide-link:hover {
   color: #38bdf8;
   text-decoration: underline;
-}
-
-/* 11. Or Login Using : Quick Demo Sign-in Row */
-.auth-slide-social-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.auth-slide-social-label {
-  color: #ffffff;
-  font-size: 0.86rem;
-  font-weight: 500;
-}
-
-.auth-slide-social-btns {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.auth-slide-social-btn {
-  width: 33px;
-  height: 33px;
-  border-radius: 50%;
-  border: none;
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 0.82rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.auth-slide-social-btn:hover {
-  transform: scale(1.12);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
-}
-
-.btn-social-admin {
-  background: #3b5998;
-}
-
-.btn-social-akhtar {
-  background: #00aced;
-}
-
-.btn-social-auditor {
-  background: #dd4b39;
 }
 
 /* 12. Subviews (Register, Forgot, Reset) */
