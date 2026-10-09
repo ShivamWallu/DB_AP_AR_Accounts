@@ -1,3 +1,4 @@
+const Auth = {
   pendingRegistration: null,
   otpTimerInterval: null,
   resetTimerInterval: null,
@@ -734,3 +735,5 @@
     });
   }
 };
+
+window.Auth = Auth;
