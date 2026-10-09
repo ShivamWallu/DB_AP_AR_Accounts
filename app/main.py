@@ -11,7 +11,7 @@ from app.routers import (
     auth_router, upload_router, data_router,
     dashboard_router, imports_router, audit_router, export_router
 )
-from app.models import ImportBatch, User
+from app.models import ImportBatch, User, DayBookRecord
 from app.services.upload_service import process_import_batch, cleanup_old_batches
 from app.excel_parser import detect_file_type
 from app.config import DATA_DIR, BASE_DIR
@@ -21,7 +21,17 @@ init_db()
 _db_init = SessionLocal()
 try:
     init_default_users(_db_init)
-    cleanup_old_batches(_db_init, max_retained_batches=2)
+    cleanup_old_batches(_db_init, retention_days=14)
+    # Backfill voucher_date_range for existing batches if needed
+    existing_batches = _db_init.query(ImportBatch).all()
+    for eb in existing_batches:
+        if not eb.voucher_date_range:
+            first_db_rec = _db_init.query(DayBookRecord).filter(DayBookRecord.batch_id == eb.id, DayBookRecord.voucher_date.isnot(None)).first()
+            if first_db_rec and first_db_rec.voucher_date:
+                eb.voucher_date_range = first_db_rec.voucher_date
+            else:
+                eb.voucher_date_range = eb.upload_date_str
+    _db_init.commit()
 finally:
     _db_init.close()
 
@@ -35,8 +45,8 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         init_default_users(db)
-        # Strictly enforce 2 batches max retention on startup
-        cleanup_old_batches(db, max_retained_batches=2)
+        # Enforce 14-day retention lifecycle on startup
+        cleanup_old_batches(db, retention_days=14)
         
         # Check if database has any existing batches, if not, auto-import data_files
         existing_batch = db.query(ImportBatch).first()

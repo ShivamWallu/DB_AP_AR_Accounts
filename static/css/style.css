@@ -3551,7 +3551,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-site {
-  width: 5.5% !important;
+  width: 5.0% !important;
   white-space: nowrap;
   font-weight: 700;
   color: #0f172a;
@@ -3559,31 +3559,38 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-vno {
-  width: 9.5% !important;
-  white-space: nowrap;
+  width: 13.0% !important;
+  min-width: 125px;
+  white-space: normal !important;
+  word-break: break-all !important;
+  overflow-wrap: anywhere !important;
   font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
-  font-size: 0.68rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.66rem;
+  line-height: 1.25;
 }
 
-.statement-table .col-date {
-  width: 6.5% !important;
-  white-space: nowrap;
+.statement-table .col-party {
+  width: 14.5% !important;
+  min-width: 135px;
+  white-space: normal !important;
+  word-break: break-word !important;
+  font-weight: 600;
+  color: #0f172a;
   font-size: 0.68rem;
+  line-height: 1.25;
 }
 
 .statement-table .col-vtype {
-  width: 11.5% !important;
-  white-space: normal;
-  word-break: break-word;
+  width: 10.0% !important;
+  white-space: normal !important;
+  word-break: break-word !important;
   font-size: 0.68rem;
   line-height: 1.25;
 }
 
 .statement-table .col-desc {
-  width: 14.0% !important;
+  width: 16.0% !important;
   white-space: normal !important;
   word-break: break-word !important;
   overflow-wrap: break-word !important;
@@ -3593,34 +3600,8 @@ body.sidebar-collapsed .main-content {
   line-height: 1.25;
 }
 
-.statement-table .col-reg {
-  width: 7.5% !important;
-  white-space: nowrap !important;
-  text-align: center;
-}
-
-.statement-table .col-reg .reg-badge {
-  background: #e2e8f0;
-  color: #1e293b;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  white-space: nowrap;
-  display: inline-block;
-}
-
-.statement-table .col-inv {
-  width: 9.5% !important;
-  white-space: nowrap;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .statement-table .col-qty {
-  width: 5.5% !important;
+  width: 6.0% !important;
   white-space: nowrap;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -3652,7 +3633,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-tot {
-  width: 8.5% !important;
+  width: 12.5% !important;
   white-space: nowrap;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -3663,7 +3644,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-status {
-  width: 5.0% !important;
+  width: 6.0% !important;
   white-space: nowrap;
   text-align: center;
   font-size: 0.65rem;
@@ -3974,69 +3955,50 @@ body.sidebar-collapsed .main-content {
   }
 
   .statement-table .col-site {
-    width: 5.5% !important;
+    width: 5.0% !important;
     white-space: nowrap !important;
     font-weight: 700 !important;
     font-size: 5.8pt !important;
   }
 
   .statement-table .col-vno {
-    width: 9.5% !important;
-    white-space: nowrap !important;
-    font-size: 5.6pt !important;
+    width: 13.0% !important;
+    white-space: normal !important;
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+    font-size: 5.4pt !important;
     font-family: 'JetBrains Mono', monospace !important;
+    line-height: 1.15 !important;
   }
 
-  .statement-table .col-date {
-    width: 6.5% !important;
-    white-space: nowrap !important;
-    font-size: 5.6pt !important;
-  }
-
-  .statement-table .col-vtype {
-    width: 11.5% !important;
+  .statement-table .col-party {
+    width: 14.5% !important;
     white-space: normal !important;
     word-break: break-word !important;
     font-size: 5.6pt !important;
-    line-height: 1.2 !important;
+    line-height: 1.15 !important;
+  }
+
+  .statement-table .col-vtype {
+    width: 10.0% !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    font-size: 5.6pt !important;
+    line-height: 1.15 !important;
   }
 
   .statement-table .col-desc {
-    width: 14.0% !important;
+    width: 16.0% !important;
     white-space: normal !important;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
     font-weight: 600 !important;
     font-size: 5.6pt !important;
-    line-height: 1.2 !important;
-  }
-
-  .statement-table .col-reg {
-    width: 7.5% !important;
-    white-space: nowrap !important;
-    text-align: center !important;
-  }
-
-  .statement-table .col-reg .reg-badge {
-    font-size: 5.0pt !important;
-    padding: 1px 3px !important;
-    border-radius: 2px !important;
-    background: #e2e8f0 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .statement-table .col-inv {
-    width: 9.5% !important;
-    white-space: nowrap !important;
-    font-size: 5.5pt !important;
-    font-family: 'JetBrains Mono', monospace !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    line-height: 1.15 !important;
   }
 
   .statement-table .col-qty {
-    width: 5.5% !important;
+    width: 6.0% !important;
     text-align: right !important;
     white-space: nowrap !important;
   }
@@ -4054,14 +4016,14 @@ body.sidebar-collapsed .main-content {
   }
 
   .statement-table .col-tot {
-    width: 8.5% !important;
+    width: 12.5% !important;
     text-align: right !important;
     white-space: nowrap !important;
     font-weight: 700 !important;
   }
 
   .statement-table .col-status {
-    width: 5.0% !important;
+    width: 6.0% !important;
     text-align: center !important;
     white-space: nowrap !important;
     font-size: 5.4pt !important;
@@ -4956,4 +4918,185 @@ body.sidebar-collapsed .main-content {
   border-radius: 6px;
   display: inline-block;
   cursor: default;
+}
+
+/* ==========================================================================
+   High-Density Compact Batch List Styles (14-Day Retention View)
+   ========================================================================== */
+.batch-compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.batch-compact-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md, 8px);
+  padding: 0.55rem 0.85rem;
+  transition: all 0.18s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.batch-compact-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.08);
+  transform: translateY(-1px);
+}
+
+.batch-compact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.batch-compact-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.batch-compact-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 750;
+  font-size: 0.86rem;
+  color: var(--accent-primary);
+  background: rgba(37, 99, 235, 0.06);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+.batch-compact-status {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.batch-vdate-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.74rem;
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.batch-vdate-chip svg {
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.batch-vdate-chip strong {
+  color: #1d4ed8;
+}
+
+.batch-meta-info {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.batch-compact-right {
+  display: flex;
+  align-items: center;
+}
+
+.btn-xs {
+  padding: 0.22rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 5px;
+}
+
+.dt-batch-audit-btn {
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  transition: all 0.15s ease;
+}
+
+.dt-batch-audit-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.batch-compact-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.35rem;
+}
+
+.batch-compact-stats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.74rem;
+}
+
+.batch-stat-item {
+  color: var(--text-secondary);
+}
+
+.batch-stat-item strong {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.batch-stat-item.stat-new strong {
+  color: #16a34a;
+}
+
+.batch-stat-item.stat-dup strong {
+  color: #d97706;
+}
+
+.batch-stat-item.stat-rej strong {
+  color: #dc2626;
+}
+
+.batch-compact-files {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.batch-file-chip {
+  font-size: 0.68rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.batch-file-chip.chip-ok {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.batch-file-chip.chip-err {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
 }

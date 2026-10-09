@@ -15,7 +15,7 @@ def get_all_batches(db: Session = Depends(get_db), current_user: User = Depends(
     batches = db.query(ImportBatch).filter(
         ImportBatch.status == "Completed",
         ImportBatch.total_rows > 0
-    ).order_by(desc(ImportBatch.id)).limit(20).all()
+    ).order_by(desc(ImportBatch.id)).limit(100).all()
     return batches
 
 @router.get("/{batch_id}", response_model=ImportBatchResponse)

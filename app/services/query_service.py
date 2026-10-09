@@ -29,17 +29,18 @@ def get_filter_options(db: Session) -> Dict[str, Any]:
     ]
     all_approvers = sorted(list(set(db_approvers)))
 
-    # Batch list - strictly keep and show max latest 2 batches
+    # Batch list - all active batches within 14-day retention lifecycle
     batches = db.query(ImportBatch).filter(
         ImportBatch.status == "Completed",
         ImportBatch.total_rows > 0
-    ).order_by(desc(ImportBatch.id)).limit(2).all()
+    ).order_by(desc(ImportBatch.id)).all()
     batch_list = [
         {
             "id": b.id,
             "batch_code": b.batch_code,
             "date": b.upload_date_str,
             "time": b.upload_time_str,
+            "voucher_date_range": getattr(b, 'voucher_date_range', None) or b.upload_date_str,
             "status": b.status
         }
         for b in batches

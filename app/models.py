@@ -58,6 +58,8 @@ class ImportBatch(Base):
     ap_filename = Column(String(255), nullable=True)
     ar_filename = Column(String(255), nullable=True)
     
+    voucher_date_range = Column(String(100), nullable=True) # e.g. 05/10/2026 or 01/10/2026 to 05/10/2026
+    
     total_rows = Column(Integer, default=0)
     daybook_rows = Column(Integer, default=0)
     ap_rows = Column(Integer, default=0)

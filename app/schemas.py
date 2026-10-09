@@ -75,6 +75,7 @@ class ImportBatchResponse(BaseModel):
     daybook_filename: Optional[str] = None
     ap_filename: Optional[str] = None
     ar_filename: Optional[str] = None
+    voucher_date_range: Optional[str] = None
     total_rows: int
     daybook_rows: int
     ap_rows: int

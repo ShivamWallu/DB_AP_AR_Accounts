@@ -1,6 +1,6 @@
 import os
 import shutil
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_, desc
@@ -147,6 +147,22 @@ def process_import_batch(
             if db_objects:
                 db.add_all(db_objects)
 
+            # Extract unique voucher dates from Day Book records
+            unique_vdates = []
+            for rec in db_records:
+                vd = rec.get("voucher_date")
+                if vd and str(vd).strip() and str(vd).strip() not in ("None", "-", "—", "null", "undefined"):
+                    vd_clean = str(vd).strip()
+                    if vd_clean not in unique_vdates:
+                        unique_vdates.append(vd_clean)
+
+            if len(unique_vdates) == 1:
+                batch.voucher_date_range = unique_vdates[0]
+            elif len(unique_vdates) > 1:
+                batch.voucher_date_range = f"{unique_vdates[0]} to {unique_vdates[-1]}" if len(unique_vdates) > 2 else f"{unique_vdates[0]}, {unique_vdates[1]}"
+            else:
+                batch.voucher_date_range = batch.upload_date_str
+
             batch.daybook_rows = len(db_records)
             total_rows += len(db_records)
             total_new += len(db_records)
@@ -287,11 +303,11 @@ def process_import_batch(
         db.commit()
         db.refresh(batch)
 
-        # Auto Retention Cleanup: Keep only the latest 2 completed batches and purge older/empty ones
+        # Auto Retention Cleanup: Automatically purge batches older than 14 days permanently
         try:
-            cleanup_old_batches(db, max_retained_batches=2)
-        except Exception:
-            pass
+            cleanup_old_batches(db, retention_days=14)
+        except Exception as cleanup_err:
+            print(f"Auto-retention cleanup note: {cleanup_err}")
 
         # Audit Log
         log_activity(
@@ -300,7 +316,7 @@ def process_import_batch(
             role=current_user.role,
             action="Batch Import Completed",
             status="Success",
-            details=f"Batch {batch.batch_code} imported: {total_rows} total rows ({total_new} new, {total_duplicates} duplicates)",
+            details=f"Batch {batch.batch_code} imported: {total_rows} total rows ({total_new} new records, voucher date: {batch.voucher_date_range})",
             ip_address=ip_address,
             batch_id=batch.id
         )
@@ -325,16 +341,17 @@ def process_import_batch(
         )
         raise e
 
-def cleanup_old_batches(db: Session, max_retained_batches: int = 2) -> int:
+def cleanup_old_batches(db: Session, retention_days: int = 14) -> int:
     """
-    Auto-retention policy:
-    1. Removes empty, duplicate (new_records == 0), or failed batches to avoid clutter.
-    2. Retains up to `max_retained_batches` (strictly 2 batches: Latest + 1 Previous) completed batches with actual new/stored records.
-    3. Purges older batches and their child records (DayBookRecord, APRecord, ARRecord, ImportFile)
-       beyond the retention limit to keep the database lean, fast, and prevent record accumulation.
+    Auto-retention policy (14-Day Rolling Lifecycle):
+    1. Removes empty, duplicate (new_records == 0 or total_rows == 0), or failed batches to avoid clutter.
+    2. Identifies batches uploaded more than `retention_days` (14 days) ago.
+    3. Permanently purges older batches beyond 14 days and all associated records
+       (DayBookRecord, APRecord, ARRecord, ImportFile) and their stored disk files to keep system lean.
     Returns the count of purged batches.
     """
     purged_count = 0
+    cutoff_time = datetime.utcnow() - timedelta(days=retention_days)
 
     # 1. Clean up duplicate / empty / failed batches with 0 new records
     empty_batches = db.query(ImportBatch).filter(
@@ -353,21 +370,25 @@ def cleanup_old_batches(db: Session, max_retained_batches: int = 2) -> int:
         db.delete(b)
         purged_count += 1
 
-    # 2. Get valid completed batches WITH REAL DATA (new_records > 0), ordered from newest to oldest
-    valid_data_batches = db.query(ImportBatch).filter(
-        ImportBatch.status == "Completed",
-        ImportBatch.new_records > 0
-    ).order_by(desc(ImportBatch.id)).all()
+    # 2. Delete batches strictly older than 14 days
+    expired_batches = db.query(ImportBatch).filter(
+        ImportBatch.upload_timestamp < cutoff_time
+    ).all()
 
-    if len(valid_data_batches) > max_retained_batches:
-        excess_batches = valid_data_batches[max_retained_batches:]
-        for b in excess_batches:
-            db.query(DayBookRecord).filter(DayBookRecord.batch_id == b.id).delete(synchronize_session=False)
-            db.query(APRecord).filter(APRecord.batch_id == b.id).delete(synchronize_session=False)
-            db.query(ARRecord).filter(ARRecord.batch_id == b.id).delete(synchronize_session=False)
-            db.query(ImportFile).filter(ImportFile.batch_id == b.id).delete(synchronize_session=False)
-            db.delete(b)
-            purged_count += 1
+    for b in expired_batches:
+        # Also clean up stored files on disk if they exist
+        for f in db.query(ImportFile).filter(ImportFile.batch_id == b.id).all():
+            try:
+                if f.stored_path and os.path.exists(f.stored_path):
+                    os.remove(f.stored_path)
+            except Exception:
+                pass
+        db.query(DayBookRecord).filter(DayBookRecord.batch_id == b.id).delete(synchronize_session=False)
+        db.query(APRecord).filter(APRecord.batch_id == b.id).delete(synchronize_session=False)
+        db.query(ARRecord).filter(ARRecord.batch_id == b.id).delete(synchronize_session=False)
+        db.query(ImportFile).filter(ImportFile.batch_id == b.id).delete(synchronize_session=False)
+        db.delete(b)
+        purged_count += 1
 
     if purged_count > 0:
         db.commit()

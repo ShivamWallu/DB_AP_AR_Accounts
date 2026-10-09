@@ -2431,15 +2431,15 @@ class DataTableController {
                 </div>
                 <div style="font-size: 0.68rem; color: #475569; margin-top: 0.18rem; display: flex; gap: 0.85rem; flex-wrap: wrap;">
                   <span><strong>Scope:</strong> ${filterSummary}</span>
-                  <span><strong>Statement Date:</strong> ${dateSummary}</span>
+                  <span><strong>Voucher Date:</strong> ${dateSummary}</span>
                 </div>
               </div>
             </div>
             <div style="text-align: right; line-height: 1.25;">
-              <div style="font-size: 0.74rem; font-weight: 700; color: #0f172a;">Generated: ${new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</div>
-              <div style="font-size: 0.65rem; color: #64748b; font-family: 'JetBrains Mono', monospace;">Doc ID: DOC-${Date.now().toString(36).toUpperCase()}</div>
-              <div style="font-size: 0.66rem; color: #15803d; font-weight: 700; display: flex; align-items: center; justify-content: flex-end; gap: 0.2rem; margin-top: 0.1rem;">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <div style="font-size: 0.72rem; font-weight: 700; color: #0f172a;">Generated: ${new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</div>
+              <div style="font-size: 0.58rem; color: #64748b; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em;">Doc ID: DOC-${Date.now().toString(36).slice(-6).toUpperCase()}</div>
+              <div style="font-size: 0.64rem; color: #15803d; font-weight: 700; display: flex; align-items: center; justify-content: flex-end; gap: 0.2rem; margin-top: 0.1rem;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 Cryptographically Certified
               </div>
             </div>
