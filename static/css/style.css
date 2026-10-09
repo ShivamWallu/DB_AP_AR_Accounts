@@ -3528,15 +3528,19 @@ body.sidebar-collapsed .main-content {
   color: #0f172a;
   font-weight: 800;
   text-align: left;
-  padding: 0.45rem 0.35rem;
+  padding: 0.40rem 0.25rem;
   border-bottom: 1.8px solid #cbd5e1;
   border-right: 1px solid #e2e8f0;
   text-transform: uppercase;
-  font-size: 0.70rem;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: normal;
+  overflow-wrap: break-word;
+  line-height: 1.18;
+  vertical-align: middle;
   box-sizing: border-box;
 }
 
@@ -3545,7 +3549,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table td {
-  padding: 0.36rem 0.38rem;
+  padding: 0.36rem 0.35rem;
   border-bottom: 1px solid #edf2f7;
   border-right: 1px solid #edf2f7;
   color: #334155;
@@ -3559,26 +3563,32 @@ body.sidebar-collapsed .main-content {
   border-right: none;
 }
 
-/* Statement Table Column Rules (100% Balanced Distribution - ZERO OVERLAPPING) */
+/* Statement Table Column Rules (100% Balanced Distribution - ZERO OVERLAPPING & FULL HEADERS) */
 .statement-table .col-num {
   width: 2.5% !important;
   text-align: center;
-  white-space: nowrap;
   font-size: 0.74rem;
   color: #94a3b8;
   font-weight: 600;
 }
 
+.statement-table td.col-num {
+  white-space: nowrap;
+}
+
 .statement-table .col-site {
   width: 4.5% !important;
-  white-space: nowrap;
   font-weight: 750;
   color: #0f172a;
   font-size: 0.76rem;
 }
 
+.statement-table td.col-site {
+  white-space: nowrap;
+}
+
 .statement-table .col-vno {
-  width: 8.0% !important;
+  width: 7.5% !important;
   white-space: normal !important;
   word-break: break-all !important;
   overflow-wrap: anywhere !important;
@@ -3630,8 +3640,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .statement-table .col-qty {
-  width: 4.5% !important;
-  white-space: nowrap;
+  width: 5.0% !important;
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-family: 'JetBrains Mono', 'Inter', monospace;
@@ -3640,9 +3649,12 @@ body.sidebar-collapsed .main-content {
   color: #0f172a;
 }
 
-.statement-table .col-rate {
-  width: 5.0% !important;
+.statement-table td.col-qty {
   white-space: nowrap;
+}
+
+.statement-table .col-rate {
+  width: 5.5% !important;
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-family: 'JetBrains Mono', 'Inter', monospace;
@@ -3651,9 +3663,12 @@ body.sidebar-collapsed .main-content {
   color: #1e293b;
 }
 
-.statement-table .col-tax {
-  width: 6.0% !important;
+.statement-table td.col-rate {
   white-space: nowrap;
+}
+
+.statement-table .col-tax {
+  width: 6.5% !important;
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-family: 'JetBrains Mono', 'Inter', monospace;
@@ -3662,9 +3677,12 @@ body.sidebar-collapsed .main-content {
   font-size: 0.80rem;
 }
 
+.statement-table td.col-tax {
+  white-space: nowrap;
+}
+
 .statement-table .col-tot {
   width: 9.5% !important;
-  white-space: nowrap;
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-family: 'JetBrains Mono', 'Inter', monospace;
@@ -3673,8 +3691,12 @@ body.sidebar-collapsed .main-content {
   font-size: 0.84rem;
 }
 
+.statement-table td.col-tot {
+  white-space: nowrap;
+}
+
 .statement-table .col-status {
-  width: 7.0% !important;
+  width: 6.0% !important;
   text-align: center;
   font-size: 0.70rem;
   line-height: 1.2;
@@ -4008,21 +4030,25 @@ body.sidebar-collapsed .main-content {
     background: #f1f5f9 !important;
     color: #0f172a !important;
     border: 0.8px solid #cbd5e1 !important;
-    padding: 3.5px 3px !important;
+    padding: 3.5px 2px !important;
     font-weight: 800 !important;
-    font-size: 6.8pt !important;
+    font-size: 6.6pt !important;
     text-transform: uppercase !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    line-height: 1.15 !important;
+    vertical-align: middle !important;
     box-sizing: border-box !important;
   }
 
   .statement-table td {
     border: 0.8px solid #e2e8f0 !important;
-    padding: 3px 3px !important;
+    padding: 3px 2.5px !important;
     color: #1e293b !important;
     background: #ffffff !important;
     font-size: 7.0pt !important;
@@ -4030,24 +4056,30 @@ body.sidebar-collapsed .main-content {
     box-sizing: border-box !important;
   }
 
-  /* Specific Print Column Widths (100% Total Balanced Distribution) */
+  /* Specific Print Column Widths (100% Total Balanced Distribution - ZERO ELLIPSIS) */
   .statement-table .col-num {
     width: 2.5% !important;
     text-align: center !important;
-    white-space: nowrap !important;
     font-size: 6.8pt !important;
     color: #64748b !important;
   }
 
+  .statement-table td.col-num {
+    white-space: nowrap !important;
+  }
+
   .statement-table .col-site {
     width: 4.5% !important;
-    white-space: nowrap !important;
     font-weight: 750 !important;
     font-size: 7.0pt !important;
   }
 
+  .statement-table td.col-site {
+    white-space: nowrap !important;
+  }
+
   .statement-table .col-vno {
-    width: 8.0% !important;
+    width: 7.5% !important;
     white-space: normal !important;
     word-break: break-all !important;
     overflow-wrap: anywhere !important;
@@ -4094,45 +4126,57 @@ body.sidebar-collapsed .main-content {
   }
 
   .statement-table .col-qty {
-    width: 4.5% !important;
+    width: 5.0% !important;
     text-align: right !important;
-    white-space: nowrap !important;
     font-size: 7.2pt !important;
     font-variant-numeric: tabular-nums !important;
     font-weight: 750 !important;
+  }
+
+  .statement-table td.col-qty {
+    white-space: nowrap !important;
   }
 
   .statement-table .col-rate {
-    width: 5.0% !important;
+    width: 5.5% !important;
     text-align: right !important;
-    white-space: nowrap !important;
     font-size: 7.2pt !important;
     font-variant-numeric: tabular-nums !important;
     font-weight: 750 !important;
   }
 
-  .statement-table .col-tax {
-    width: 6.0% !important;
-    text-align: right !important;
+  .statement-table td.col-rate {
     white-space: nowrap !important;
+  }
+
+  .statement-table .col-tax {
+    width: 6.5% !important;
+    text-align: right !important;
     font-size: 7.2pt !important;
     font-variant-numeric: tabular-nums !important;
     color: #047857 !important;
     font-weight: 800 !important;
   }
 
+  .statement-table td.col-tax {
+    white-space: nowrap !important;
+  }
+
   .statement-table .col-tot {
     width: 9.5% !important;
     text-align: right !important;
-    white-space: nowrap !important;
     font-weight: 850 !important;
     font-size: 7.4pt !important;
     font-variant-numeric: tabular-nums !important;
     color: #0f172a !important;
   }
 
+  .statement-table td.col-tot {
+    white-space: nowrap !important;
+  }
+
   .statement-table .col-status {
-    width: 7.0% !important;
+    width: 6.0% !important;
     text-align: center !important;
     white-space: normal !important;
     word-break: break-word !important;

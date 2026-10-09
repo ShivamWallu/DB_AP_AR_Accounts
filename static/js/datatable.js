@@ -2783,10 +2783,10 @@ class DataTableController {
             <table class="statement-table">
               <thead>
                 <tr>
-                  <th class="col-num" style="width: 2.5%; text-align: center;">#</th>
+                  <th class="col-num" style="text-align: center;">#</th>
                   <th class="col-site">Site</th>
                   <th class="col-vno">Voucher Number</th>
-                  <th class="col-party" style="min-width: 120px;">Party Name</th>
+                  <th class="col-party">Party Name</th>
                   <th class="col-vtype">Voucher Type</th>
                   <th class="col-desc">Item / Expense Description</th>
                   <th class="col-exp">Expense Account</th>
@@ -2795,8 +2795,8 @@ class DataTableController {
                   <th class="col-tax" style="text-align: right;">Tax Amount (₹)</th>
                   <th class="col-tot" style="text-align: right;">Total Amount (₹)</th>
                   <th class="col-status" style="text-align: center;">Status</th>
-                  <th class="col-created" style="min-width: 90px;">Created By</th>
-                  <th class="col-approved" style="min-width: 95px;">Approved By</th>
+                  <th class="col-created">Created By</th>
+                  <th class="col-approved">Approved By</th>
                 </tr>
               </thead>
               <tbody>
