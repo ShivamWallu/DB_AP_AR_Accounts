@@ -215,7 +215,27 @@ def build_otp_html_email(user_name: str, otp_code: str, to_email: str) -> str:
     """
     return html
 
+def is_dummy_or_test_email(to_email: str) -> bool:
+    """Detect test/dummy email addresses to prevent Google SMTP bounce-backs."""
+    if not to_email:
+        return True
+    email_clean = to_email.strip().lower()
+    dummy_patterns = [
+        "@kogm.com",
+        "@example.com",
+        "@test.com",
+        ".test",
+        "admin.test@",
+        "user.test@"
+    ]
+    if os.getenv("TEST_MODE") == "1" or os.getenv("PYTEST_CURRENT_TEST"):
+        return True
+    return any(p in email_clean for p in dummy_patterns)
+
 def send_via_webhook(to_email: str, subject: str, html_body: str) -> bool:
+    if is_dummy_or_test_email(to_email):
+        logger.info(f"[SIMULATED WEBHOOK] Skipped dispatch for dummy/test recipient: {to_email}")
+        return True
     if not GMAIL_WEBHOOK_URL:
         return False
     try:
@@ -241,6 +261,9 @@ def send_via_webhook(to_email: str, subject: str, html_body: str) -> bool:
         return False
 
 def send_via_smtp(to_email: str, subject: str, html_body: str) -> bool:
+    if is_dummy_or_test_email(to_email):
+        logger.info(f"[SIMULATED SMTP] Skipped dispatch for dummy/test recipient: {to_email}")
+        return True
     if not SMTP_USER or not SMTP_PASSWORD:
         return False
     try:

@@ -277,6 +277,8 @@ def test_full_pipeline():
         from app.auth import get_password_hash
         admin_restore = db.query(User).filter(User.username == "admin").first()
         admin_restore.hashed_password = get_password_hash("Admin@123")
+        admin_restore.email = None
+        db.commit()
 
         # Clean up test upload batch
         if 'batch2' in locals() and batch2 and "id" in batch2:
