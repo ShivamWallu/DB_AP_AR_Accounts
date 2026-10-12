@@ -5,15 +5,115 @@ import openpyxl
 from typing import Dict, Any, List, Tuple, Optional
 from datetime import datetime, date
 
+# Verified 44-Column Specification for Day Book in Exact Sequence
+DAYBOOK_COLUMNS_44 = [
+    "Transaction Site",
+    "Transaction Site Description",
+    "Accounting Site Code",
+    "Accounting Site Description",
+    "Source",
+    "Voucher Number",
+    "Journal Voucher",
+    "Voucher Date",
+    "Inter Unit Y / N",
+    "Source / Target",
+    "Voucher Type",
+    "Voucher Status",
+    "Party Code",
+    "Party Description",
+    "Payment Mode",
+    "Cheque Number",
+    "Bank Account Number",
+    "Account Code",
+    "Account Description",
+    "Owner Name",
+    "Owner Description",
+    "Purpose",
+    "Purpose Description",
+    "Net Amount in Foreign Currency",
+    "Net Amount in Domestic Currency",
+    "Service Amount Foreign Currency",
+    "Service Amount Domestic Currency",
+    "Charge Amount Foreign Currency",
+    "Charge Amount Domestic Currency",
+    "Bank Charge Amount Foreign Currency",
+    "Bank Charge Amount Domestic Currency",
+    "Discount in Foreign Currency",
+    "Discount in Domestic Currency",
+    "Tax Amount Foreign Currency",
+    "Tax Amount Domestic Currency",
+    "Round Off Amount Foreign Currency",
+    "Round Off Amount Domestic Currency",
+    "Total Amount in Foreign Currency",
+    "Total Amount in Domestic Currency",
+    "Narration",
+    "Created By",
+    "Created Date",
+    "Approved By",
+    "Approved Date"
+]
+
+def parse_date_only(val: Any) -> Optional[date]:
+    """Parse Excel cell date accurately to a python date object ignoring time."""
+    if val is None:
+        return None
+    if isinstance(val, datetime):
+        return val.date()
+    if isinstance(val, date):
+        return val
+    if isinstance(val, (int, float)):
+        try:
+            from datetime import timedelta
+            base_date = datetime(1899, 12, 30)
+            return (base_date + timedelta(days=val)).date()
+        except Exception:
+            pass
+    val_str = str(val).strip()
+    if not val_str or val_str.lower() in ("none", "null", "nan", "-", "—", "nat", ""):
+        return None
+    val_clean = val_str.split(" ")[0].split("T")[0].strip()
+    for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y", "%m/%d/%Y", "%d.%m.%Y", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(val_clean, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+def compute_validation_status(v_raw: Any, c_raw: Any, a_raw: Any) -> str:
+    """
+    Evaluates exact business date validation rules:
+    Rule 1: Matched: V = A and C != A
+    Rule 2: Back date entry: C = A and V != C
+    Rule 3: Late Approval: V = C and C != A
+    Rule 4: Back date entry & Late Approval: V != C, C != A, V != A (all 3 different)
+    Rule 5: Pending / Check Dates: Any date missing, invalid, or V == C == A
+    """
+    dv = parse_date_only(v_raw)
+    dc = parse_date_only(c_raw)
+    da = parse_date_only(a_raw)
+
+    if not dv or not dc or not da:
+        return "Pending / Check Dates"
+
+    if dv == da and dc != da:
+        return "Matched"
+
+    if dc == da and dv != dc:
+        return "Back date entry"
+
+    if dv == dc and dc != da:
+        return "Late Approval"
+
+    if dv != dc and dc != da and dv != da:
+        return "Back date entry & Late Approval"
+
+    return "Pending / Check Dates"
+
 # Verified Column Mappings from Real Excel Inspection
 EXPECTED_HEADERS = {
     "Day Book": {
         "identifying_headers": ["Voucher Number", "Transaction Site", "Voucher Type"],
-        "required_columns": [
-            "Transaction Site", "Voucher Number", "Voucher Date", "Voucher Type",
-            "Voucher Status", "Party Code", "Party Description", "Account Description",
-            "Narration", "Created By", "Approved By"
-        ]
+        "required_columns": DAYBOOK_COLUMNS_44
     },
     "AP": {
         "identifying_headers": ["Accounting Site Code", "Voucher Number", "Voucher Type", "Invoice Number", "Total Voucher Amount"],
@@ -335,6 +435,19 @@ def parse_daybook_file(filepath: str) -> Tuple[List[Dict[str, Any]], Dict[str, A
         cdate_val = get_val(row, idx_created_date)
         adate_val = get_val(row, idx_approved_date)
 
+        # Validation Status Computation using actual cell values
+        raw_v_date = row[idx_vdate] if (idx_vdate is not None and idx_vdate < len(row)) else vdate_val
+        raw_c_date = row[idx_created_date] if (idx_created_date is not None and idx_created_date < len(row)) else cdate_val
+        raw_a_date = row[idx_approved_date] if (idx_approved_date is not None and idx_approved_date < len(row)) else adate_val
+        val_status = compute_validation_status(raw_v_date, raw_c_date, raw_a_date)
+
+        # Standardize dates in raw_row as DD/MM/YYYY for consistent display
+        for dt_col in ("Voucher Date", "Created Date", "Approved Date"):
+            if dt_col in raw_row and raw_row[dt_col]:
+                p_dt = parse_date_only(raw_row[dt_col])
+                if p_dt:
+                    raw_row[dt_col] = p_dt.strftime("%d/%m/%Y")
+
         record_dict = {
             "transaction_site": str(site_val) if site_val else None,
             "voucher_number": str(v_no),
@@ -349,13 +462,98 @@ def parse_daybook_file(filepath: str) -> Tuple[List[Dict[str, Any]], Dict[str, A
             "approved_by": str(aby_val) if aby_val else None,
             "created_date_raw": str(cdate_val) if cdate_val else None,
             "approved_date_raw": str(adate_val) if adate_val else None,
+            "validation_status": val_status,
             "raw_data_json": json.dumps(raw_row, default=str),
             "row_hash": compute_hash(raw_row)
         }
         records.append(record_dict)
 
-    stats = {"total_rows": len(records), "valid_rows": len(records), "header_row": header_row_idx + 1}
+    stats = {
+        "total_rows": len(records),
+        "total_transactions": len(records),
+        "valid_rows": len(records),
+        "header_row": header_row_idx + 1,
+        "matched": sum(1 for r in records if r.get("validation_status") == "Matched"),
+        "back_date_entry": sum(1 for r in records if r.get("validation_status") == "Back date entry"),
+        "late_approval": sum(1 for r in records if r.get("validation_status") == "Late Approval"),
+        "back_date_late_approval": sum(1 for r in records if r.get("validation_status") == "Back date entry & Late Approval"),
+        "back_date_and_late_approval": sum(1 for r in records if r.get("validation_status") == "Back date entry & Late Approval"),
+        "pending_check_dates": sum(1 for r in records if r.get("validation_status") == "Pending / Check Dates"),
+        "balance_other": sum(1 for r in records if r.get("validation_status") == "Pending / Check Dates"),
+    }
     return records, stats
+
+def validate_daybook_file(filepath: str) -> Dict[str, Any]:
+    """
+    Dedicated Day Book Excel validator that:
+    1. Validates that the file is an Excel spreadsheet.
+    2. Detects the header row.
+    3. Verifies all 44 columns match DAYBOOK_COLUMNS_44 in the exact sequence.
+    4. Computes date validation categories for every transaction.
+    5. Returns statistics and top preview rows.
+    """
+    wb = openpyxl.load_workbook(filepath, read_only=True, data_only=True)
+    sheet = wb.active
+    all_rows = list(sheet.iter_rows(values_only=True))
+    wb.close()
+
+    header_row_idx, col_idx_to_name, col_name_to_idx = find_header_row_fast(all_rows)
+    
+    # Check headers against DAYBOOK_COLUMNS_44
+    detected_cols = [col_idx_to_name[i] for i in sorted(col_idx_to_name.keys()) if col_idx_to_name[i]]
+    
+    missing_cols = []
+    for col in DAYBOOK_COLUMNS_44:
+        if not any(col.lower() == c.lower() for c in detected_cols):
+            missing_cols.append(col)
+            
+    is_valid_sequence = True
+    sequence_mismatches = []
+    for i, expected in enumerate(DAYBOOK_COLUMNS_44):
+        if i < len(detected_cols):
+            actual = detected_cols[i]
+            if actual.lower() != expected.lower():
+                is_valid_sequence = False
+                sequence_mismatches.append(f"Position {i+1}: expected '{expected}', found '{actual}'")
+        else:
+            is_valid_sequence = False
+            sequence_mismatches.append(f"Position {i+1}: missing '{expected}'")
+
+    records, stats = parse_daybook_file(filepath)
+
+    status = "Valid" if len(missing_cols) == 0 else "Failed"
+    message = (
+        f"Verified Day Book structure: All 44 columns validated in exact sequence with {len(records)} data rows."
+        if status == "Valid"
+        else f"Validation failed: Missing {len(missing_cols)} columns: {', '.join(missing_cols[:5])}"
+    )
+
+    # Preview items (top 10 rows with raw data and validation status)
+    preview_items = []
+    for r in records[:10]:
+        raw_dict = json.loads(r["raw_data_json"]) if r.get("raw_data_json") else {}
+        item = {**raw_dict}
+        item["voucher_number"] = r["voucher_number"]
+        item["transaction_site"] = r["transaction_site"]
+        item["voucher_date"] = r["voucher_date"]
+        item["validation_status"] = r["validation_status"]
+        preview_items.append(item)
+
+    return {
+        "status": status,
+        "is_valid": status == "Valid",
+        "filename": os.path.basename(filepath),
+        "message": message,
+        "columns_count": len(detected_cols),
+        "expected_columns_count": len(DAYBOOK_COLUMNS_44),
+        "columns_matched": len(DAYBOOK_COLUMNS_44) - len(missing_cols),
+        "missing_columns": missing_cols,
+        "is_valid_sequence": is_valid_sequence,
+        "sequence_mismatches": sequence_mismatches[:5],
+        "total_rows": len(records),
+        "stats": stats,
+        "preview_items": preview_items
+    }
 
 def parse_ap_file(filepath: str) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     """Parse AP Excel file with 2X high-speed read_only tuple indexing + raw preservation"""

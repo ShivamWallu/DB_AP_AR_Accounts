@@ -9,7 +9,8 @@ from app.database import engine, Base, SessionLocal, init_db
 from app.auth import init_default_users
 from app.routers import (
     auth_router, upload_router, data_router,
-    dashboard_router, imports_router, audit_router, export_router
+    dashboard_router, imports_router, audit_router, export_router,
+    daybook_router
 )
 from app.models import ImportBatch, User, DayBookRecord
 from app.services.upload_service import process_import_batch, cleanup_old_batches
@@ -94,6 +95,7 @@ app.include_router(dashboard_router.router)
 app.include_router(imports_router.router)
 app.include_router(audit_router.router)
 app.include_router(export_router.router)
+app.include_router(daybook_router.router)
 
 # Mount Static Files
 static_path = BASE_DIR / "static"

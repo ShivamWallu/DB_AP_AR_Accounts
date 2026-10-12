@@ -152,6 +152,29 @@ const StatusBadge = {
   }
 };
 
+const ValidationStatusBadge = {
+  render(status) {
+    if (!status || status === "—" || status === "null" || status === "undefined") {
+      return `<span class="val-badge val-badge-pending" title="Rule 5: Pending / Check Dates"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Pending / Check Dates</span>`;
+    }
+    const s = String(status).trim();
+    if (s === "Matched") {
+      return `<span class="val-badge val-badge-matched" title="Rule 1: Matched (V = A and C ≠ A)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Matched</span>`;
+    }
+    if (s === "Back date entry") {
+      return `<span class="val-badge val-badge-backdate" title="Rule 2: Back date entry (C = A and V ≠ C)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Back date entry</span>`;
+    }
+    if (s === "Late Approval") {
+      return `<span class="val-badge val-badge-lateappr" title="Rule 3: Late Approval (V = C and C ≠ A)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Late Approval</span>`;
+    }
+    if (s === "Back date entry & Late Approval") {
+      return `<span class="val-badge val-badge-combined" title="Rule 4: Back date entry & Late Approval (V ≠ C, C ≠ A, V ≠ A)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Back date entry & Late Approval</span>`;
+    }
+    return `<span class="val-badge val-badge-pending" title="Rule 5: Pending / Check Dates"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Pending / Check Dates</span>`;
+  }
+};
+window.ValidationStatusBadge = ValidationStatusBadge;
+
 const VerificationManager = {
   _cache: {},
   _initialized: false,
@@ -740,7 +763,12 @@ class DataTableController {
       ${this.columns.map((col, cIdx) => {
       const isStickySite = (cIdx === 0 && (col.key === 'transaction_site' || col.key === 'accounting_site_code'));
       const isStickyVoucher = (cIdx === 1 && (col.key === 'voucher_number' || col.key === 'voucher_no'));
-      const stickyClass = isStickySite ? 'dt-sticky-col-site' : (isStickyVoucher ? 'dt-sticky-col-voucher' : '');
+      let stickyClass = isStickySite ? 'dt-sticky-col-site' : (isStickyVoucher ? 'dt-sticky-col-voucher' : '');
+      if (this.datasetType === 'daybook') {
+        if (col.key === 'voucher_date') stickyClass = 'dt-sticky-col-vdate';
+        else if (col.key === 'created_date') stickyClass = 'dt-sticky-col-cdate';
+        else if (col.key === 'approved_date') stickyClass = 'dt-sticky-col-adate';
+      }
       return `
           <th class="sortable dt-th ${stickyClass}" data-col="${col.key}">
             ${col.label}
@@ -1441,6 +1469,7 @@ class DataTableController {
   }
 
   populateFilterOptions(filterData) {
+    if (!filterData) return;
     const container = document.getElementById(this.containerId);
     if (!container) return;
 
@@ -1852,7 +1881,12 @@ class DataTableController {
           ${this.columns.map((col, cIdx) => {
         const isStickySite = (cIdx === 0 && (col.key === 'transaction_site' || col.key === 'accounting_site_code'));
         const isStickyVoucher = (cIdx === 1 && (col.key === 'voucher_number' || col.key === 'voucher_no'));
-        const stickyClass = isStickySite ? 'dt-sticky-col-site' : (isStickyVoucher ? 'dt-sticky-col-voucher' : '');
+        let stickyClass = isStickySite ? 'dt-sticky-col-site' : (isStickyVoucher ? 'dt-sticky-col-voucher' : '');
+        if (this.datasetType === 'daybook') {
+          if (col.key === 'voucher_date') stickyClass = 'dt-sticky-col-vdate';
+          else if (col.key === 'created_date') stickyClass = 'dt-sticky-col-cdate';
+          else if (col.key === 'approved_date') stickyClass = 'dt-sticky-col-adate';
+        }
 
         let val = row[col.key];
 
@@ -1865,8 +1899,12 @@ class DataTableController {
           return `<td class="${stickyClass}">${PersonBadge.render(val, "approved")}</td>`;
         }
 
-        if (val === null || val === undefined || val === "") {
+        if (val === null || val === undefined || val === "" || val === "None") {
           return `<td class="${stickyClass}"><span style="color: var(--text-muted); font-style: italic;">—</span></td>`;
+        }
+
+        if (col.key === "voucher_date" || col.key === "created_date" || col.key === "approved_date") {
+          return `<td class="${stickyClass} cell-date">${val}</td>`;
         }
 
         if (col.key === "source_tag") {
@@ -1911,6 +1949,10 @@ class DataTableController {
                   </div>
                 </td>
               `;
+        }
+
+        if (col.type === "validation_badge" || col.key === "validation_status" || col.key === "Validation Status") {
+          return `<td class="${stickyClass}">${ValidationStatusBadge.render(val)}</td>`;
         }
 
         if (col.type === "badge" || col.key === "voucher_status") {

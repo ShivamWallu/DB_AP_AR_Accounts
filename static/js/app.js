@@ -125,13 +125,45 @@ const App = {
         this.navigate(view);
       });
     });
+
+    document.querySelectorAll(".nav-subitem[data-view]").forEach(sub => {
+      sub.addEventListener("click", (e) => {
+        e.preventDefault();
+        const view = sub.dataset.view;
+        this.navigate(view);
+      });
+    });
   },
 
   navigate(viewName) {
+    let actualSection = viewName;
+    if (viewName === "daybook-upload" || viewName === "daybook-dashboard") {
+      actualSection = "daybook";
+      const navGroup = document.getElementById("nav-group-daybook");
+      if (navGroup) navGroup.classList.add("open");
+      if (window.DayBook) {
+        DayBook.switchSubTab(viewName === "daybook-upload" ? "upload" : "dashboard");
+      }
+    } else if (viewName === "daybook") {
+      const navGroup = document.getElementById("nav-group-daybook");
+      if (navGroup) navGroup.classList.toggle("open");
+      if (window.DayBook) {
+        DayBook.switchSubTab(DayBook.currentSubTab || "dashboard");
+      }
+    } else {
+      const navGroup = document.getElementById("nav-group-daybook");
+      if (navGroup) navGroup.classList.remove("open");
+    }
+
     this.currentView = viewName;
 
     // Update active nav state
     document.querySelectorAll(".nav-item").forEach(item => {
+      const isMatch = item.dataset.view === viewName || (actualSection === "daybook" && item.dataset.view === "daybook");
+      item.classList.toggle("active", isMatch);
+    });
+
+    document.querySelectorAll(".nav-subitem").forEach(item => {
       item.classList.toggle("active", item.dataset.view === viewName);
     });
 
@@ -140,7 +172,7 @@ const App = {
       sec.style.display = "none";
     });
 
-    const targetView = document.getElementById(`view-${viewName}`);
+    const targetView = document.getElementById(`view-${actualSection}`);
     if (targetView) {
       targetView.style.display = "block";
     }
@@ -149,7 +181,9 @@ const App = {
     const titles = {
       dashboard: "Executive Dashboard",
       master: "Day Book Master 360° Ledger (Unified Day Book + AP + AR)",
-      daybook: "Day Book Register",
+      daybook: "Day Book Register & Date Validation Dashboard",
+      "daybook-upload": "Day Book Excel Upload & Validation",
+      "daybook-dashboard": "Day Book Register & Date Validation Dashboard",
       ap: "Account Payable (AP) Register",
       ar: "Account Receivable (AR) Register",
       explorer: "Cross-Reference Transaction Explorer",
@@ -159,7 +193,7 @@ const App = {
       users: "User Management"
     };
     const titleEl = document.getElementById("page-title");
-    if (titleEl) titleEl.innerText = titles[viewName] || "Excel Data Management";
+    if (titleEl) titleEl.innerText = titles[viewName] || "Finance Day Book";
 
     // Trigger view-specific data loading
     this.onViewActivated(viewName);
@@ -173,9 +207,11 @@ const App = {
     } else if (viewName === "master" && this.dtMaster) {
       this.dtMaster.populateFilterOptions(this.filterData);
       this.dtMaster.loadData();
-    } else if (viewName === "daybook" && this.dtDayBook) {
-      this.dtDayBook.populateFilterOptions(this.filterData);
-      this.dtDayBook.loadData();
+    } else if ((viewName === "daybook" || viewName === "daybook-dashboard" || viewName === "daybook-upload") && window.DayBook) {
+      if (this.dtDayBook) {
+        this.dtDayBook.populateFilterOptions(this.filterData);
+      }
+      DayBook.loadDashboardData();
     } else if (viewName === "ap" && this.dtAP) {
       this.dtAP.populateFilterOptions(this.filterData);
       this.dtAP.loadData();
@@ -234,26 +270,31 @@ const App = {
     });
     this.dtMaster.init();
 
-    // 1. Day Book Table
-    this.dtDayBook = new DataTableController({
-      containerId: "daybook-table-container",
-      datasetType: "daybook",
-      fetchFn: (params) => API.getDayBook(params),
-      columns: [
-        { key: "transaction_site", label: "Site" },
-        { key: "voucher_number", label: "Voucher No." },
-        { key: "voucher_date", label: "Voucher Date" },
-        { key: "voucher_type", label: "Voucher Type" },
-        { key: "voucher_status", label: "Status", type: "badge" },
-        { key: "party_code", label: "Party Code" },
-        { key: "party_description", label: "Party Description" },
-        { key: "account_description", label: "Account Description" },
-        { key: "narration", label: "Narration" },
-        { key: "created_by", label: "Created By" },
-        { key: "approved_by", label: "Approved By" }
-      ]
-    });
-    this.dtDayBook.init();
+    // 1. Day Book Table (Enhanced 44 Columns + Validation Status)
+    if (window.DayBook) {
+      DayBook.init();
+      this.dtDayBook = DayBook.dtController;
+    } else {
+      this.dtDayBook = new DataTableController({
+        containerId: "daybook-table-container",
+        datasetType: "daybook",
+        fetchFn: (params) => API.getDayBook(params),
+        columns: [
+          { key: "transaction_site", label: "Site" },
+          { key: "voucher_number", label: "Voucher No." },
+          { key: "voucher_date", label: "Voucher Date" },
+          { key: "voucher_type", label: "Voucher Type" },
+          { key: "voucher_status", label: "Status", type: "badge" },
+          { key: "party_code", label: "Party Code" },
+          { key: "party_description", label: "Party Description" },
+          { key: "account_description", label: "Account Description" },
+          { key: "narration", label: "Narration" },
+          { key: "created_by", label: "Created By" },
+          { key: "approved_by", label: "Approved By" }
+        ]
+      });
+      this.dtDayBook.init();
+    }
 
     // 2. AP Table
     this.dtAP = new DataTableController({

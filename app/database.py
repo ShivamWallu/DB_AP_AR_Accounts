@@ -32,6 +32,13 @@ def init_db():
             if "voucher_date_range" not in col_names:
                 conn.execute(text("ALTER TABLE import_batches ADD COLUMN voucher_date_range VARCHAR(100)"))
                 conn.commit()
+
+            db_res = conn.execute(text("PRAGMA table_info(daybook_records)")).fetchall()
+            db_cols = [r[1] for r in db_res]
+            if "validation_status" not in db_cols:
+                conn.execute(text("ALTER TABLE daybook_records ADD COLUMN validation_status VARCHAR(100)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_db_val_status ON daybook_records (validation_status)"))
+                conn.commit()
     except Exception as e:
         print(f"DB auto-migration check note: {e}")
 

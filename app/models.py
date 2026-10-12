@@ -125,6 +125,7 @@ class DayBookRecord(Base):
     # Additional audit & full data preservation
     created_date_raw = Column(String(100), nullable=True) # Col AP
     approved_date_raw = Column(String(100), nullable=True) # Col AR
+    validation_status = Column(String(100), index=True, nullable=True) # Matched, Back date entry, Late Approval, Back date entry & Late Approval, Pending / Check Dates
     source_file = Column(String(255), nullable=True)
     upload_timestamp = Column(DateTime, default=datetime.utcnow)
     raw_data_json = Column(Text, nullable=True)
@@ -135,6 +136,7 @@ class DayBookRecord(Base):
     __table_args__ = (
         Index("idx_db_site_vno", "transaction_site", "voucher_number"),
         Index("idx_db_search", "voucher_number", "party_code", "party_description"),
+        Index("idx_db_val_status", "validation_status"),
     )
 
 

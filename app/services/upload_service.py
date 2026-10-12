@@ -137,6 +137,7 @@ def process_import_batch(
                     approved_by=rec["approved_by"],
                     created_date_raw=rec["created_date_raw"],
                     approved_date_raw=rec["approved_date_raw"],
+                    validation_status=rec.get("validation_status", "Pending / Check Dates"),
                     row_hash=rec["row_hash"],
                     raw_data_json=rec["raw_data_json"],
                     source_file=os.path.basename(db_path),

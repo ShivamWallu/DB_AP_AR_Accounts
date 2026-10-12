@@ -168,6 +168,25 @@ const API = {
     return await this.request(`/api/data/daybook?${qs}`);
   },
 
+  async getDayBookStats(params = {}) {
+    const qs = this.buildQueryString(params);
+    return await this.request(`/api/data/daybook/stats?${qs}`);
+  },
+
+  async validateDayBook(formData) {
+    return await this.request("/api/daybook/validate", {
+      method: "POST",
+      body: formData
+    });
+  },
+
+  async uploadDayBook(formData) {
+    return await this.request("/api/daybook/upload", {
+      method: "POST",
+      body: formData
+    });
+  },
+
   async getAP(params = {}) {
     const qs = this.buildQueryString(params);
     return await this.request(`/api/data/ap?${qs}`);

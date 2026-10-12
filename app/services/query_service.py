@@ -32,7 +32,7 @@ def get_filter_options(db: Session) -> Dict[str, Any]:
     # Batch list - all active batches within 14-day retention lifecycle
     batches = db.query(ImportBatch).filter(
         ImportBatch.status == "Completed",
-        ImportBatch.total_rows > 0
+        ImportBatch.new_records > 0
     ).order_by(desc(ImportBatch.id)).all()
     batch_list = []
     for b in batches:
@@ -163,10 +163,15 @@ def query_daybook(
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
     verify_status: Optional[str] = None,
+    validation_status: Optional[str] = None,
+    voucher_status: Optional[str] = None,
+    party_code: Optional[str] = None,
+    created_date: Optional[str] = None,
+    approved_date: Optional[str] = None,
     sort_by: str = "id",
     sort_order: str = "desc"
 ) -> Tuple[int, List[DayBookRecord]]:
-    """Query Day Book records with server-side filters, search, and pagination"""
+    """Query Day Book records with server-side filters, search, validation category, and pagination"""
     q = db.query(DayBookRecord)
 
     sites_list = parse_site_filter(site)
@@ -192,6 +197,23 @@ def query_daybook(
         q = q.filter(DayBookRecord.voucher_date >= date_from.strip())
     if date_to and date_to.strip():
         q = q.filter(DayBookRecord.voucher_date <= date_to.strip())
+
+    # Validation status filter
+    if validation_status and validation_status.strip() and validation_status.strip().lower() not in ("all", "all transactions"):
+        v_stat_clean = validation_status.strip()
+        q = q.filter(DayBookRecord.validation_status == v_stat_clean)
+
+    if voucher_status and voucher_status.strip():
+        q = q.filter(DayBookRecord.voucher_status == voucher_status.strip())
+
+    if party_code and party_code.strip():
+        q = q.filter(DayBookRecord.party_code.ilike(f"%{party_code.strip()}%"))
+
+    if created_date and created_date.strip():
+        q = q.filter(DayBookRecord.created_date_raw.ilike(f"%{created_date.strip()}%"))
+
+    if approved_date and approved_date.strip():
+        q = q.filter(DayBookRecord.approved_date_raw.ilike(f"%{approved_date.strip()}%"))
 
     # Verification status filter
     if verify_status and verify_status.strip().lower() in ("verified", "pending"):
@@ -243,6 +265,106 @@ def query_daybook(
     # Paginate
     records = q.offset((page - 1) * page_size).limit(page_size).all()
     return total, records
+
+
+def get_daybook_dashboard_stats(
+    db: Session,
+    batch_id: Optional[int] = None,
+    site: Optional[str] = None,
+    voucher_type: Optional[str] = None,
+    approved_by: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    search: Optional[str] = None,
+    voucher_status: Optional[str] = None,
+    party_code: Optional[str] = None,
+    created_date: Optional[str] = None,
+    approved_date: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Compute dynamic summary cards for Day Book Dashboard with 100% strict sum consistency."""
+    q = db.query(DayBookRecord)
+    if batch_id:
+        q = q.filter(DayBookRecord.batch_id == batch_id)
+
+    sites_list = parse_site_filter(site)
+    if sites_list:
+        if len(sites_list) == 1:
+            q = q.filter(DayBookRecord.transaction_site == sites_list[0])
+        else:
+            q = q.filter(DayBookRecord.transaction_site.in_(sites_list))
+
+    syns = expand_voucher_types_multi(voucher_type)
+    if syns:
+        if len(syns) == 1:
+            q = q.filter(DayBookRecord.voucher_type == syns[0])
+        else:
+            q = q.filter(DayBookRecord.voucher_type.in_(syns))
+
+    appr_cond = build_approvers_conditions(DayBookRecord, approved_by)
+    if appr_cond is not None:
+        q = q.filter(appr_cond)
+
+    if date_from and date_from.strip():
+        q = q.filter(DayBookRecord.voucher_date >= date_from.strip())
+    if date_to and date_to.strip():
+        q = q.filter(DayBookRecord.voucher_date <= date_to.strip())
+
+    if voucher_status and voucher_status.strip():
+        q = q.filter(DayBookRecord.voucher_status == voucher_status.strip())
+
+    if party_code and party_code.strip():
+        q = q.filter(DayBookRecord.party_code.ilike(f"%{party_code.strip()}%"))
+
+    if created_date and created_date.strip():
+        q = q.filter(DayBookRecord.created_date_raw.ilike(f"%{created_date.strip()}%"))
+
+    if approved_date and approved_date.strip():
+        q = q.filter(DayBookRecord.approved_date_raw.ilike(f"%{approved_date.strip()}%"))
+
+    if search and search.strip():
+        term = f"%{search.strip()}%"
+        q = q.filter(
+            or_(
+                DayBookRecord.voucher_number.ilike(term),
+                DayBookRecord.party_code.ilike(term),
+                DayBookRecord.party_description.ilike(term),
+                DayBookRecord.account_description.ilike(term),
+                DayBookRecord.narration.ilike(term),
+                DayBookRecord.created_by.ilike(term),
+                DayBookRecord.approved_by.ilike(term)
+            )
+        )
+
+    from sqlalchemy import func
+    counts_by_status = dict(
+        q.with_entities(DayBookRecord.validation_status, func.count(DayBookRecord.id))
+        .group_by(DayBookRecord.validation_status)
+        .all()
+    )
+
+    total = q.count()
+    matched = counts_by_status.get("Matched", 0)
+    back_date = counts_by_status.get("Back date entry", 0)
+    late_approval = counts_by_status.get("Late Approval", 0)
+    back_date_late = counts_by_status.get("Back date entry & Late Approval", 0)
+    pending_check = counts_by_status.get("Pending / Check Dates", 0)
+
+    # Any unclassified records (None or unexpected) fall safely into pending_check
+    unclassified = sum(c for s, c in counts_by_status.items() if s not in ("Matched", "Back date entry", "Late Approval", "Back date entry & Late Approval", "Pending / Check Dates"))
+    pending_check += unclassified
+
+    # Balance / Other is unclassified records outside the 4 main categories
+    # Matched + Back date entry + Late Approval + Back date entry & Late Approval + Pending / Check Dates = Total Transactions.
+    return {
+        "total_transactions": total,
+        "matched": matched,
+        "back_date_entry": back_date,
+        "late_approval": late_approval,
+        "back_date_late_approval": back_date_late,
+        "back_date_and_late_approval": back_date_late,
+        "pending_check_dates": pending_check,
+        "balance_other": pending_check
+    }
 
 
 def query_ap(

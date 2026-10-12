@@ -148,32 +148,20 @@ def build_export_response(
     total_exported = 0
 
     if ds_lower == "daybook":
+        from app.excel_parser import DAYBOOK_COLUMNS_44
+        import json
         _, records = query_daybook(
             db, page=1, page_size=1000000, search=search,
             site=site, voucher_type=voucher_type, approved_by=approved_by, batch_id=batch_id
         )
         total_exported = len(records)
-        headers = [
-            "Site", "Voucher No.", "Voucher Date", "Voucher Type",
-            "Status", "Party Code", "Party Description", "Account Description",
-            "Narration", "Created By", "Approved By", "Verified Status"
-        ]
+        headers = list(DAYBOOK_COLUMNS_44) + ["Validation Status"]
         writer.writerow(headers)
         for r in records:
-            writer.writerow([
-                clean_val(r.transaction_site),
-                clean_val(r.voucher_number),
-                clean_val(r.voucher_date),
-                clean_val(r.voucher_type),
-                clean_val(r.voucher_status),
-                clean_val(r.party_code),
-                clean_val(r.party_description),
-                clean_val(r.account_description),
-                clean_val(r.narration),
-                clean_val(r.created_by),
-                clean_val(r.approved_by),
-                clean_val(resolve_verifier_name(r, verifications))
-            ])
+            raw_dict = json.loads(r.raw_data_json) if r.raw_data_json else {}
+            row_data = [clean_val(raw_dict.get(h, getattr(r, h.lower().replace(" ", "_"), ""))) for h in DAYBOOK_COLUMNS_44]
+            row_data.append(clean_val(r.validation_status or "Pending / Check Dates"))
+            writer.writerow(row_data)
 
     elif ds_lower == "ap":
         _, records = query_ap(

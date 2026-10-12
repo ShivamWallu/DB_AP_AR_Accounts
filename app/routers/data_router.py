@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, Query, HTTPException, status
@@ -11,7 +12,8 @@ from app.schemas import (
 )
 from app.auth import get_current_user
 from app.services.query_service import (
-    query_daybook, query_ap, query_ar, query_master_360, get_filter_options, get_cross_referenced_voucher
+    query_daybook, query_ap, query_ar, query_master_360, get_filter_options,
+    get_cross_referenced_voucher, get_daybook_dashboard_stats
 )
 from app.services.audit_service import log_activity
 
@@ -24,12 +26,17 @@ def get_filters(db: Session = Depends(get_db), current_user: User = Depends(get_
 def _resolve_batch_id(db: Session, batch_id: Optional[str]) -> Optional[int]:
     """
     Smart Batch Resolution:
-    - If empty/omitted -> defaults to the LATEST active batch ID.
+    - If empty/omitted -> defaults to the LATEST active batch ID with actual records.
     - If explicitly 'all' or 'all_batches' -> returns None (all batches).
     - If specific numeric ID -> returns integer ID.
     """
     if not batch_id or not str(batch_id).strip():
-        latest = db.query(ImportBatch).filter(ImportBatch.status == "Completed").order_by(ImportBatch.id.desc()).first()
+        latest = db.query(ImportBatch).filter(
+            ImportBatch.status == "Completed",
+            ImportBatch.new_records > 0
+        ).order_by(ImportBatch.id.desc()).first()
+        if not latest:
+            latest = db.query(ImportBatch).filter(ImportBatch.status == "Completed").order_by(ImportBatch.id.desc()).first()
         return latest.id if latest else None
     if str(batch_id).strip().lower() in ("all", "all_batches", "0", "-1"):
         return None
@@ -71,6 +78,30 @@ def get_master_360_records(
         "items": records
     }
 
+@router.get("/daybook/stats")
+def get_daybook_stats(
+    batch_id: Optional[str] = None,
+    site: Optional[str] = None,
+    voucher_type: Optional[str] = None,
+    approved_by: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    search: Optional[str] = None,
+    voucher_status: Optional[str] = None,
+    party_code: Optional[str] = None,
+    created_date: Optional[str] = None,
+    approved_date: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    b_id = _resolve_batch_id(db, batch_id)
+    return get_daybook_dashboard_stats(
+        db, batch_id=b_id, site=site, voucher_type=voucher_type,
+        approved_by=approved_by, date_from=date_from, date_to=date_to,
+        search=search, voucher_status=voucher_status, party_code=party_code,
+        created_date=created_date, approved_date=approved_date
+    )
+
 @router.get("/daybook", response_model=PaginatedResponse)
 def get_daybook_records(
     page: int = Query(1, ge=1),
@@ -83,8 +114,13 @@ def get_daybook_records(
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
     verify_status: Optional[str] = None,
+    validation_status: Optional[str] = None,
+    voucher_status: Optional[str] = None,
+    party_code: Optional[str] = None,
+    created_date: Optional[str] = None,
+    approved_date: Optional[str] = None,
     sort_by: str = "id",
-    sort_order: str = "desc",
+    sort_order: str = "asc",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -93,11 +129,37 @@ def get_daybook_records(
         db, page=page, page_size=page_size, search=search,
         site=site, voucher_type=voucher_type, approved_by=approved_by, batch_id=b_id,
         date_from=date_from, date_to=date_to, verify_status=verify_status,
+        validation_status=validation_status, voucher_status=voucher_status,
+        party_code=party_code, created_date=created_date, approved_date=approved_date,
         sort_by=sort_by, sort_order=sort_order
     )
     total_pages = (total + page_size - 1) // page_size if total > 0 else 1
-    items = [DayBookRecordResponse.model_validate(r) for r in records]
-    
+
+    items = []
+    for r in records:
+        raw_dict = json.loads(r.raw_data_json) if r.raw_data_json else {}
+        item = {**raw_dict}
+        item["id"] = r.id
+        item["batch_id"] = r.batch_id
+        item["validation_status"] = r.validation_status or "Pending / Check Dates"
+        # Standard snake_case compatibility aliases
+        item["transaction_site"] = r.transaction_site or item.get("Transaction Site")
+        item["voucher_number"] = r.voucher_number or item.get("Voucher Number")
+        item["voucher_date"] = r.voucher_date or item.get("Voucher Date")
+        item["voucher_type"] = r.voucher_type or item.get("Voucher Type")
+        item["voucher_status"] = r.voucher_status or item.get("Voucher Status")
+        item["party_code"] = r.party_code or item.get("Party Code")
+        item["party_description"] = r.party_description or item.get("Party Description")
+        item["account_description"] = r.account_description or item.get("Account Description")
+        item["narration"] = r.narration or item.get("Narration")
+        item["created_by"] = r.created_by or item.get("Created By")
+        item["approved_by"] = r.approved_by or item.get("Approved By")
+        item["created_date_raw"] = r.created_date_raw or item.get("Created Date")
+        item["approved_date_raw"] = r.approved_date_raw or item.get("Approved Date")
+        item["created_date"] = r.created_date_raw or item.get("Created Date")
+        item["approved_date"] = r.approved_date_raw or item.get("Approved Date")
+        items.append(item)
+
     return {
         "total": total,
         "page": page,
@@ -174,7 +236,7 @@ def get_ar_records(
         "items": items
     }
 
-@router.get("/cross-reference/{voucher_no}")
+@router.get("/cross-reference/{voucher_no:path}")
 def cross_reference(
     voucher_no: str,
     db: Session = Depends(get_db),

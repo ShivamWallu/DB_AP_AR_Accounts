@@ -12,7 +12,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Allura&family=Caveat:wght@600;700&family=Cedarville+Cursive&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Herr+Von+Muellerhoff&family=Inter:wght@400;500;600;700;800;900&family=Italianno&family=JetBrains+Mono:wght@500;600;700&family=Kristi&family=La+Belle+Aurore&family=Marck+Script&family=Meddon&family=Monsieur+La+Doulaise&family=Mr+De+Haviland&family=Mrs+Saint+Delafield&family=Nothing+You+Could+Do&family=Pinyon+Script&family=Reenie+Beanie&family=Rouge+Script&family=Sacramento&family=Satisfy&family=Whisper&family=WindSong:wght@400;500&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=33.0">
+  <link rel="stylesheet" href="/static/css/style.css?v=37.0">
   <link rel="preload" as="image" href="/static/images/Finance8.webp">
   <link rel="preload" as="image" href="/static/images/Finance6.webp">
   <link rel="preload" as="image" href="/static/images/Finance2.webp">
@@ -397,13 +397,37 @@
           </svg>
           <span class="nav-item-text">Master 360° Ledger</span>
         </a>
-        <a class="nav-item" data-view="daybook" title="Day Book">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-          </svg>
-          <span class="nav-item-text">Day Book</span>
-        </a>
+        <div class="nav-item-group" id="nav-group-daybook">
+          <a class="nav-item has-submenu" data-view="daybook" title="Day Book" id="nav-daybook-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span class="nav-item-text">Day Book</span>
+            <svg class="submenu-arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </a>
+          <div class="nav-submenu" id="submenu-daybook">
+            <a class="nav-subitem" data-view="daybook-upload" title="Day Book Upload">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Day Book Upload</span>
+            </a>
+            <a class="nav-subitem" data-view="daybook-dashboard" title="Day Book Dashboard">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span>Day Book Dashboard</span>
+            </a>
+          </div>
+        </div>
         <a class="nav-item" data-view="ap" title="Account Payable (AP)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -699,9 +723,240 @@
           <div id="master-table-container"></div>
         </section>
 
-        <!-- 3. DAY BOOK VIEW -->
+        <!-- 3. DAY BOOK VIEW (WITH 2 SUB-TABS: UPLOAD & DASHBOARD) -->
         <section id="view-daybook" class="view-section" style="display: none;">
-          <div id="daybook-table-container"></div>
+          <!-- Top Sub-Tabs Navigation Bar -->
+          <div class="daybook-subnav-container">
+            <div class="daybook-subtabs-pills">
+              <button type="button" class="daybook-subtab-btn" data-subtab="upload" id="subtab-btn-upload">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span>Day Book Upload</span>
+              </button>
+              <button type="button" class="daybook-subtab-btn active" data-subtab="dashboard" id="subtab-btn-dashboard">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Day Book Dashboard</span>
+              </button>
+            </div>
+            <div class="daybook-subnav-right">
+              <span id="active-filter-indicator" style="font-size: 0.78rem; color: #64748b; font-weight: 500;">Showing: <strong>All Transactions</strong></span>
+              <button type="button" class="btn btn-outline btn-sm daybook-hdr-btn" id="btn-clear-daybook-filters" title="Reset all applied filters">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                Reset Filters
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm daybook-hdr-btn" id="btn-export-daybook-dashboard" title="Export all 44 columns + Validation Status to CSV">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Export Validated Register
+              </button>
+              <span class="daybook-status-chip" id="daybook-batch-code-badge">Live Dataset Active</span>
+            </div>
+          </div>
+
+          <!-- SUBVIEW 1: DAY BOOK UPLOAD & EXCEL VALIDATION -->
+          <div id="daybook-subview-upload" style="display: none;">
+            
+            <!-- Process Stepper Bar -->
+            <div class="daybook-upload-stepper">
+              <div class="db-step-pill active">
+                <span class="db-step-num">1</span>
+                <div class="db-step-info">
+                  <span class="db-step-title">Select Excel File</span>
+                  <span class="db-step-sub">.xlsx or .xls format</span>
+                </div>
+              </div>
+              <div class="db-step-connector"></div>
+              <div class="db-step-pill">
+                <span class="db-step-num">2</span>
+                <div class="db-step-info">
+                  <span class="db-step-title">44-Column Audit</span>
+                  <span class="db-step-sub">Sequence Verified</span>
+                </div>
+              </div>
+              <div class="db-step-connector"></div>
+              <div class="db-step-pill">
+                <span class="db-step-num">3</span>
+                <div class="db-step-info">
+                  <span class="db-step-title">Date Rules &amp; Dedup</span>
+                  <span class="db-step-sub">3-Way Math Matrix</span>
+                </div>
+              </div>
+              <div class="db-step-connector"></div>
+              <div class="db-step-pill">
+                <span class="db-step-num">4</span>
+                <div class="db-step-info">
+                  <span class="db-step-title">Dashboard Live</span>
+                  <span class="db-step-sub">Instant Ledger Refresh</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main Upload Hub Card (Centered, Clean, Enterprise Design) -->
+            <div class="card daybook-upload-hub-card">
+              <div class="hub-header">
+                <div class="hub-title-row">
+                  <div class="hub-icon-badge">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="hub-title">Day Book Excel Upload &amp; Validation</h3>
+                    <p class="hub-subtitle">Upload the Day Book Excel file to validate all 44 original columns in sequence, inspect transaction dates (Voucher, Created, Approved), and commit verified records to the Day Book Dashboard.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Drag & Drop Zone -->
+              <div class="daybook-drop-zone" id="daybook-drop-zone">
+                <input type="file" id="daybook-file-input" accept=".xlsx, .xls" style="display: none;" />
+                
+                <div class="drop-zone-emblem">
+                  <div class="drop-icon-ring">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="12" y1="18" x2="12" y2="12"></line>
+                      <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                  </div>
+                  <span class="emblem-tag">EXCEL</span>
+                </div>
+
+                <div class="drop-zone-text-group">
+                  <div class="drop-primary-text">Drag &amp; Drop Day Book Excel File Here</div>
+                  <div class="drop-secondary-text">or choose a file directly from your computer</div>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-browse-hub" id="btn-choose-daybook-file">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                  </svg>
+                  Browse Excel File
+                </button>
+
+                <div class="drop-zone-chips">
+                  <span class="drop-chip">✓ Supports .XLSX / .XLS</span>
+                  <span class="drop-chip">✓ Up to 50 MB</span>
+                  <span class="drop-chip">✓ 44 Columns Sequential Verification</span>
+                </div>
+              </div>
+
+              <!-- Selected File Card -->
+              <div class="daybook-file-info-box" id="daybook-file-info-box" style="display: none;">
+                <div class="file-icon-box">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <path d="M8 13h8M8 17h8M10 9h4"></path>
+                  </svg>
+                </div>
+                <div class="file-details">
+                  <div class="file-name" id="daybook-file-name">filename.xlsx</div>
+                  <div class="file-meta">
+                    <span id="daybook-file-size">0 KB</span>
+                    <span class="file-status-pill">Ready for Ingestion</span>
+                  </div>
+                </div>
+                <div class="file-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-daybook-validate">
+                    🔍 Re-Validate
+                  </button>
+                  <button type="button" class="btn btn-primary btn-sm" id="btn-daybook-commit">
+                    🚀 Commit &amp; Save to Dashboard
+                  </button>
+                </div>
+              </div>
+
+              <!-- Loading spinner -->
+              <div id="daybook-upload-loader" style="display: none; align-items: center; justify-content: center; gap: 0.75rem; padding: 1.25rem; color: #0284c7; background: #f0f9ff; border-radius: 8px; border: 1px solid #bae6fd; margin-top: 0.75rem;">
+                <div class="spinner" style="width: 22px; height: 22px; border: 3px solid #e2e8f0; border-top-color: #0284c7; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                <span style="font-weight: 600; font-size: 0.88rem;">Executing 44-column sequence validator and 3-way date rules...</span>
+              </div>
+            </div>
+
+            <!-- Dynamic Validation Report Card -->
+            <div class="card daybook-report-card" id="daybook-validation-report-card" style="display: none; margin-top: 1.25rem; margin-bottom: 1.5rem;">
+              <div id="daybook-report-content"></div>
+            </div>
+          </div>
+
+          <!-- SUBVIEW 2: DAY BOOK DASHBOARD -->
+          <div id="daybook-subview-dashboard" style="display: block;">
+            <!-- Executive Unified Interactive KPI Status Ribbon (Height-Optimized Table Priority) -->
+            <div class="daybook-kpi-ribbon">
+              <div class="kpi-ribbon-label">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                </svg>
+                <span>Filter Status:</span>
+              </div>
+              <div class="kpi-ribbon-items">
+                <!-- 1. All Transactions -->
+                <button type="button" class="kpi-pill kpi-pill-total val-filter-pill daybook-summary-card active" data-status="All Transactions" title="Click to view All Transactions">
+                  <span class="kpi-pill-dot dot-total"></span>
+                  <span class="kpi-pill-name">All Transactions</span>
+                  <span class="kpi-pill-count" id="card-val-total">0</span>
+                </button>
+
+                <!-- 2. Matched -->
+                <button type="button" class="kpi-pill kpi-pill-matched val-filter-pill daybook-summary-card pill-matched" data-status="Matched" title="Click to filter by Matched (Same Date)">
+                  <span class="kpi-pill-dot dot-matched"></span>
+                  <span class="kpi-pill-name">Matched</span>
+                  <span class="kpi-pill-count" id="card-val-matched">0</span>
+                </button>
+
+                <!-- 3. Back date entry -->
+                <button type="button" class="kpi-pill kpi-pill-backdate val-filter-pill daybook-summary-card pill-backdate" data-status="Back date entry" title="Click to filter by Back date entry">
+                  <span class="kpi-pill-dot dot-backdate"></span>
+                  <span class="kpi-pill-name">Back date entry</span>
+                  <span class="kpi-pill-count" id="card-val-backdate">0</span>
+                </button>
+
+                <!-- 4. Late Approval -->
+                <button type="button" class="kpi-pill kpi-pill-lateappr val-filter-pill daybook-summary-card pill-lateappr" data-status="Late Approval" title="Click to filter by Late Approval">
+                  <span class="kpi-pill-dot dot-lateappr"></span>
+                  <span class="kpi-pill-name">Late Approval</span>
+                  <span class="kpi-pill-count" id="card-val-lateappr">0</span>
+                </button>
+
+                <!-- 5. Back date entry & Late Approval -->
+                <button type="button" class="kpi-pill kpi-pill-combined val-filter-pill daybook-summary-card pill-combined" data-status="Back date entry & Late Approval" title="Click to filter by Back date entry & Late Approval">
+                  <span class="kpi-pill-dot dot-combined"></span>
+                  <span class="kpi-pill-name">Back date & Late Appr.</span>
+                  <span class="kpi-pill-count" id="card-val-combined">0</span>
+                </button>
+
+                <!-- 6. Pending / Check Dates -->
+                <button type="button" class="kpi-pill kpi-pill-pending val-filter-pill daybook-summary-card pill-pending" data-status="Pending / Check Dates" title="Click to filter by Pending / Check Dates">
+                  <span class="kpi-pill-dot dot-pending"></span>
+                  <span class="kpi-pill-name">Pending / Check Dates</span>
+                  <span class="kpi-pill-count" id="card-val-pending">0</span>
+                </button>
+
+                <!-- 7. Balance / Other -->
+                <button type="button" class="kpi-pill kpi-pill-other val-filter-pill daybook-summary-card pill-other" data-status="Balance / Other" title="Total unclassified transactions">
+                  <span class="kpi-pill-dot dot-other"></span>
+                  <span class="kpi-pill-name">Balance / Other</span>
+                  <span class="kpi-pill-count" id="card-val-other">0</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 3. DataTable Container (All 44 columns + 45th Validation Status) -->
+            <div id="daybook-table-container"></div>
+          </div>
         </section>
 
         <!-- 4. AP VIEW -->
@@ -1132,15 +1387,16 @@
   </div>
 
   <!-- JS MODULES -->
-  <script src="/static/js/api.js?v=33.0"></script>
-  <script src="/static/js/auth.js?v=33.0"></script>
-  <script src="/static/js/signature.js?v=33.0"></script>
-  <script src="/static/js/dashboard.js?v=33.0"></script>
-  <script src="/static/js/datatable.js?v=33.0"></script>
-  <script src="/static/js/upload.js?v=33.0"></script>
-  <script src="/static/js/imports.js?v=33.0"></script>
-  <script src="/static/js/audit.js?v=33.0"></script>
-  <script src="/static/js/app.js?v=33.0"></script>
+  <script src="/static/js/api.js?v=35.0"></script>
+  <script src="/static/js/auth.js?v=35.0"></script>
+  <script src="/static/js/signature.js?v=35.0"></script>
+  <script src="/static/js/dashboard.js?v=35.0"></script>
+  <script src="/static/js/datatable.js?v=35.0"></script>
+  <script src="/static/js/upload.js?v=35.0"></script>
+  <script src="/static/js/imports.js?v=35.0"></script>
+  <script src="/static/js/audit.js?v=35.0"></script>
+  <script src="/static/js/daybook.js?v=36.0"></script>
+  <script src="/static/js/app.js?v=35.0"></script>
 </body>
 
 </html>
