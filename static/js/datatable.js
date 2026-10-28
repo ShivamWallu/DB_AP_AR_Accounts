@@ -1875,6 +1875,14 @@ class DataTableController {
       const prevVNo = prevRow ? String(prevRow.voucher_number || prevRow.voucher_no || "").trim() : null;
       const isDuplicateVNo = (prevVNo !== null && currentVNo !== "" && currentVNo !== "—" && currentVNo !== "-" && currentVNo === prevVNo);
 
+      const currentPartyDesc = String(row.party_description || "").trim();
+      const prevPartyDesc = prevRow ? String(prevRow.party_description || "").trim() : null;
+      const isDuplicatePartyDesc = isDuplicateVNo && (prevPartyDesc !== null && currentPartyDesc !== "" && currentPartyDesc !== "—" && currentPartyDesc !== "-" && currentPartyDesc === prevPartyDesc);
+
+      const currentPartyCode = String(row.party_code || "").trim();
+      const prevPartyCode = prevRow ? String(prevRow.party_code || "").trim() : null;
+      const isDuplicatePartyCode = isDuplicateVNo && (prevPartyCode !== null && currentPartyCode !== "" && currentPartyCode !== "—" && currentPartyCode !== "-" && currentPartyCode === prevPartyCode);
+
       return `
         <tr data-id="${row.id}">
           <td class="dt-sticky-col-idx">${startIndex + idx + 1}</td>
@@ -1922,11 +1930,28 @@ class DataTableController {
           return `<td class="${stickyClass}">${badgeHtml}</td>`;
         }
 
-        if (col.key === "party_description" || col.key === "account_description" || col.key === "item_service_description" || col.key === "item_service_expense_account_desc" || col.key === "ap_item_description" || col.key === "ar_item_description" || col.key === "unified_item_description") {
+        if (col.key === "party_description") {
+          if (isDuplicatePartyDesc) {
+            return `<td class="${stickyClass} cell-duplicate-blank"><span style="opacity: 0; user-select: none; display: inline-block;">${val}</span></td>`;
+          }
           const fullDesc = String(val);
           const safeAttr = fullDesc.replace(/"/g, '&quot;');
           const shortText = fullDesc.length > 28 ? fullDesc.substring(0, 26) + '...' : fullDesc;
-          const icon = col.key === 'party_description' ? '🏢' : (col.key.includes('item') ? '📦' : '📋');
+          return `
+                <td class="${stickyClass} tooltip-trigger-cell" data-popover-title="${col.label}" data-popover-icon="🏢" data-full-text="${safeAttr}">
+                  <div class="narration-cell-content">
+                    <span class="narration-text-truncated">${shortText}</span>
+                    ${fullDesc.length > 26 ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; flex-shrink: 0;" title="Click/Hover to view full details"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>` : ''}
+                  </div>
+                </td>
+              `;
+        }
+
+        if (col.key === "account_description" || col.key === "item_service_description" || col.key === "item_service_expense_account_desc" || col.key === "ap_item_description" || col.key === "ar_item_description" || col.key === "unified_item_description") {
+          const fullDesc = String(val);
+          const safeAttr = fullDesc.replace(/"/g, '&quot;');
+          const shortText = fullDesc.length > 28 ? fullDesc.substring(0, 26) + '...' : fullDesc;
+          const icon = col.key.includes('item') ? '📦' : '📋';
           return `
                 <td class="${stickyClass} tooltip-trigger-cell" data-popover-title="${col.label}" data-popover-icon="${icon}" data-full-text="${safeAttr}">
                   <div class="narration-cell-content">
@@ -2003,7 +2028,14 @@ class DataTableController {
           return `<td class="${stickyClass}"><span class="voucher-num-badge">${val}</span></td>`;
         }
 
-        if (col.key === "party_code" || col.key === "ap_invoice_number" || col.key === "invoice_number" || col.key === "unified_invoice_no") {
+        if (col.key === "party_code") {
+          if (isDuplicatePartyCode) {
+            return `<td class="${stickyClass} cell-duplicate-blank"><span style="opacity: 0; user-select: none; display: inline-block;">${val}</span></td>`;
+          }
+          return `<td class="${stickyClass}"><span class="cell-code">${val}</span></td>`;
+        }
+
+        if (col.key === "ap_invoice_number" || col.key === "invoice_number" || col.key === "unified_invoice_no") {
           return `<td class="${stickyClass}"><span class="cell-code">${val}</span></td>`;
         }
 
