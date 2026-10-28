@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import declarative_base, sessionmaker
 from app.config import DATABASE_URL
 
-connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+connect_args = {"check_same_thread": False, "timeout": 60} if "sqlite" in DATABASE_URL else {}
 
 engine = create_engine(
     DATABASE_URL,
@@ -16,6 +16,7 @@ if "sqlite" in DATABASE_URL:
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL")
         cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout=60000")
         cursor.close()
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

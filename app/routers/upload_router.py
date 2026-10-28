@@ -1,5 +1,6 @@
 import os
 import shutil
+from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request
 from sqlalchemy.orm import Session
@@ -62,7 +63,7 @@ async def import_files(
         raise HTTPException(status_code=400, detail="No files provided for import.")
 
     # Save files to batch directory
-    batch_timestamp = int(os.times().system)
+    batch_timestamp = int(datetime.utcnow().timestamp())
     batch_dir = UPLOAD_DIR / f"batch_upload_{batch_timestamp}"
     batch_dir.mkdir(exist_ok=True, parents=True)
 
