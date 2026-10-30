@@ -490,7 +490,7 @@ class DataTableController {
       if (!container) return;
       const tbody = container.querySelector(".data-table tbody");
       if (!tbody) return;
-      
+
       tbody.querySelectorAll(".btn-verify-badge").forEach(btn => {
         const ds = btn.dataset.dataset || this.datasetType;
         const rId = btn.dataset.id;
@@ -1489,11 +1489,23 @@ class DataTableController {
       this.updateSiteTriggerVisuals();
     }
 
-    // Populate Voucher Types (Multi-Select Checkboxes)
+    // Populate Voucher Types (Multi-Select Checkboxes with Normalization & Deduplication)
     const vtypeOptionsContainer = container.querySelector(".dt-vtype-options-list");
     if (vtypeOptionsContainer && filterData.voucher_types) {
-      this.availableVTypes = filterData.voucher_types;
-      vtypeOptionsContainer.innerHTML = filterData.voucher_types.map(vt => {
+      const seenTypes = new Set();
+      const cleanVTypes = [];
+      filterData.voucher_types.forEach(vt => {
+        if (!vt) return;
+        const s = String(vt).trim();
+        const norm = (s.toLowerCase() === "salesreturn") ? "Sales Return" : s;
+        if (!seenTypes.has(norm)) {
+          seenTypes.add(norm);
+          cleanVTypes.push(norm);
+        }
+      });
+      cleanVTypes.sort((a, b) => a.localeCompare(b));
+      this.availableVTypes = cleanVTypes;
+      vtypeOptionsContainer.innerHTML = cleanVTypes.map(vt => {
         const isChecked = this.selectedVTypes.includes(vt);
         return `
           <label class="multi-select-option" data-vtype="${vt}">
@@ -1677,8 +1689,8 @@ class DataTableController {
 
     // Site Filter (Multi-Select)
     if (this.selectedSites && this.selectedSites.length > 0) {
-      const displayVal = this.selectedSites.length <= 3 
-        ? this.selectedSites.join(", ") 
+      const displayVal = this.selectedSites.length <= 3
+        ? this.selectedSites.join(", ")
         : `${this.selectedSites.slice(0, 2).join(", ")} (+${this.selectedSites.length - 2} more)`;
       activeList.push({ key: "site", label: "Sites", value: displayVal });
     } else if (this.site && this.site.trim()) {
@@ -1843,13 +1855,20 @@ class DataTableController {
   renderTableData() {
     this.updateActiveFilterVisuals();
     const container = document.getElementById(this.containerId);
+    if (container) {
+      const isMaterialTransfer = Boolean(
+        (this.selectedVTypes && this.selectedVTypes.some(vt => String(vt).trim().toLowerCase() === "material transfer")) ||
+        (this.voucherType && String(this.voucherType).toLowerCase().includes("material transfer"))
+      );
+      container.classList.toggle("dt-wide-vouchers", isMaterialTransfer);
+    }
     const tableWrapper = container ? container.querySelector(".table-responsive") : null;
     const currentScroll = tableWrapper ? tableWrapper.scrollLeft : (this.savedScrollLeft || 0);
     if (currentScroll > 0) {
       this.savedScrollLeft = currentScroll;
     }
-    const tbody = container.querySelector(".dt-tbody");
-    const countText = container.querySelector(".dt-count-text");
+    const tbody = container ? container.querySelector(".dt-tbody") : null;
+    const countText = container ? container.querySelector(".dt-count-text") : null;
 
     const displayedRows = this.data;
 
@@ -2025,7 +2044,8 @@ class DataTableController {
           if (isDuplicateVNo) {
             return `<td class="${stickyClass} cell-duplicate-blank"><span style="opacity: 0; user-select: none; display: inline-block;">${val}</span></td>`;
           }
-          return `<td class="${stickyClass}"><span class="voucher-num-badge">${val}</span></td>`;
+          const safeVal = String(val).replace(/"/g, '&quot;');
+          return `<td class="${stickyClass}"><span class="voucher-num-badge" title="Voucher No: ${safeVal} (Click to copy)" onclick="if (navigator.clipboard) { navigator.clipboard.writeText('${safeVal}'); if (window.App &amp;&amp; App.toast) App.toast('Copied Voucher No: ' + '${safeVal}', 'info'); }">${val}</span></td>`;
         }
 
         if (col.key === "party_code") {
@@ -2090,7 +2110,7 @@ class DataTableController {
           const rId = btn.dataset.id;
           const vNo = btn.dataset.voucher;
           const row = this.data.find(r => String(r.id) === String(rId)) || { id: rId, voucher_number: vNo };
-          
+
           btn.style.opacity = '0.6';
           btn.style.pointerEvents = 'none';
 
@@ -3088,7 +3108,7 @@ const NarrationPopover = {
   }
 };
 
-DataTableController.showRecordModal = function(record, datasetType) {
+DataTableController.showRecordModal = function (record, datasetType) {
   const dummy = new DataTableController({
     containerId: "dummy",
     datasetType: datasetType || "daybook",

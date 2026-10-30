@@ -425,6 +425,8 @@ def parse_daybook_file(filepath: str) -> Tuple[List[Dict[str, Any]], Dict[str, A
         site_val = get_val(row, idx_site)
         vdate_val = get_val(row, idx_vdate)
         vtype_val = get_val(row, idx_vtype)
+        if vtype_val and str(vtype_val).strip().lower() in ("salesreturn", "sales return"):
+            vtype_val = "Sales Return"
         vstat_val = get_val(row, idx_vstatus)
         pcode_val = get_val(row, idx_pcode)
         pdesc_val = get_val(row, idx_pdesc)
@@ -620,6 +622,8 @@ def parse_ap_file(filepath: str) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
 
         site_val = get_val(row, idx_site)
         vtype_val = get_val(row, idx_vtype)
+        if vtype_val and str(vtype_val).strip().lower() in ("salesreturn", "sales return"):
+            vtype_val = "Sales Return"
         vsub_val = get_val(row, idx_vsub)
         pgst_val = get_val(row, idx_party_gst)
         invno_val = get_val(row, idx_inv_no)
@@ -720,6 +724,8 @@ def parse_ar_file(filepath: str) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
 
         site_val = get_val(row, idx_site)
         vtype_val = get_val(row, idx_vtype)
+        if vtype_val and str(vtype_val).strip().lower() in ("salesreturn", "sales return"):
+            vtype_val = "Sales Return"
         vsub_val = get_val(row, idx_vsub)
         itemdesc_val = get_val(row, idx_item_desc)
         remarks_val = get_val(row, idx_remarks)

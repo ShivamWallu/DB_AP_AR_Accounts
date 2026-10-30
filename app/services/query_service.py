@@ -11,11 +11,23 @@ def get_filter_options(db: Session) -> Dict[str, Any]:
     ar_sites = [r[0] for r in db.query(ARRecord.accounting_site_code).distinct().filter(ARRecord.accounting_site_code.isnot(None)).all()]
     all_sites = sorted(list(set(db_sites + ap_sites + ar_sites)))
 
-    # Unique Voucher Types across all 3 tables
+    # Unique Voucher Types across all 3 tables with clean normalization
     db_vtypes = [r[0] for r in db.query(DayBookRecord.voucher_type).distinct().filter(DayBookRecord.voucher_type.isnot(None)).all()]
     ap_vtypes = [r[0] for r in db.query(APRecord.voucher_type).distinct().filter(APRecord.voucher_type.isnot(None)).all()]
     ar_vtypes = [r[0] for r in db.query(ARRecord.voucher_type).distinct().filter(ARRecord.voucher_type.isnot(None)).all()]
-    all_vtypes = sorted(list(set(db_vtypes + ap_vtypes + ar_vtypes)))
+    
+    def _normalize_vtype(val: Any) -> Optional[str]:
+        if not val:
+            return None
+        s = str(val).strip()
+        if not s or s.lower() in ("none", "-", "—", "null", "undefined"):
+            return None
+        if s.lower() in ("salesreturn", "sales return"):
+            return "Sales Return"
+        return s
+
+    raw_vtypes = [_normalize_vtype(r) for r in (db_vtypes + ap_vtypes + ar_vtypes)]
+    all_vtypes = sorted(list(set(v for v in raw_vtypes if v)))
 
     # Unique Voucher Sub-Types across AP and AR
     ap_subtypes = [r[0] for r in db.query(APRecord.voucher_sub_type).distinct().filter(APRecord.voucher_sub_type.isnot(None)).all()]
@@ -836,8 +848,8 @@ def query_master_360(
                     "voucher_date": dbr.voucher_date,
                     "voucher_type": ap.voucher_type or dbr.voucher_type,
                     "voucher_status": dbr.voucher_status or "Verified",
-                    "party_code": ap.party_gst_tin or dbr.party_code,
-                    "party_description": dbr.party_description or dbr.party_code or "",
+                    "party_code": dbr.party_code or getattr(ap, 'party_code', None) or ap.party_gst_tin or "",
+                    "party_description": dbr.party_description or getattr(ap, 'party_description', None) or dbr.party_code or getattr(ap, 'party_code', None) or "",
                     "account_description": exp_acc,
                     "expense_account": exp_acc,
                     "narration": ap.header_narration or ap.detail_narration or dbr.narration or f"Voucher transaction: {dbr.voucher_type}",
@@ -881,8 +893,8 @@ def query_master_360(
                     "voucher_date": dbr.voucher_date,
                     "voucher_type": ap.voucher_type or dbr.voucher_type,
                     "voucher_status": dbr.voucher_status or "Verified",
-                    "party_code": ap.party_gst_tin or dbr.party_code,
-                    "party_description": dbr.party_description or dbr.party_code or "",
+                    "party_code": dbr.party_code or getattr(ap, 'party_code', None) or ap.party_gst_tin or "",
+                    "party_description": dbr.party_description or getattr(ap, 'party_description', None) or dbr.party_code or getattr(ap, 'party_code', None) or "",
                     "account_description": exp_acc,
                     "expense_account": exp_acc,
                     "narration": ap.header_narration or ap.detail_narration or dbr.narration,
@@ -1021,8 +1033,8 @@ def query_master_360(
                     "voucher_date": ap.invoice_date or (ap.upload_timestamp.strftime("%d/%m/%Y") if ap.upload_timestamp else ""),
                     "voucher_type": ap.voucher_type or "Purchase Voucher",
                     "voucher_status": "Reconciled (AP)",
-                    "party_code": ap.party_gst_tin or "",
-                    "party_description": ap.item_service_expense_account_desc or "Supplier / Vendor",
+                    "party_code": getattr(ap, 'party_code', None) or ap.party_gst_tin or "",
+                    "party_description": getattr(ap, 'party_description', None) or ap.item_service_expense_account_desc or "Supplier / Vendor",
                     "account_description": exp_acc,
                     "expense_account": exp_acc,
                     "narration": ap.header_narration or ap.detail_narration or f"AP Entry: {ap.item_service_description}",

@@ -69,7 +69,7 @@ const App = {
       if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT" || activeEl.isContentEditable)) {
         return;
       }
-      
+
       // If statement modal is open, scroll statement table
       const statementModal = document.getElementById("statement-report-modal");
       if (statementModal && statementModal.classList.contains("show")) {
@@ -106,7 +106,7 @@ const App = {
     document.body.classList.toggle("sidebar-collapsed");
     const isCollapsed = document.body.classList.contains("sidebar-collapsed");
     localStorage.setItem("sidebar_collapsed", isCollapsed ? "true" : "false");
-    
+
     // Trigger resize & table scroll phantom updates for smooth UX
     setTimeout(() => {
       window.dispatchEvent(new Event("resize"));
@@ -374,7 +374,7 @@ const App = {
   async exploreVoucher(voucherNo) {
     if (!voucherNo) return;
     this.navigate("explorer");
-    
+
     const input = document.getElementById("explorer-search-input");
     if (input) input.value = voucherNo;
 
@@ -629,13 +629,13 @@ const App = {
     try {
       const newStatus = !isCurrentlyActive;
       await API.updateUserStatus(userId, newStatus);
-      
+
       if (newStatus) {
         App.toast(`✓ User '${username}' successfully unblocked & activated!`, "success");
       } else {
         App.toast(`🚫 User '${username}' successfully BLOCKED and suspended.`, "warning");
       }
-      
+
       // Update local state & refresh view
       const target = (this.usersData || []).find(u => u.id === userId);
       if (target) target.is_active = newStatus;
@@ -667,7 +667,7 @@ const App = {
         (u.username && u.username.toLowerCase().includes(search)) ||
         (u.full_name && u.full_name.toLowerCase().includes(search)) ||
         (u.email && u.email.toLowerCase().includes(search));
-      
+
       const matchStatus = status === "all" ||
         (status === "active" && u.is_active) ||
         (status === "blocked" && !u.is_active);
@@ -758,11 +758,11 @@ const App = {
                   </td>
                 </tr>
               ` : filtered.map(u => {
-                const isSelf = currentUsername && u.username === currentUsername;
-                const safeName = (u.full_name || u.username).replace(/'/g, "\\'");
-                const safeUser = u.username.replace(/'/g, "\\'");
+      const isSelf = currentUsername && u.username === currentUsername;
+      const safeName = (u.full_name || u.username).replace(/'/g, "\\'");
+      const safeUser = u.username.replace(/'/g, "\\'");
 
-                return `
+      return `
                   <tr class="${!u.is_active ? 'user-row-blocked' : ''}">
                     <td><span class="user-id-tag">#${u.id}</span></td>
                     <td>
@@ -813,7 +813,7 @@ const App = {
                     </td>
                   </tr>
                 `;
-              }).join("")}
+    }).join("")}
             </tbody>
           </table>
         </div>
@@ -823,7 +823,7 @@ const App = {
 
   async refreshAllData(targetBatchId = null) {
     await this.refreshFilterOptions();
-    
+
     // If a specific targetBatchId was provided (e.g. from a new batch upload),
     // sync the batch dropdown filter across all DataTables so active tables reflect the new dataset
     if (targetBatchId) {

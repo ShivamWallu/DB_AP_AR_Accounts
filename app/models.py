@@ -152,6 +152,8 @@ class APRecord(Base):
     voucher_number = Column(String(150), index=True, nullable=True) # Col H
     voucher_type = Column(String(150), index=True, nullable=True) # Col N
     voucher_sub_type = Column(String(150), index=True, nullable=True) # Col P
+    party_code = Column(String(100), index=True, nullable=True) # Col AE
+    party_description = Column(String(255), index=True, nullable=True) # Col AG
     party_gst_tin = Column(String(100), index=True, nullable=True) # Col AR
     invoice_number = Column(String(150), index=True, nullable=True) # Col AZ
     invoice_date = Column(String(50), index=True, nullable=True) # Col BA

@@ -823,18 +823,27 @@ body.sidebar-collapsed .sidebar-credit-pill {
 .voucher-num-badge {
   font-family: 'JetBrains Mono', 'Inter', monospace;
   font-variant-numeric: tabular-nums;
-  font-size: 0.84rem;
+  font-size: 0.80rem;
   font-weight: 700;
   color: #0f172a;
   background: #ffffff;
-  padding: 0.16rem 0.42rem;
+  padding: 0.18rem 0.46rem;
   border-radius: 5px;
   border: 1.2px solid #cbd5e1;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.voucher-num-badge:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #1d4ed8;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
 }
 
 .cell-code {
@@ -1191,6 +1200,29 @@ body.sidebar-collapsed .sidebar-credit-pill {
   text-align: center !important;
   white-space: nowrap !important;
   padding: 0.5rem 0.35rem !important;
+}
+
+/* --- DYNAMIC WIDE VOUCHER COLUMN (When Material Transfer is selected) --- */
+.dt-wide-vouchers .data-table th.dt-sticky-col-voucher,
+.dt-wide-vouchers .data-table td.dt-sticky-col-voucher {
+  width: 255px !important;
+  min-width: 255px !important;
+  max-width: 255px !important;
+}
+
+.dt-wide-vouchers .data-table th.dt-sticky-col-vdate,
+.dt-wide-vouchers .data-table td.dt-sticky-col-vdate {
+  left: 394px !important;
+}
+
+.dt-wide-vouchers .data-table th.dt-sticky-col-cdate,
+.dt-wide-vouchers .data-table td.dt-sticky-col-cdate {
+  left: 509px !important;
+}
+
+.dt-wide-vouchers .data-table th.dt-sticky-col-adate,
+.dt-wide-vouchers .data-table td.dt-sticky-col-adate {
+  left: 624px !important;
 }
 
 .data-table th.dt-sticky-col-adate {
