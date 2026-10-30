@@ -895,6 +895,12 @@ const App = {
     const container = document.getElementById("toast-container");
     if (!container) return;
 
+    // Deduplicate: Don't show if the exact same message is already visible
+    const existing = Array.from(container.querySelectorAll(".toast")).find(t => t.innerText.includes(message));
+    if (existing) {
+      return;
+    }
+
     const toastEl = document.createElement("div");
     toastEl.className = `toast ${type}`;
     toastEl.innerHTML = `

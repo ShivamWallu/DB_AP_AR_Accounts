@@ -212,7 +212,9 @@ const VerificationManager = {
   async loadFromServer(silent = true) {
     try {
       const token = API.getToken();
-      if (!token) return;
+      const appContainer = document.getElementById("app-container");
+      const isAppVisible = appContainer && appContainer.style.display !== "none";
+      if (!token || !isAppVisible) return;
       const res = await API.getVerifications();
       if (res && res.verifications) {
         const hash = JSON.stringify(res.verifications);
@@ -481,7 +483,11 @@ class DataTableController {
     this.bindControls();
     this.bindScrollSync();
     this.bindVerificationSync();
-    this.loadData();
+    const appContainer = document.getElementById("app-container");
+    const isAppVisible = appContainer && appContainer.style.display !== "none";
+    if (API.getToken() && isAppVisible) {
+      this.loadData();
+    }
   }
 
   bindVerificationSync() {

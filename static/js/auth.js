@@ -41,9 +41,25 @@ const Auth = {
       logoutBtn.addEventListener("click", () => this.handleLogout());
     }
 
+    let lastUnauthorizedToast = 0;
     window.addEventListener("auth:unauthorized", () => {
+      const authContainer = document.getElementById("auth-container");
+      const appContainer = document.getElementById("app-container");
+      const isAlreadyOnLogin = (authContainer && authContainer.style.display !== "none") ||
+                               (appContainer && appContainer.style.display === "none");
+
       this.showLoginView();
-      App.toast("Session expired or unauthorized. Please log in.", "warning");
+
+      // If user is already on the login screen, do not spam with expired session alerts
+      if (isAlreadyOnLogin) {
+        return;
+      }
+
+      const now = Date.now();
+      if (now - lastUnauthorizedToast > 5000) {
+        lastUnauthorizedToast = now;
+        App.toast("Session expired or unauthorized. Please log in.", "warning");
+      }
     });
   },
 
